@@ -136,9 +136,8 @@ class GameMap(Map):
                     ai_component = BasicMonster()
                     monster = Entity(x=x,
                                      y=y,
-                                     char='o',
-                                     color=terminal.color_from_argb(
-                                         0, 63, 127, 63),
+                                     char=0x1003,
+                                     color="white",
                                      name='Orc',
                                      blocks=True,
                                      render_order=RenderOrder.ACTOR,
@@ -149,9 +148,8 @@ class GameMap(Map):
                     ai_component = BasicMonster()
                     monster = Entity(x=x,
                                      y=y,
-                                     char='T',
-                                     color=terminal.color_from_argb(
-                                         0, 0, 127, 0),
+                                     char=0x1004,
+                                     color="white",
                                      name='Troll',
                                      blocks=True,
                                      render_order=RenderOrder.ACTOR,
@@ -172,7 +170,7 @@ class GameMap(Map):
 
                 item = Entity(x,
                               y,
-                              '!',
+                              0x1005,
                               "violet",
                               'Potion of Healing',
                               render_order=RenderOrder.ITEM,
@@ -181,11 +179,12 @@ class GameMap(Map):
                 entities.append(item)
 
     def render(self, colors):
+
         for y in range(self.height):
             for x in range(self.width):
                 wall = self.is_blocked(x, y)
                 visible = self.fov[x, y]
-
+                """
                 if visible:
                     if wall:
                         terminal.printf(
@@ -209,5 +208,19 @@ class GameMap(Map):
                             x=x,
                             y=y,
                             s=f'[color={colors.get("dark_ground")}].[/color]')
+                """
+                if visible:
+                    terminal.color(terminal.color_from_name("white"))
+                    if wall:
+                        terminal.put(x=x, y=y, c=0x1000)
+                    else:
+                        terminal.put(x=x, y=y, c=0x1001)
+
+                elif self.explored[x, y]:
+                    terminal.color(terminal.color_from_name("grey"))
+                    if wall:
+                        terminal.put(x=x, y=y, c=0x1000)
+                    else:
+                        terminal.put(x=x, y=y, c=0x1001)
 
         self.explored = self.explored | self.fov

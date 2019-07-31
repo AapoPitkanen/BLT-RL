@@ -15,7 +15,7 @@ class Entity:
     def __init__(self,
                  x: int,
                  y: int,
-                 char: str,
+                 char,
                  color,
                  name: str,
                  blocks: bool = False,
@@ -27,7 +27,7 @@ class Entity:
                  equippable=None):
         self.x: int = x
         self.y: int = y
-        self.char: str = char
+        self.char = char
         self.color = color
         self.name: str = name
         self.blocks: bool = blocks
@@ -55,9 +55,13 @@ class Entity:
 
     def draw(self):
         #Draw the entity to the terminal
+        terminal.color(terminal.color_from_name("white"))
+        terminal.put(x=self.x, y=self.y, c=self.char)
+        """
         terminal.printf(x=self.x,
                         y=self.y,
                         s=f'[color={self.color}]{self.char}[/color]')
+        """
 
     def move(self, dx, dy):
         # Move the entity by a given amount

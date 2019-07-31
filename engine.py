@@ -9,16 +9,17 @@ from death_functions import kill_monster, kill_player
 from game_messages import MessageLog, Message
 from game_states import GameStates
 from render_order import RenderOrder
-from render_functions import render_all
+from render_functions import render_all, clear_all_entities, clear_map_layer, clear_menu_layer
+from gameview import GameView
 
 
 def main():
     window_title: str = 'Bearlibterm/TCOD Roguelike'
 
-    screen_width: int = 120
-    screen_height: int = 60
-    map_width: int = 100
-    map_height: int = 53
+    screen_width: int = 90
+    screen_height: int = 50
+    map_width: int = 80
+    map_height: int = 43
 
     room_max_size: int = 10
     room_min_size: int = 6
@@ -40,7 +41,6 @@ def main():
     message_height = panel_height - 1
 
     mouse_coordinates = (0, 0)
-    cur_x, cur_y = 0, 0
 
     colors = {
         'dark_wall': terminal.color_from_argb(0, 38, 38, 38),
@@ -53,14 +53,16 @@ def main():
 
     fov_recompute: bool = True
 
+    menu = None
+
     fighter_component = Fighter(hp=30, defense=2, power=5)
 
     inventory_component = Inventory(26)
 
     player: Entity = Entity(x=0,
                             y=0,
-                            char='@',
-                            color=terminal.color_from_argb(0, 255, 255, 255),
+                            char=0x1002,
+                            color=terminal.color_from_argb(255, 255, 255, 255),
                             name='Player',
                             blocks=True,
                             render_order=RenderOrder.ACTOR,
@@ -78,10 +80,18 @@ def main():
     game_state: GameStates = GameStates.PLAYERS_TURN
 
     terminal.open()
+
     terminal.set(
-        f'window: size={screen_width}x{screen_height}, title="{window_title}";'
+        f'window: size={screen_width}x{screen_height}, cellsize=32x32, title="{window_title}";'
     )
-    terminal.set("font: clacon.ttf, size=16x16;")
+
+    terminal.set(
+        "0x1000: test_tiles.png, size=32x32, resize=32x32, resize-filter=nearest"
+    )
+
+    game_view = GameView(player, game_map)
+
+    print(game_view.__dict__)
 
     while game_running:
         if fov_recompute:
@@ -90,15 +100,21 @@ def main():
                                  radius=fov_radius,
                                  light_walls=fov_light_walls,
                                  algorithm=fov_algorithm)
+            game_view.recalculate_origin(player, game_map)
+            print(game_view.__dict__)
 
-        render_all(entities=entities,
-                   player=player,
-                   game_map=game_map,
-                   message_log=message_log,
-                   bar_width=bar_width,
-                   panel_y=panel_y,
-                   mouse_coordinates=mouse_coordinates,
-                   colors=colors)
+        render_all(
+            entities=entities,
+            player=player,
+            game_map=game_map,
+            message_log=message_log,
+            bar_width=bar_width,
+            panel_y=panel_y,
+            coordinates=mouse_coordinates,
+            menu=menu,
+            gameview=game_view,
+            colors=colors,
+        )
 
         fov_recompute = False
 
