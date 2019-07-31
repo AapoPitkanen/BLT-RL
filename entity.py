@@ -3,7 +3,7 @@ import math
 from bearlibterminal import terminal
 import tcod
 from copy import deepcopy
-from render_order import RenderOrder
+from render_order import RenderOrder, RenderLayer
 
 
 class Entity:
@@ -53,15 +53,14 @@ class Entity:
         if self.equippable:
             self.equippable.owner = self
 
-    def draw(self):
-        #Draw the entity to the terminal
+    def draw(self, camera, game_map):
+        # Draw the entity to the terminal
         terminal.color(terminal.color_from_name("white"))
-        terminal.put(x=self.x, y=self.y, c=self.char)
-        """
-        terminal.printf(x=self.x,
-                        y=self.y,
-                        s=f'[color={self.color}]{self.char}[/color]')
-        """
+
+        if game_map.fov[self.x, self.y]:
+            (x, y) = camera.to_camera_coordinates(self.x, self.y)
+            if x is not None:
+                terminal.put(x=x * 2, y=y, c=self.char)
 
     def move(self, dx, dy):
         # Move the entity by a given amount

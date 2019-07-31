@@ -5,7 +5,7 @@ class Message:
     """A message, which holds translated text (if exists) and its color."""
     def __init__(self, text, color='white'):
         """Initialize the message's text and color."""
-        self.text = text
+        self.text = f"[font=text]{text}"
         self.color = color
 
 

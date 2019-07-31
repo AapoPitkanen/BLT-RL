@@ -5,11 +5,15 @@ from game_map import GameMap
 import itertools
 
 
-def get_names_under_mouse(cur_coord, entities, game_map):
+def get_names_under_mouse(cur_coord, camera, entities, game_map):
     # Return a list of names of entity located where the mouse cursor at.
+
+    (x, y) = (cur_coord[0], cur_coord[1])
+    (x, y) = (camera.camera_x + x, camera.camera_y + y)
+
     names = [
-        entity.name for entity in entities if entity.x == cur_coord[0]
-        and entity.y == cur_coord[1] and game_map.fov[entity.x, entity.y]
+        entity.name for entity in entities
+        if entity.x == x and entity.y == y and game_map.fov[entity.x, entity.y]
     ]
 
     names = ', '.join(names)
@@ -43,20 +47,25 @@ def render_bar(x, y, total_width, name, value, maximum, bar_color, back_color):
 
 
 def render_all(entities, player, game_map, message_log, bar_width, panel_y,
-               coordinates, menu, gameview, colors):
+               coordinates, menu, camera, colors):
 
     entities_in_render_order = sorted(entities,
                                       key=lambda x: x.render_order.value)
     # Draw the map
 
+    camera_moved = camera.move_camera(player.x, player.y, game_map)
+
     terminal.layer(RenderLayer.MAP.value)
-    game_map.render(colors=colors)
+
+    if camera_moved:
+        clear_map_layer()
+
+    game_map.render_from_camera(camera)
 
     # Draw all entities in the list
     terminal.layer(RenderLayer.ENTITIES.value)
     for entity in entities_in_render_order:
-        if game_map.fov[entity.x, entity.y]:
-            entity.draw()
+        entity.draw(camera, game_map)
 
     terminal.layer(RenderLayer.HUD.value)
     clear_layer()
@@ -65,8 +74,8 @@ def render_all(entities, player, game_map, message_log, bar_width, panel_y,
     render_bar(1, panel_y + 5, bar_width, 'HP', player.fighter.hp,
                player.fighter.max_hp, "red", "darker red")
 
-    entity_names = get_names_under_mouse((coordinates[0], coordinates[1]),
-                                         entities, game_map)
+    entity_names = get_names_under_mouse(coordinates, camera, entities,
+                                         game_map)
     terminal.printf(1, panel_y + 4, f"[color=white]{entity_names.title()}")
 
     terminal.layer(RenderLayer.HUD.value)
@@ -149,18 +158,18 @@ def clear_all_entities(entities, camera):
     prev_layer = terminal.state(terminal.TK_LAYER)
     terminal.layer(RenderLayer.ENTITIES.value)
 
-    for entity in entities:
-        clear_entity(entity, camera)
+    for ent in entities:
+        clear_entity(ent, camera)
 
     terminal.layer(prev_layer)
 
 
-def clear_entity(entity, camera):
+def clear_entity(ent, camera):
     """Clear an entity display on the terminal."""
     prev_layer = terminal.state(terminal.TK_LAYER)
     terminal.layer(RenderLayer.ENTITIES.value)
 
-    (term_x, term_y) = camera.map_to_term_coord(entity.x, entity.y)
+    (term_x, term_y) = camera.to_camera_coordinates(ent.x, ent.y)
     terminal.put_ext(term_x, term_y, 0, 0, ' ', None)
 
     terminal.layer(prev_layer)

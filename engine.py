@@ -10,20 +10,21 @@ from game_messages import MessageLog, Message
 from game_states import GameStates
 from render_order import RenderOrder
 from render_functions import render_all, clear_all_entities, clear_map_layer, clear_menu_layer
-from gameview import GameView
+from camera import Camera
 
 
 def main():
     window_title: str = 'Bearlibterm/TCOD Roguelike'
 
-    screen_width: int = 90
-    screen_height: int = 50
-    map_width: int = 80
-    map_height: int = 43
+    screen_width: int = 64
+    screen_height: int = 32
+
+    map_width: int = 96
+    map_height: int = 48
 
     room_max_size: int = 10
     room_min_size: int = 6
-    max_rooms: int = 30
+    max_rooms: int = 50
 
     fov_algorithm: int = 0
     fov_light_walls: bool = True
@@ -55,7 +56,7 @@ def main():
 
     menu = None
 
-    fighter_component = Fighter(hp=30, defense=2, power=5)
+    fighter_component = Fighter(hp=300, defense=20, power=15)
 
     inventory_component = Inventory(26)
 
@@ -82,16 +83,16 @@ def main():
     terminal.open()
 
     terminal.set(
-        f'window: size={screen_width}x{screen_height}, cellsize=32x32, title="{window_title}";'
+        f'window: size={screen_width}x{screen_height}, cellsize=8x16, title="{window_title}"'
     )
+
+    terminal.set("font: clacon.ttf, size=8x16")
 
     terminal.set(
-        "0x1000: test_tiles.png, size=32x32, resize=32x32, resize-filter=nearest"
+        "0x1000: test_tiles.png, size=32x32, resize=16x16, resize-filter=nearest, align=top-left"
     )
 
-    game_view = GameView(player, game_map)
-
-    print(game_view.__dict__)
+    camera = Camera()
 
     while game_running:
         if fov_recompute:
@@ -100,8 +101,6 @@ def main():
                                  radius=fov_radius,
                                  light_walls=fov_light_walls,
                                  algorithm=fov_algorithm)
-            game_view.recalculate_origin(player, game_map)
-            print(game_view.__dict__)
 
         render_all(
             entities=entities,
@@ -112,13 +111,14 @@ def main():
             panel_y=panel_y,
             coordinates=mouse_coordinates,
             menu=menu,
-            gameview=game_view,
+            camera=camera,
             colors=colors,
         )
 
         fov_recompute = False
 
         terminal.refresh()
+        clear_all_entities(entities, camera)
 
         if terminal.has_input():
             terminal_input: int = terminal.read()
@@ -164,7 +164,6 @@ def main():
 
                     else:
                         player.move(dx, dy)
-
                         fov_recompute = True
 
                     game_state = GameStates.ENEMY_TURN

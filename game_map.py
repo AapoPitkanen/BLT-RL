@@ -224,3 +224,29 @@ class GameMap(Map):
                         terminal.put(x=x, y=y, c=0x1001)
 
         self.explored = self.explored | self.fov
+
+    def render_from_camera(self, camera):
+
+        for y in range(camera.camera_height):
+            for x in range(camera.camera_width):
+
+                (map_x, map_y) = (camera.camera_x + x, camera.camera_y + y)
+
+                wall = self.is_blocked(map_x, map_y)
+                visible = self.fov[map_x, map_y]
+
+                if visible:
+                    terminal.color(terminal.color_from_name("white"))
+                    if wall:
+                        terminal.put(x=x * 2, y=y, c=0x1000)
+                    else:
+                        terminal.put(x=x * 2, y=y, c=0x1001)
+
+                elif self.explored[map_x, map_y]:
+                    terminal.color(terminal.color_from_name("grey"))
+                    if wall:
+                        terminal.put(x=x * 2, y=y, c=0x1000)
+                    else:
+                        terminal.put(x=x * 2, y=y, c=0x1001)
+
+        self.explored = self.explored | self.fov
