@@ -6,6 +6,7 @@ class Inventory:
         self.capacity = capacity
         self.items = []
         self.equipment = []
+        self.owner = None
 
     def add_item(self, item_entity):
         results = []

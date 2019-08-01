@@ -30,6 +30,7 @@ class Equipment:
         self.LEFT_RING = left_ring
         self.MAIN_HAND = main_hand
         self.OFF_HAND = off_hand
+        self.owner = None
 
     def calculate_equipment_modifier(self, modifier_to_search):
         modifier = 0

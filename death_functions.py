@@ -6,7 +6,7 @@ from game_messages import Message
 
 
 def kill_player(player):
-    player.char = '%'
+    player.char = 0x1006
     player.color = terminal.color_from_name("dark red")
 
     return Message('You are killed!', "red"), GameStates.PLAYER_DEAD
@@ -16,7 +16,7 @@ def kill_monster(monster):
     death_message = Message(f'{monster.name.capitalize()} is killed!',
                             "orange")
 
-    monster.char = '%'
+    monster.char = 0x1006
     monster.color = terminal.color_from_name("dark red")
     monster.blocks = False
     monster.fighter = None

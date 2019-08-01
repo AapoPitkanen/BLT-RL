@@ -24,6 +24,7 @@ class Entity:
                  ai=None,
                  item=None,
                  inventory=None,
+                 equipment=None,
                  equippable=None):
         self.x: int = x
         self.y: int = y
@@ -36,6 +37,7 @@ class Entity:
         self.ai = ai
         self.item = item
         self.inventory = inventory
+        self.equipment = equipment
         self.equippable = equippable
 
         if self.fighter:
@@ -60,7 +62,7 @@ class Entity:
         if game_map.fov[self.x, self.y]:
             (x, y) = camera.to_camera_coordinates(self.x, self.y)
             if x is not None:
-                terminal.put(x=x * 2, y=y, c=self.char)
+                terminal.put(x=x * 4, y=y * 2, c=self.char)
 
     def move(self, dx, dy):
         # Move the entity by a given amount
@@ -79,6 +81,9 @@ class Entity:
                 and not get_blocking_entities_at_location(
                     entities, self.x + dx, self.y + dy)):
             self.move(dx, dy)
+
+    def distance(self, x, y):
+        return math.sqrt((x - self.x)**2 + (y - self.y)**2)
 
     def distance_to(self, other):
         dx = other.x - self.x

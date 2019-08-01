@@ -1,14 +1,18 @@
 from render_order import RenderLayer, Visible
 from bearlibterminal import terminal
-import re
+from game_states import GameStates
+from menu import inventory_menu
 from game_map import GameMap
 import itertools
 
 
 def get_names_under_mouse(cur_coord, camera, entities, game_map):
-    # Return a list of names of entity located where the mouse cursor at.
+    # Return a list of names of the entities under the mouse cursor.
+    # We'll have to account for the 8x16 cellsize here
+    mouse_x = int((cur_coord[0] / 4))
+    mouse_y = int((cur_coord[1] / 2))
 
-    (x, y) = (cur_coord[0], cur_coord[1])
+    (x, y) = (mouse_x, mouse_y)
     (x, y) = (camera.camera_x + x, camera.camera_y + y)
 
     names = [
@@ -27,12 +31,12 @@ def render_bar(x, y, total_width, name, value, maximum, bar_color, back_color):
 
     terminal.color(terminal.color_from_name(back_color))
     for _i in range(total_width):
-        terminal.put(x + _i, y, "o")
+        terminal.put(x + _i, y, 0x2588)
 
     if bar_width > 0:
         terminal.color(terminal.color_from_name(bar_color))
         for _i in range(bar_width):
-            terminal.put(x + _i, y, "O")
+            terminal.put(x + _i, y, 0x2588)
 
     terminal.composition(terminal.TK_ON)
 
@@ -47,7 +51,7 @@ def render_bar(x, y, total_width, name, value, maximum, bar_color, back_color):
 
 
 def render_all(entities, player, game_map, message_log, bar_width, panel_y,
-               coordinates, menu, camera, colors):
+               coordinates, camera, game_state, colors):
 
     entities_in_render_order = sorted(entities,
                                       key=lambda x: x.render_order.value)
@@ -76,7 +80,7 @@ def render_all(entities, player, game_map, message_log, bar_width, panel_y,
 
     entity_names = get_names_under_mouse(coordinates, camera, entities,
                                          game_map)
-    terminal.printf(1, panel_y + 4, f"[color=white]{entity_names.title()}")
+    terminal.printf(1, panel_y, f"[color=white]{entity_names.title()}")
 
     terminal.layer(RenderLayer.HUD.value)
     line_y = panel_y + 1
@@ -85,29 +89,41 @@ def render_all(entities, player, game_map, message_log, bar_width, panel_y,
         print_shadowed_text(message_log.x, line_y, message.text)
         line_y += 1
 
-    if menu:
-        menu.draw()
+    if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY):
+        if game_state == GameStates.SHOW_INVENTORY:
+            title = "INVENTORY – press key next to item to use it"
+        elif game_state == GameStates.DROP_INVENTORY:
+            title = "INVENTORY – press key next to item to drop it"
+        inventory_menu(player, title).draw()
 
 
-def print_shadowed_text(x, y, text, shadow_offset=1):
-    """Print text with shadow."""
-    # remove color options for drawing shadow which has to be always black
-    pattern = r'\[/?color.*?\]'
-    no_color_text = re.sub(pattern, '', text)
+def print_shadowed_text(
+        x,
+        y,
+        text,
+        shadow_offset=1,
+        shadow_color="black",
+        align=[terminal.TK_ALIGN_DEFAULT, terminal.TK_ALIGN_DEFAULT]):
+
+    # Print text with colored shadow (default is black). Text alignment can also be set.
+
+    vertical_align = align[0]
+    horizontal_align = align[1]
 
     terminal.composition(terminal.TK_ON)
 
-    # Print shadowed text
-    terminal.printf(
-        x, y, '[color=black][offset=0, {0}]{1}'.format(shadow_offset,
-                                                       no_color_text))
-    terminal.printf(
-        x, y,
-        '[color=black][offset={0}, {0}]{1}'.format(shadow_offset,
-                                                   no_color_text))
+    terminal.puts(x,
+                  y,
+                  f"[color={shadow_color}][offset=0, {shadow_offset}]{text}",
+                  align=vertical_align | horizontal_align)
 
-    # Print foreground text
-    terminal.printf(x, y, text)
+    terminal.puts(
+        x,
+        y,
+        f"[color={shadow_color}][offset={shadow_offset}, {shadow_offset}]{text}",
+        align=vertical_align | horizontal_align)
+
+    terminal.puts(x, y, text, align=vertical_align | horizontal_align)
 
     terminal.composition(terminal.TK_OFF)
 
@@ -128,7 +144,7 @@ def clear_layer(layer=None):
 
 
 def clear_map_layer():
-    """Clear map layer."""
+    # Clear the map layer.
     prev_layer = terminal.state(terminal.TK_LAYER)
     terminal.layer(RenderLayer.MAP.value)
 
@@ -140,13 +156,13 @@ def clear_map_layer():
 
 
 def clear_menu_layer():
-    """Clear menu and menu icon layer."""
+    # Clear the menu and menu icon layers.
     prev_layer = terminal.state(terminal.TK_LAYER)
     terminal.layer(RenderLayer.MENU.value)
     terminal.clear_area(0, 0, terminal.state(terminal.TK_WIDTH),
                         terminal.state(terminal.TK_HEIGHT))
 
-    #terminal.layer(RenderLayer.MENU_ICON.value)
+    terminal.layer(RenderLayer.MENU_ICON.value)
     terminal.clear_area(0, 0, terminal.state(terminal.TK_WIDTH),
                         terminal.state(terminal.TK_HEIGHT))
 
@@ -154,7 +170,7 @@ def clear_menu_layer():
 
 
 def clear_all_entities(entities, camera):
-    """Clear all entities on the terminal."""
+    # Clear all entities on the terminal.
     prev_layer = terminal.state(terminal.TK_LAYER)
     terminal.layer(RenderLayer.ENTITIES.value)
 
@@ -165,7 +181,7 @@ def clear_all_entities(entities, camera):
 
 
 def clear_entity(ent, camera):
-    """Clear an entity display on the terminal."""
+    # Clear an entity display on the terminal.
     prev_layer = terminal.state(terminal.TK_LAYER)
     terminal.layer(RenderLayer.ENTITIES.value)
 

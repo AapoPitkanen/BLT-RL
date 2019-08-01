@@ -8,6 +8,8 @@ from enum import Enum, auto
 from components.fighter import Fighter
 from components.ai import BasicMonster
 from entity import Entity
+from item_functions import heal, cast_chaos_bolt, cast_fireball, cast_confuse
+from game_messages import Message
 
 
 class Rect:
@@ -136,7 +138,7 @@ class GameMap(Map):
                     ai_component = BasicMonster()
                     monster = Entity(x=x,
                                      y=y,
-                                     char=0x1003,
+                                     char=0x1002,
                                      color="white",
                                      name='Orc',
                                      blocks=True,
@@ -148,7 +150,7 @@ class GameMap(Map):
                     ai_component = BasicMonster()
                     monster = Entity(x=x,
                                      y=y,
-                                     char=0x1004,
+                                     char=0x1003,
                                      color="white",
                                      name='Troll',
                                      blocks=True,
@@ -166,69 +168,73 @@ class GameMap(Map):
                     entity
                     for entity in entities if entity.x == x and entity.y == y
             ]):
-                item_component = Item()
+                item_chance = randint(0, 100)
 
-                item = Entity(x,
-                              y,
-                              0x1005,
-                              "violet",
-                              'Potion of Healing',
-                              render_order=RenderOrder.ITEM,
-                              item=item_component)
+                if item_chance < 70:
+                    item_component = Item(use_function=heal, amount=4)
+
+                    item = Entity(x,
+                                  y,
+                                  0x1005,
+                                  "violet",
+                                  'Potion of Healing',
+                                  render_order=RenderOrder.ITEM,
+                                  item=item_component)
+                elif item_chance < 80:
+                    item_component = Item(
+                        use_function=cast_fireball,
+                        targeting=True,
+                        targeting_message=Message(
+                            'Left-click a target tile for the fireball, or right-click to cancel.',
+                            "light cyan"),
+                        damage=15,
+                        radius=2)
+
+                    item = Entity(x,
+                                  y,
+                                  0x1007,
+                                  "red",
+                                  'Scroll of Fireball',
+                                  render_order=RenderOrder.ITEM,
+                                  item=item_component)
+                elif item_chance < 90:
+                    item_component = Item(
+                        use_function=cast_confuse,
+                        targeting=True,
+                        targeting_message=Message(
+                            'Left-click an enemy to confuse it, or right-click to cancel.',
+                            "light cyan"))
+                    item = Entity(x,
+                                  y,
+                                  0x1007,
+                                  "light pink",
+                                  'Confusion Scroll',
+                                  render_order=RenderOrder.ITEM,
+                                  item=item_component)
+                else:
+                    chaos_bolt_damage = 0
+
+                    for _i in range(5):
+                        chaos_bolt_damage += randint(1, 6)
+
+                    item_component = Item(use_function=cast_chaos_bolt,
+                                          damage=chaos_bolt_damage,
+                                          maximum_range=5)
+
+                    item = Entity(x,
+                                  y,
+                                  0x1007,
+                                  "crimson",
+                                  'Scroll of Chaos Bolt',
+                                  render_order=RenderOrder.ITEM,
+                                  item=item_component)
 
                 entities.append(item)
 
-    def render(self, colors):
-
-        for y in range(self.height):
-            for x in range(self.width):
-                wall = self.is_blocked(x, y)
-                visible = self.fov[x, y]
-                """
-                if visible:
-                    if wall:
-                        terminal.printf(
-                            x=x,
-                            y=y,
-                            s=f'[color={colors.get("light_wall")}]#[/color]')
-                    else:
-                        terminal.printf(
-                            x=x,
-                            y=y,
-                            s=f'[color={colors.get("light_ground")}].[/color]')
-
-                elif self.explored[x, y]:
-                    if wall:
-                        terminal.printf(
-                            x=x,
-                            y=y,
-                            s=f'[color={colors.get("dark_wall")}]#[/color]')
-                    else:
-                        terminal.printf(
-                            x=x,
-                            y=y,
-                            s=f'[color={colors.get("dark_ground")}].[/color]')
-                """
-                if visible:
-                    terminal.color(terminal.color_from_name("white"))
-                    if wall:
-                        terminal.put(x=x, y=y, c=0x1000)
-                    else:
-                        terminal.put(x=x, y=y, c=0x1001)
-
-                elif self.explored[x, y]:
-                    terminal.color(terminal.color_from_name("grey"))
-                    if wall:
-                        terminal.put(x=x, y=y, c=0x1000)
-                    else:
-                        terminal.put(x=x, y=y, c=0x1001)
-
-        self.explored = self.explored | self.fov
-
     def render_from_camera(self, camera):
 
-        for y in range(camera.camera_height):
-            for x in range(camera.camera_width):
+        for y in range(camera.height):
+            for x in range(camera.width):
 
                 (map_x, map_y) = (camera.camera_x + x, camera.camera_y + y)
 
@@ -238,15 +244,15 @@ class GameMap(Map):
                 if visible:
                     terminal.color(terminal.color_from_name("white"))
                     if wall:
-                        terminal.put(x=x * 2, y=y, c=0x1000)
+                        terminal.put(x=x * 4, y=y * 2, c=0x1000)
                     else:
-                        terminal.put(x=x * 2, y=y, c=0x1001)
+                        terminal.put(x=x * 4, y=y * 2, c=0x1001)
 
                 elif self.explored[map_x, map_y]:
                     terminal.color(terminal.color_from_name("grey"))
                     if wall:
-                        terminal.put(x=x * 2, y=y, c=0x1000)
+                        terminal.put(x=x * 4, y=y * 2, c=0x1000)
                     else:
-                        terminal.put(x=x * 2, y=y, c=0x1001)
+                        terminal.put(x=x * 4, y=y * 2, c=0x1001)
 
         self.explored = self.explored | self.fov
