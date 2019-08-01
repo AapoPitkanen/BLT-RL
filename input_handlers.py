@@ -40,6 +40,8 @@ def handle_player_turn_keys(key):
         return {"show_inventory": True}
     elif key == terminal.TK_D:
         return {"drop_inventory": True}
+    elif key == terminal.TK_ENTER:
+        return {"take_stairs": True}
     elif key == terminal.TK_ESCAPE:
         return {"escape": True}
 
@@ -72,6 +74,17 @@ def handle_inventory_keys(key):
 
     if key == terminal.TK_ESCAPE:
         return {"escape": True}
+
+    return {}
+
+
+def handle_main_menu(key):
+    if key == terminal.TK_A:
+        return {"new_game": True}
+    elif key == terminal.TK_B:
+        return {"load_game": True}
+    elif key == terminal.TK_C or key == terminal.TK_ESCAPE:
+        return {"exit": True}
 
     return {}
 

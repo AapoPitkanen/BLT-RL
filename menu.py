@@ -6,9 +6,13 @@ import itertools
 
 
 class Menu:
-    """A generic menu with header and options."""
-    def __init__(self, header, width, options=None, pos='c'):
-        """Set attributes."""
+    # A generic menu with header and options.
+    def __init__(self,
+                 header,
+                 width,
+                 options=None,
+                 pos='c',
+                 background_image=None):
         self.header = header
         self.width = width
         self.options = options if options else [
@@ -106,6 +110,11 @@ class Menu:
             else:
                 terminal.put(self.topleft_x + term_x, self.topleft_y + term_y,
                              0x2008)
+
+    def draw_background_image(self):
+        terminal.color('white')
+
+        terminal.put(0, 0, self.background_image)
 
 
 def inventory_menu(player, title):

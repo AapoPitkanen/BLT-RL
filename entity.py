@@ -24,6 +24,7 @@ class Entity:
                  ai=None,
                  item=None,
                  inventory=None,
+                 stairs=None,
                  equipment=None,
                  equippable=None):
         self.x: int = x
@@ -37,6 +38,7 @@ class Entity:
         self.ai = ai
         self.item = item
         self.inventory = inventory
+        self.stairs = stairs
         self.equipment = equipment
         self.equippable = equippable
 
@@ -52,6 +54,9 @@ class Entity:
         if self.inventory:
             self.inventory.owner = self
 
+        if self.stairs:
+            self.stairs.owner = self
+
         if self.equippable:
             self.equippable.owner = self
 
@@ -59,7 +64,8 @@ class Entity:
         # Draw the entity to the terminal
         terminal.color(terminal.color_from_name("white"))
 
-        if game_map.fov[self.x, self.y]:
+        if game_map.fov[self.x, self.y] or (self.stairs and
+                                            game_map.explored[self.x, self.y]):
             (x, y) = camera.to_camera_coordinates(self.x, self.y)
             if x is not None:
                 terminal.put(x=x * 4, y=y * 2, c=self.char)

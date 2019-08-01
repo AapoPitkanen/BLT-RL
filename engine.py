@@ -1,150 +1,132 @@
 from bearlibterminal import terminal
 import tcod
 from entity import Entity, get_blocking_entities_at_location
-from game_map import GameMap
-from input_handlers import handle_keys, handle_mouse
-from components.inventory import Inventory
-from components.item import Item
-from item_functions import cast_fireball
-from components.fighter import Fighter
-from components.equipment import Equipment
+from loader_functions.initialize_new_game import get_constants, get_game_variables
+from loader_functions.data_loaders import save_game, load_game
+from map_objects.game_map import GameMap
+from input_handlers import handle_keys, handle_mouse, handle_main_menu
 from death_functions import kill_monster, kill_player
 from game_messages import MessageLog, Message
 from game_states import GameStates
 from render_order import RenderOrder
-from render_functions import render_all, clear_all_entities, clear_map_layer, clear_menu_layer
+from render_functions import render_all, clear_all_entities, clear_map_layer, clear_menu_layer, main_screen
 from camera import Camera
 from copy import deepcopy
+from menu import Menu
+import sys
 
 
 def main():
-    window_title: str = 'Bearlibterm/TCOD Roguelike'
+    terminal.open()
+    constants = get_constants()
+    terminal.set(
+        f'window: size={constants["screen_width"]}x{constants["screen_height"]}, cellsize=8x16, title="{constants["window_title"]}"'
+    )
+    terminal.set("font: clacon.ttf, size=8x16")
+    terminal.set(
+        "0x1000: test_tiles.png, size=32x32, resize-filter=nearest, align=top-left"
+    )
+    terminal.set(
+        "0x2000: inventory-ui.png, size=32x32, resize-filter=nearest, align=top-left"
+    )
+    terminal.set(
+        "0x3000: wall_tiles.png, size=32x32, resize-filter=nearest, align=top-left"
+    )
+    terminal.set(
+        "0x4000: voidstone_background.png, size=1280x768, align=top-left")
 
-    screen_width: int = 160
-    screen_height: int = 48
+    player = None
+    entities = []
+    game_map = None
+    message_log = None
+    game_state = None
 
-    map_width: int = 80
-    map_height: int = 80
+    show_main_menu = True
+    show_load_error_message = False
 
-    room_max_size: int = 10
-    room_min_size: int = 6
-    max_rooms: int = 50
+    in_main_menu: bool = True
 
-    fov_algorithm: int = 0
-    fov_light_walls: bool = True
-    fov_radius: int = 10
+    main_menu = Menu('Voidstone', 24,
+                     ["New game", "Load saved game", "Quit game"])
 
-    max_monsters_per_room: int = 3
-    max_items_per_room: int = 2
+    while in_main_menu:
 
-    bar_width: int = 20
-    panel_height: int = 8
-    panel_y: int = (screen_height - panel_height)
+        key = None
+        if terminal.has_input():
+            key: int = terminal.read()
 
-    message_x = bar_width + 2
-    message_width = screen_width - bar_width - 2
-    message_height = panel_height - 1
+        if show_main_menu:
+            main_screen()
+            main_menu.draw()
 
-    mouse_coordinates = (0, 0)
+            if show_load_error_message:
+                Menu("No save game to load", 60).draw()
 
-    colors = {
-        'dark_wall': terminal.color_from_argb(0, 38, 38, 38),
-        'dark_ground': terminal.color_from_argb(0, 100, 100, 100),
-        'light_wall': terminal.color_from_argb(255, 128, 128, 128),
-        'light_ground': terminal.color_from_argb(0, 255, 255, 255)
-    }
+            terminal.refresh()
 
-    game_running: bool = True
+            action = handle_main_menu(key)
+
+            new_game = action.get("new_game")
+            load_saved_game = action.get("load_game")
+            exit_game = action.get("exit")
+
+            if show_load_error_message and (new_game or load_saved_game
+                                            or exit_game):
+                show_load_error_message = False
+            elif new_game:
+                player, entities, game_map, message_log, game_state = get_game_variables(
+                    constants)
+                game_state = GameStates.PLAYERS_TURN
+                show_main_menu = False
+            elif load_saved_game:
+                try:
+                    player, entities, game_map, message_log, game_state = load_game(
+                    )
+                    show_main_menu = False
+                except FileNotFoundError:
+                    show_load_error_message = True
+            elif exit_game:
+                break
+        else:
+            terminal.clear()
+
+            play_game(player, entities, game_map, message_log, game_state,
+                      constants)
+
+            terminal.clear()
+            show_main_menu = True
+
+
+def play_game(player, entities, game_map, message_log, game_state, constants):
 
     fov_recompute: bool = True
-
-    fighter_component = Fighter(hp=30, defense=2, power=15)
-
-    inventory_component = Inventory(26)
-
-    equipment_component = Equipment()
-
-    player: Entity = Entity(x=0,
-                            y=0,
-                            char=0x1004,
-                            color=terminal.color_from_argb(255, 255, 255, 255),
-                            name='Player',
-                            blocks=True,
-                            render_order=RenderOrder.ACTOR,
-                            fighter=fighter_component,
-                            inventory=inventory_component,
-                            equipment=equipment_component)
-
-    item_component = Item(
-        use_function=cast_fireball,
-        targeting=True,
-        targeting_message=Message(
-            'Left-click a target tile for the fireball, or right-click to cancel.',
-            "light cyan"),
-        damage=15,
-        radius=2)
-
-    item = Entity(0,
-                  0,
-                  0x1007,
-                  "red",
-                  'Scroll of Fireball',
-                  render_order=RenderOrder.ITEM,
-                  item=item_component)
-
-    player.inventory.add_item(item)
-
-    entities = [player]
-
-    message_log = MessageLog(message_x, message_width, message_height)
-
-    game_map: GameMap = GameMap(width=map_width, height=map_height)
-    game_map.make_map(max_rooms, room_min_size, room_max_size, map_width,
-                      map_height, player, entities, max_monsters_per_room,
-                      max_items_per_room)
 
     game_state: GameStates = GameStates.PLAYERS_TURN
     previous_game_state: GameStates = game_state
 
+    camera = Camera()
+    mouse_coordinates = (0, 0)
+
     targeting_item = None
 
-    terminal.open()
-
-    terminal.set(
-        f'window: size={screen_width}x{screen_height}, cellsize=8x16, title="{window_title}"'
-    )
-
-    terminal.set("font: clacon.ttf, size=8x16")
-
-    terminal.set(
-        "0x1000: test_tiles.png, size=32x32, resize-filter=nearest, align=top-left"
-    )
-
-    terminal.set(
-        "0x2000: inventory-ui.png, size=32x32, resize-filter=nearest, align=top-left"
-    )
-
-    camera = Camera()
-    camera.move_camera(player.x, player.y, game_map)
-    while game_running:
+    while True:
         if fov_recompute:
             game_map.compute_fov(x=player.x,
                                  y=player.y,
-                                 radius=fov_radius,
-                                 light_walls=fov_light_walls,
-                                 algorithm=fov_algorithm)
+                                 radius=constants["fov_radius"],
+                                 light_walls=constants["fov_light_walls"],
+                                 algorithm=constants["fov_algorithm"])
 
         render_all(
             entities=entities,
             player=player,
             game_map=game_map,
             message_log=message_log,
-            bar_width=bar_width,
-            panel_y=panel_y,
+            bar_width=constants["bar_width"],
+            panel_y=constants["panel_y"],
             coordinates=mouse_coordinates,
             camera=camera,
             game_state=game_state,
-            colors=colors,
         )
 
         fov_recompute = False
@@ -168,6 +150,7 @@ def main():
             show_inventory = action.get("show_inventory")
             drop_inventory = action.get("drop_inventory")
             inventory_index = action.get("inventory_index")
+            take_stairs = action.get("take_stairs")
             pass_turn = action.get("pass_turn")
 
             left_click = mouse_action.get("left_click")
@@ -236,12 +219,24 @@ def main():
 
                     game_state = GameStates.ENEMY_TURN
 
+            if take_stairs:
+                for entity in entities:
+
+                    if entity.stairs and entity.x == player.x and entity.y == player.y:
+                        entities = game_map.next_floor(player, message_log,
+                                                       constants)
+                        fov_recompute = True
+                        terminal.clear()
+
+                        break
+                else:
+                    message_log.add_message(
+                        Message('There are no stairs here.', "yellow"))
+
             if game_state == GameStates.TARGETING:
                 if left_click:
                     target_x, target_y = left_click
-                    print(f"({target_x}, {target_y})")
-                    print(f"({player.x}, {player.y})")
-                    print(game_map.fov[target_x, target_y])
+
                     item_use_results = player.inventory.use(targeting_item,
                                                             entities=entities,
                                                             game_map=game_map,
@@ -258,7 +253,9 @@ def main():
                 elif game_state == GameStates.TARGETING:
                     player_turn_results.append({'targeting_cancelled': True})
                 else:
-                    game_running = False
+                    save_game(player, entities, game_map, message_log,
+                              game_state)
+                    return True
 
             for player_turn_result in player_turn_results:
 
@@ -346,8 +343,6 @@ def main():
                     game_state = GameStates.PLAYERS_TURN
 
         terminal.clear()
-
-    terminal.close()
 
 
 if __name__ == '__main__':

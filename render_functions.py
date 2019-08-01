@@ -2,7 +2,7 @@ from render_order import RenderLayer, Visible
 from bearlibterminal import terminal
 from game_states import GameStates
 from menu import inventory_menu
-from game_map import GameMap
+from map_objects.game_map import GameMap
 import itertools
 
 
@@ -51,7 +51,7 @@ def render_bar(x, y, total_width, name, value, maximum, bar_color, back_color):
 
 
 def render_all(entities, player, game_map, message_log, bar_width, panel_y,
-               coordinates, camera, game_state, colors):
+               coordinates, camera, game_state):
 
     entities_in_render_order = sorted(entities,
                                       key=lambda x: x.render_order.value)
@@ -74,9 +74,14 @@ def render_all(entities, player, game_map, message_log, bar_width, panel_y,
     terminal.layer(RenderLayer.HUD.value)
     clear_layer()
 
+    #if game_state == GameStates.TARGETING:
+    #terminal.layer(RenderLayer.OVERLAY.value)
+
     # HP bar
-    render_bar(1, panel_y + 5, bar_width, 'HP', player.fighter.hp,
+    render_bar(1, panel_y + 6, bar_width, 'HP', player.fighter.hp,
                player.fighter.max_hp, "red", "darker red")
+
+    terminal.printf(1, panel_y + 7, f"Dungeon Level: {game_map.dungeon_level}")
 
     entity_names = get_names_under_mouse(coordinates, camera, entities,
                                          game_map)
@@ -189,3 +194,19 @@ def clear_entity(ent, camera):
     terminal.put_ext(term_x, term_y, 0, 0, ' ', None)
 
     terminal.layer(prev_layer)
+
+
+def main_screen():
+    """Create main menu."""
+    terminal.layer(RenderLayer.HUD.value)
+    terminal.color('white')
+
+    screen_w = terminal.state(terminal.TK_WIDTH)
+    screen_h = terminal.state(terminal.TK_HEIGHT)
+
+    title = "Voidstone"
+    center = (screen_w - len(title)) // 2
+    terminal.printf(center, screen_h // 2 - 4, title)
+
+    center = (screen_w - len(title)) // 2
+    terminal.printf(center, screen_h - 2, title)

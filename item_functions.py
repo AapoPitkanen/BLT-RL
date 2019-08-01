@@ -76,7 +76,7 @@ def cast_chaos_bolt(*args, **kwargs):
 
 
 def cast_fireball(*args, **kwargs):
-    print("casting fireball")
+
     entities = kwargs.get("entities")
     game_map = kwargs.get("game_map")
     damage = kwargs.get("damage")
@@ -107,7 +107,6 @@ def cast_fireball(*args, **kwargs):
 
     for entity in entities:
         if entity.distance(target_x, target_y) <= radius and entity.fighter:
-            print("entity in range, entity is", entity)
             results.append({
                 "message":
                 Message(
