@@ -12,7 +12,7 @@ class Menu:
                  width,
                  options=None,
                  pos='c',
-                 background_image=None):
+                 background_color="white"):
         self.header = header
         self.width = width
         self.options = options if options else [
@@ -32,6 +32,7 @@ class Menu:
 
         self.topleft_y = int(
             (terminal.state(terminal.TK_HEIGHT) - self.height) / 2)
+        self.background_color = background_color
 
     def draw(self):
         # Draw the menu to the terminal.
@@ -41,14 +42,14 @@ class Menu:
         previous_layer = terminal.state(terminal.TK_LAYER)
         terminal.layer(RenderLayer.MENU.value)
 
-        self.draw_background()
+        self.draw_background(background_color=self.background_color)
 
         # Print the header with wrapped text to the center of the menu
         terminal.color('white')
         terminal.composition(terminal.TK_ON)
         for i, _ in enumerate(self.header_wrapped):
             render_functions.print_shadowed_text(
-                self.topleft_x + int(round(self.width / 2)),
+                self.topleft_x + int((self.width / 2) + 1),
                 self.topleft_y + i,
                 self.header_wrapped[i],
                 align=[terminal.TK_ALIGN_DEFAULT, terminal.TK_ALIGN_CENTER])
@@ -68,9 +69,9 @@ class Menu:
 
         terminal.layer(previous_layer)
 
-    def draw_background(self, margin=2):
+    def draw_background(self, margin=2, background_color="white"):
         # Draw the menu background.
-        terminal.color('white')
+        terminal.color(background_color)
 
         left = -margin
         right = self.width + margin - 1
@@ -111,11 +112,6 @@ class Menu:
                 terminal.put(self.topleft_x + term_x, self.topleft_y + term_y,
                              0x2008)
 
-    def draw_background_image(self):
-        terminal.color('white')
-
-        terminal.put(0, 0, self.background_image)
-
 
 def inventory_menu(player, title):
     # Create and return a inventory menu instance.
@@ -130,3 +126,12 @@ def inventory_menu(player, title):
             options.append(text)
 
     return Menu(title, 90, options)
+
+
+def main_menu():
+
+    main_menu = Menu('Voidstone',
+                     20, ["New game", "Load saved game", "Quit game"],
+                     background_color=terminal.color_from_argb(200, 128, 0, 0))
+
+    return main_menu

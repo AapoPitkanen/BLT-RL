@@ -31,7 +31,7 @@ class ConfusedMonster:
         self.number_of_turns = number_of_turns
         self.owner = None
 
-    def take_turn(self, target, fov_map, game_map, entities):
+    def take_turn(self, target, game_map, entities):
         results = []
 
         if self.number_of_turns > 0:
@@ -40,7 +40,7 @@ class ConfusedMonster:
 
             if random_x != self.owner.x and random_y != self.owner.y and not get_blocking_entities_at_location(
                     entities, random_x, random_y):
-                self.owner.move_towards(random_x, random_y, entities, game_map)
+                self.owner.move_towards(random_x, random_y, game_map, entities)
 
             self.number_of_turns -= 1
 
@@ -50,5 +50,4 @@ class ConfusedMonster:
                 "message":
                 Message(f"The {self.owner.name} is no longer confused!", "red")
             })
-        self.owner.fighter.action_points -= 1500
         return results

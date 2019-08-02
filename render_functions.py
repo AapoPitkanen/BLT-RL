@@ -4,6 +4,8 @@ from game_states import GameStates
 from menu import inventory_menu
 from map_objects.game_map import GameMap
 import itertools
+import tcod
+from utils import disk
 
 
 def get_names_under_mouse(cur_coord, camera, entities, game_map):
@@ -51,7 +53,7 @@ def render_bar(x, y, total_width, name, value, maximum, bar_color, back_color):
 
 
 def render_all(entities, player, game_map, message_log, bar_width, panel_y,
-               coordinates, camera, game_state):
+               coordinates, camera, game_state, targeting_item):
 
     entities_in_render_order = sorted(entities,
                                       key=lambda x: x.render_order.value)
@@ -71,11 +73,75 @@ def render_all(entities, player, game_map, message_log, bar_width, panel_y,
     for entity in entities_in_render_order:
         entity.draw(camera, game_map)
 
-    terminal.layer(RenderLayer.HUD.value)
+    terminal.layer(RenderLayer.OVERLAY.value)
     clear_layer()
 
-    #if game_state == GameStates.TARGETING:
-    #terminal.layer(RenderLayer.OVERLAY.value)
+    for efx in game_map.effects:
+        efx.update()
+        if efx.expired:
+            game_map.effects.remove(efx)
+        elif efx.render:
+            (term_x, term_y) = camera.map_to_term_coord(efx.x, efx.y)
+            terminal.put(term_x, term_y, efx.effect_tile)
+
+    if game_state == GameStates.TARGETING:
+        from entity import get_blocking_entities_at_location
+        terminal.composition(terminal.TK_ON)
+
+        mouse_map_x = int(coordinates[0] / 4)
+        mouse_map_y = int(coordinates[1] / 2)
+
+        mouse_map_x += camera.camera_x
+        mouse_map_y += camera.camera_y
+
+        line = tcod.line_iter(player.x, player.y, mouse_map_x, mouse_map_y)
+
+        for coord in line:
+            if coord[0] == player.x and coord[1] == player.y:
+                continue
+            cell_term_x, cell_term_y = camera.map_to_term_coord(
+                coord[0], coord[1])
+            if coord[0] == mouse_map_x and coord[
+                    1] == mouse_map_y and game_map.fov[
+                        coord[0], coord[1]] and not game_map.is_blocked(
+                            coord[0], coord[1]):
+                terminal.color(terminal.color_from_argb(125, 0, 255, 0))
+            elif get_blocking_entities_at_location(entities, coord[0],
+                                                   coord[1]):
+                terminal.color(terminal.color_from_argb(125, 255, 0, 0))
+            elif not game_map.fov[coord[0], coord[1]] or game_map.is_blocked(
+                    coord[0], coord[1]):
+                terminal.color(terminal.color_from_argb(125, 255, 0, 0))
+            else:
+                terminal.color(terminal.color_from_argb(125, 255, 255, 0))
+            terminal.put(x=cell_term_x, y=cell_term_y, c=0x3014)
+            terminal.composition(terminal.TK_OFF)
+
+        if targeting_item:
+            function_kwargs = targeting_item.item.function_kwargs
+            if function_kwargs:
+                radius = function_kwargs.get("radius")
+                if radius:
+                    for cell_x, cell_y in disk(mouse_map_x, mouse_map_y,
+                                               radius, game_map.width,
+                                               game_map.height):
+                        (cell_term_x, cell_term_y) = camera.map_to_term_coord(
+                            cell_x, cell_y)
+                        if cell_term_x and cell_term_y:  # Omit cells outside of the terminal window
+                            if get_blocking_entities_at_location(
+                                    entities, cell_x,
+                                    cell_y) and game_map.fov[cell_x, cell_y]:
+                                terminal.color(
+                                    terminal.color_from_argb(125, 0, 255, 0))
+                            else:
+                                terminal.color(
+                                    terminal.color_from_argb(125, 139, 0, 0))
+                            terminal.put(x=cell_term_x,
+                                         y=cell_term_y,
+                                         c=0x3014)
+
+    terminal.layer(RenderLayer.HUD.value)
+    clear_layer()
 
     # HP bar
     render_bar(1, panel_y + 6, bar_width, 'HP', player.fighter.hp,
@@ -204,7 +270,9 @@ def main_screen():
     screen_w = terminal.state(terminal.TK_WIDTH)
     screen_h = terminal.state(terminal.TK_HEIGHT)
 
-    title = "Voidstone"
+    # Draw background image
+    terminal.put(0, 0, 0x4000)
+    title = ""
     center = (screen_w - len(title)) // 2
     terminal.printf(center, screen_h // 2 - 4, title)
 

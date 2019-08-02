@@ -2,6 +2,8 @@ import tcod
 
 from game_messages import Message
 from components.ai import ConfusedMonster
+from utils import disk
+from effect import Effect
 
 
 def heal(*args, **kwargs):
@@ -62,6 +64,7 @@ def cast_chaos_bolt(*args, **kwargs):
                 "crimson")
         })
         results.extend(target.fighter.take_damage(damage))
+        game_map.effects.append(Effect(target.x, target.y, effect_tile=0x1009))
     else:
         results.append({
             "consumed":
@@ -105,8 +108,10 @@ def cast_fireball(*args, **kwargs):
         )
     })
 
+    target_area = disk(target_x, target_y, radius)
+
     for entity in entities:
-        if entity.distance(target_x, target_y) <= radius and entity.fighter:
+        if entity.fighter and (entity.x, entity.y) in target_area:
             results.append({
                 "message":
                 Message(
@@ -114,6 +119,10 @@ def cast_fireball(*args, **kwargs):
                     "orange")
             })
             results.extend(entity.fighter.take_damage(damage))
+
+    for map_coordinates in target_area:
+        game_map.effects.append(
+            Effect(map_coordinates[0], map_coordinates[1], effect_tile=0x1008))
 
     return results
 

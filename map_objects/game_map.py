@@ -12,6 +12,24 @@ from entity import Entity
 from game_messages import Message
 from item_functions import heal, cast_chaos_bolt, cast_fireball, cast_confuse
 
+WALL_NORTH = 0x3000
+WALL_SOUTH = 0x3001
+WALL_WEST = 0x3002
+WALL_EAST = 0x3003
+IN_CORNER_TOP_LEFT = 0x3004
+IN_CORNER_TOP_RIGHT = 0x3005
+IN_CORNER_BOTTOM_RIGHT = 0x3006
+IN_CORNER_BOTTOM_LEFT = 0x3007
+OUT_CORNER_TOP_LEFT = 0x3008
+OUT_CORNER_TOP_RIGHT = 0x3009
+OUT_CORNER_BOTTOM_LEFT = 0x300a
+OUT_CORNER_BOTTOM_RIGHT = 0x300b
+WALL_HORIZONTAL_BOTH_SIDES = 0x3015
+WALL_VERTICAL_BOTH_SIDES = 0x301a
+WALL_END_EAST = 0x3016
+WALL_END_WEST = 0x3017
+WALL_END_NORTH = 0x3018
+WALL_END_SOUTH = 0x3019
 
 class Rect:
     def __init__(self, x, y, w, h):
@@ -46,6 +64,7 @@ class GameMap(Map):
                 self.floor_seed[map_x][map_y] = floor_tile
 
         self.dungeon_level = dungeon_level
+        self.effects = []
 
     def create_h_tunnel(self, x1, x2, y):
         min_x: int = min(x1, x2)
@@ -71,6 +90,16 @@ class GameMap(Map):
     def make_map(self, max_rooms, room_min_size, room_max_size, map_width,
                  map_height, player, entities, max_monsters_per_room,
                  max_items_per_room):
+
+        self.explored = numpy.zeros((self.width, self.height), dtype=bool, order='F')
+        self.transparent[:] = False
+        self.walkable[:] = False
+        self.floor_seed = [[None for y in range(self.height)] for x in range(self.width)]
+        for map_y in range(self.height):
+            for map_x in range(self.width):
+                floor_tile = randint(1, 8)
+                self.floor_seed[map_x][map_y] = floor_tile
+
         rooms = []
         num_rooms = 0
 
@@ -262,8 +291,57 @@ class GameMap(Map):
                 if visible:
                     terminal.color(terminal.color_from_name("white"))
                     if wall:
-                        # Check for outward facing corners first
-                        if self.transparent[min(
+                        # Check for single-width walls first
+                        if self.transparent[
+                                map_x, min(self.height - 1, map_y -
+                                           1)] and self.transparent[
+                                               map_x,
+                                               min(self.height - 1, map_y +
+                                                   1)] and self.transparent[min(self.width - 1, map_x + 1), map_y]:
+                            terminal.put(x=x * 4,
+                                         y=y * 2,
+                                         c=WALL_END_EAST)
+                        elif self.transparent[
+                                map_x, min(self.height - 1, map_y -
+                                           1)] and self.transparent[
+                                               map_x,
+                                               min(self.height - 1, map_y + 1
+                                                   )] and self.transparent[min(
+                                                       self.width - 1, map_x -
+                                                       1), map_y]:
+                            terminal.put(x=x * 4, y=y * 2, c=WALL_END_WEST)
+                        elif self.transparent[min(self.width - 1, map_x + 1),
+                                              map_y] and self.transparent[min(
+                                                  self.width - 1, map_x -
+                                                  1), map_y] and self.transparent[map_x, min(self.height - 1, map_y - 1)]:
+                            terminal.put(x=x * 4,
+                                         y=y * 2,
+                                         c=WALL_END_NORTH)
+                        elif self.transparent[min(
+                                self.width - 1, map_x + 1
+                        ), map_y] and self.transparent[min(
+                                self.width - 1, map_x - 1
+                        ), map_y] and self.transparent[
+                                map_x, min(self.height - 1, map_y + 1)]:
+                            terminal.put(x=x * 4, y=y * 2, c=WALL_END_SOUTH)
+                        elif self.transparent[
+                                map_x, min(self.height - 1, map_y -
+                                           1)] and self.transparent[
+                                               map_x,
+                                               min(self.height - 1, map_y +
+                                                   1)]:
+                            terminal.put(x=x * 4,
+                                         y=y * 2,
+                                         c=WALL_HORIZONTAL_BOTH_SIDES)
+                        elif self.transparent[min(self.width - 1, map_x + 1),
+                                              map_y] and self.transparent[min(
+                                                  self.width - 1, map_x -
+                                                  1), map_y]:
+                            terminal.put(x=x * 4,
+                                         y=y * 2,
+                                         c=WALL_VERTICAL_BOTH_SIDES)
+                        # Check for outward facing corners
+                        elif self.transparent[min(
                                 self.width - 1, map_x - 1
                         ), map_y] and self.transparent[
                                 map_x, min(self.height - 1, map_y -
@@ -271,7 +349,7 @@ class GameMap(Map):
                                                min(self.width - 1, map_x - 1),
                                                min(self.height - 1, map_y -
                                                    1)]:
-                            terminal.put(x=x * 4, y=y * 2, c=0x3008)
+                            terminal.put(x=x * 4, y=y * 2, c=OUT_CORNER_TOP_LEFT)
                         elif self.transparent[min(
                                 self.width - 1, map_x + 1
                         ), map_y] and self.transparent[
@@ -280,7 +358,7 @@ class GameMap(Map):
                                                min(self.width - 1, map_x + 1),
                                                min(self.height - 1, map_y -
                                                    1)]:
-                            terminal.put(x=x * 4, y=y * 2, c=0x3009)
+                            terminal.put(x=x * 4, y=y * 2, c=OUT_CORNER_TOP_RIGHT)
                         elif self.transparent[min(
                                 self.width - 1, map_x - 1
                         ), map_y] and self.transparent[
@@ -289,7 +367,7 @@ class GameMap(Map):
                                                min(self.width - 1, map_x - 1),
                                                min(self.height - 1, map_y -
                                                    1)]:
-                            terminal.put(x=x * 4, y=y * 2, c=0x300a)
+                            terminal.put(x=x * 4, y=y * 2, c=OUT_CORNER_BOTTOM_LEFT)
                         elif self.transparent[min(
                                 self.width - 1, map_x + 1
                         ), map_y] and self.transparent[
@@ -298,20 +376,21 @@ class GameMap(Map):
                                                min(self.width - 1, map_x + 1),
                                                min(self.height - 1, map_y -
                                                    1)]:
-                            terminal.put(x=x * 4, y=y * 2, c=0x300b)
+                            terminal.put(x=x * 4, y=y * 2, c=OUT_CORNER_BOTTOM_RIGHT)
                         # Check for edges
                         elif self.transparent[map_x,
                                               min(self.height - 1, map_y + 1)]:
-                            terminal.put(x=x * 4, y=y * 2, c=0x3000)
+                            terminal.put(x=x * 4, y=y * 2, c=WALL_NORTH)
                         elif self.transparent[map_x,
                                               min(self.height - 1, map_y - 1)]:
-                            terminal.put(x=x * 4, y=y * 2, c=0x3001)
-                        elif self.transparent[min(self.width - 1, map_x -
-                                                  1), map_y]:
-                            terminal.put(x=x * 4, y=y * 2, c=0x3003)
+                            terminal.put(x=x * 4, y=y * 2, c=WALL_SOUTH)
                         elif self.transparent[min(self.width - 1, map_x +
                                                   1), map_y]:
-                            terminal.put(x=x * 4, y=y * 2, c=0x3002)
+                            terminal.put(x=x * 4, y=y * 2, c=WALL_WEST)
+                        elif self.transparent[min(self.width - 1, map_x -
+                                                  1), map_y]:
+                            terminal.put(x=x * 4, y=y * 2, c=WALL_EAST)
+
                         # Check for inward facing corners
                         elif not self.transparent[min(
                                 self.width - 1, map_x + 1
@@ -321,7 +400,7 @@ class GameMap(Map):
                                                min(self.width - 1, map_x + 1),
                                                min(self.height - 1, map_y +
                                                    1)]:
-                            terminal.put(x=x * 4, y=y * 2, c=0x3004)
+                            terminal.put(x=x * 4, y=y * 2, c=IN_CORNER_TOP_LEFT)
                         elif not self.transparent[min(
                                 self.width - 1, map_x - 1
                         ), map_y] and not self.transparent[
@@ -330,7 +409,9 @@ class GameMap(Map):
                                                min(self.width - 1, map_x - 1),
                                                min(self.height - 1, map_y +
                                                    1)]:
-                            terminal.put(x=x * 4, y=y * 2, c=0x3005)
+                            terminal.put(x=x * 4,
+                                         y=y * 2,
+                                         c=IN_CORNER_TOP_RIGHT)
                         elif not self.transparent[min(
                                 self.width - 1, map_x - 1
                         ), map_y] and not self.transparent[
@@ -339,7 +420,9 @@ class GameMap(Map):
                                                min(self.width - 1, map_x - 1),
                                                min(self.height - 1, map_y -
                                                    1)]:
-                            terminal.put(x=x * 4, y=y * 2, c=0x3006)
+                            terminal.put(x=x * 4,
+                                         y=y * 2,
+                                         c=IN_CORNER_BOTTOM_RIGHT)
                         elif not self.transparent[min(
                                 self.width - 1, map_x + 1
                         ), map_y] and not self.transparent[
@@ -348,7 +431,9 @@ class GameMap(Map):
                                                min(self.width - 1, map_x + 1),
                                                min(self.height - 1, map_y -
                                                    1)]:
-                            terminal.put(x=x * 4, y=y * 2, c=0x3007)
+                            terminal.put(x=x * 4,
+                                         y=y * 2,
+                                         c=IN_CORNER_BOTTOM_LEFT)
 
 
                     else:
@@ -360,8 +445,57 @@ class GameMap(Map):
                 elif self.explored[map_x, map_y]:
                     terminal.color(terminal.color_from_name("grey"))
                     if wall:
-                        # Check for outward facing corners first
-                        if self.transparent[min(
+                        # Check for single-width walls first
+                        if self.transparent[
+                                map_x, min(self.height - 1, map_y -
+                                           1)] and self.transparent[
+                                               map_x,
+                                               min(self.height - 1, map_y + 1
+                                                   )] and self.transparent[min(
+                                                       self.width - 1, map_x +
+                                                       1), map_y]:
+                            terminal.put(x=x * 4, y=y * 2, c=WALL_END_EAST)
+                        elif self.transparent[
+                                map_x, min(self.height - 1, map_y -
+                                           1)] and self.transparent[
+                                               map_x,
+                                               min(self.height - 1, map_y + 1
+                                                   )] and self.transparent[min(
+                                                       self.width - 1, map_x -
+                                                       1), map_y]:
+                            terminal.put(x=x * 4, y=y * 2, c=WALL_END_WEST)
+                        elif self.transparent[min(
+                                self.width - 1, map_x + 1
+                        ), map_y] and self.transparent[min(
+                                self.width - 1, map_x - 1
+                        ), map_y] and self.transparent[
+                                map_x, min(self.height - 1, map_y - 1)]:
+                            terminal.put(x=x * 4, y=y * 2, c=WALL_END_NORTH)
+                        elif self.transparent[min(
+                                self.width - 1, map_x + 1
+                        ), map_y] and self.transparent[min(
+                                self.width - 1, map_x - 1
+                        ), map_y] and self.transparent[
+                                map_x, min(self.height - 1, map_y + 1)]:
+                            terminal.put(x=x * 4, y=y * 2, c=WALL_END_SOUTH)
+                        elif self.transparent[
+                                map_x, min(self.height - 1, map_y -
+                                           1)] and self.transparent[
+                                               map_x,
+                                               min(self.height - 1, map_y +
+                                                   1)]:
+                            terminal.put(x=x * 4,
+                                         y=y * 2,
+                                         c=WALL_HORIZONTAL_BOTH_SIDES)
+                        elif self.transparent[min(self.width - 1, map_x + 1),
+                                              map_y] and self.transparent[min(
+                                                  self.width - 1, map_x -
+                                                  1), map_y]:
+                            terminal.put(x=x * 4,
+                                         y=y * 2,
+                                         c=WALL_VERTICAL_BOTH_SIDES)
+                        # Check for outward facing corners
+                        elif self.transparent[min(
                                 self.width - 1, map_x - 1
                         ), map_y] and self.transparent[
                                 map_x, min(self.height - 1, map_y -
@@ -369,7 +503,9 @@ class GameMap(Map):
                                                min(self.width - 1, map_x - 1),
                                                min(self.height - 1, map_y -
                                                    1)]:
-                            terminal.put(x=x * 4, y=y * 2, c=0x3008)
+                            terminal.put(x=x * 4,
+                                         y=y * 2,
+                                         c=OUT_CORNER_TOP_LEFT)
                         elif self.transparent[min(
                                 self.width - 1, map_x + 1
                         ), map_y] and self.transparent[
@@ -378,7 +514,9 @@ class GameMap(Map):
                                                min(self.width - 1, map_x + 1),
                                                min(self.height - 1, map_y -
                                                    1)]:
-                            terminal.put(x=x * 4, y=y * 2, c=0x3009)
+                            terminal.put(x=x * 4,
+                                         y=y * 2,
+                                         c=OUT_CORNER_TOP_RIGHT)
                         elif self.transparent[min(
                                 self.width - 1, map_x - 1
                         ), map_y] and self.transparent[
@@ -387,7 +525,9 @@ class GameMap(Map):
                                                min(self.width - 1, map_x - 1),
                                                min(self.height - 1, map_y -
                                                    1)]:
-                            terminal.put(x=x * 4, y=y * 2, c=0x300a)
+                            terminal.put(x=x * 4,
+                                         y=y * 2,
+                                         c=OUT_CORNER_BOTTOM_LEFT)
                         elif self.transparent[min(
                                 self.width - 1, map_x + 1
                         ), map_y] and self.transparent[
@@ -396,20 +536,23 @@ class GameMap(Map):
                                                min(self.width - 1, map_x + 1),
                                                min(self.height - 1, map_y -
                                                    1)]:
-                            terminal.put(x=x * 4, y=y * 2, c=0x300b)
+                            terminal.put(x=x * 4,
+                                         y=y * 2,
+                                         c=OUT_CORNER_BOTTOM_RIGHT)
                         # Check for edges
                         elif self.transparent[map_x,
                                               min(self.height - 1, map_y + 1)]:
-                            terminal.put(x=x * 4, y=y * 2, c=0x3000)
+                            terminal.put(x=x * 4, y=y * 2, c=WALL_NORTH)
                         elif self.transparent[map_x,
                                               min(self.height - 1, map_y - 1)]:
-                            terminal.put(x=x * 4, y=y * 2, c=0x3001)
-                        elif self.transparent[min(self.width - 1, map_x -
-                                                  1), map_y]:
-                            terminal.put(x=x * 4, y=y * 2, c=0x3003)
+                            terminal.put(x=x * 4, y=y * 2, c=WALL_SOUTH)
                         elif self.transparent[min(self.width - 1, map_x +
                                                   1), map_y]:
-                            terminal.put(x=x * 4, y=y * 2, c=0x3002)
+                            terminal.put(x=x * 4, y=y * 2, c=WALL_WEST)
+                        elif self.transparent[min(self.width - 1, map_x -
+                                                  1), map_y]:
+                            terminal.put(x=x * 4, y=y * 2, c=WALL_EAST)
+
                         # Check for inward facing corners
                         elif not self.transparent[min(
                                 self.width - 1, map_x + 1
@@ -419,7 +562,9 @@ class GameMap(Map):
                                                min(self.width - 1, map_x + 1),
                                                min(self.height - 1, map_y +
                                                    1)]:
-                            terminal.put(x=x * 4, y=y * 2, c=0x3004)
+                            terminal.put(x=x * 4,
+                                         y=y * 2,
+                                         c=IN_CORNER_TOP_LEFT)
                         elif not self.transparent[min(
                                 self.width - 1, map_x - 1
                         ), map_y] and not self.transparent[
@@ -428,7 +573,9 @@ class GameMap(Map):
                                                min(self.width - 1, map_x - 1),
                                                min(self.height - 1, map_y +
                                                    1)]:
-                            terminal.put(x=x * 4, y=y * 2, c=0x3005)
+                            terminal.put(x=x * 4,
+                                         y=y * 2,
+                                         c=IN_CORNER_TOP_RIGHT)
                         elif not self.transparent[min(
                                 self.width - 1, map_x - 1
                         ), map_y] and not self.transparent[
@@ -437,7 +584,9 @@ class GameMap(Map):
                                                min(self.width - 1, map_x - 1),
                                                min(self.height - 1, map_y -
                                                    1)]:
-                            terminal.put(x=x * 4, y=y * 2, c=0x3006)
+                            terminal.put(x=x * 4,
+                                         y=y * 2,
+                                         c=IN_CORNER_BOTTOM_RIGHT)
                         elif not self.transparent[min(
                                 self.width - 1, map_x + 1
                         ), map_y] and not self.transparent[
@@ -446,8 +595,9 @@ class GameMap(Map):
                                                min(self.width - 1, map_x + 1),
                                                min(self.height - 1, map_y -
                                                    1)]:
-                            terminal.put(x=x * 4, y=y * 2, c=0x3007)
-
+                            terminal.put(x=x * 4,
+                                         y=y * 2,
+                                         c=IN_CORNER_BOTTOM_LEFT)
 
                     else:
                         tile_type = self.floor_seed[map_x][map_y]

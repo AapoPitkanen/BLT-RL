@@ -12,7 +12,7 @@ from render_order import RenderOrder
 from render_functions import render_all, clear_all_entities, clear_map_layer, clear_menu_layer, main_screen
 from camera import Camera
 from copy import deepcopy
-from menu import Menu
+from menu import main_menu, Menu
 import sys
 
 
@@ -46,9 +46,6 @@ def main():
 
     in_main_menu: bool = True
 
-    main_menu = Menu('Voidstone', 24,
-                     ["New game", "Load saved game", "Quit game"])
-
     while in_main_menu:
 
         key = None
@@ -57,7 +54,7 @@ def main():
 
         if show_main_menu:
             main_screen()
-            main_menu.draw()
+            main_menu().draw()
 
             if show_load_error_message:
                 Menu("No save game to load", 60).draw()
@@ -117,17 +114,16 @@ def play_game(player, entities, game_map, message_log, game_state, constants):
                                  light_walls=constants["fov_light_walls"],
                                  algorithm=constants["fov_algorithm"])
 
-        render_all(
-            entities=entities,
-            player=player,
-            game_map=game_map,
-            message_log=message_log,
-            bar_width=constants["bar_width"],
-            panel_y=constants["panel_y"],
-            coordinates=mouse_coordinates,
-            camera=camera,
-            game_state=game_state,
-        )
+        render_all(entities=entities,
+                   player=player,
+                   game_map=game_map,
+                   message_log=message_log,
+                   bar_width=constants["bar_width"],
+                   panel_y=constants["panel_y"],
+                   coordinates=mouse_coordinates,
+                   camera=camera,
+                   game_state=game_state,
+                   targeting_item=targeting_item)
 
         fov_recompute = False
 

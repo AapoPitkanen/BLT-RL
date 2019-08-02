@@ -36,3 +36,23 @@ class Camera:
         if (x < 0 or y < 0 or x >= self.width or y >= self.height):
             return (None, None)
         return (x, y)
+
+    def map_to_cam_coord(self, map_x, map_y):
+        # Convert game map coordinates to camera shooting range coordinates.
+        cam_x = (map_x - self.camera_x)
+        cam_y = (map_y - self.camera_y)
+
+        if 0 <= cam_x < self.width and 0 <= cam_y < self.height:
+            return (cam_x, cam_y)
+
+        return (None, None)  # if it's outside the camera, return nothing
+
+    def map_to_term_coord(self, map_x, map_y):
+        # Convert game map coordinates to terminal screen coordinates.
+        (cam_x, cam_y) = self.map_to_cam_coord(map_x, map_y)
+
+        if cam_x is not None:
+            return (cam_x * 4, cam_y * 2)
+
+        return (None, None
+                )  # if outside of the camera (or screen), return nothing

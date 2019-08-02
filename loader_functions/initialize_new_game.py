@@ -6,7 +6,7 @@ from components.equipment import Equipment
 from entity import Entity
 from render_order import RenderOrder
 from game_states import GameStates
-from game_messages import MessageLog
+from game_messages import MessageLog, Message
 from map_objects.game_map import GameMap
 
 
@@ -76,6 +76,25 @@ def get_game_variables(constants):
                     fighter=fighter_component,
                     inventory=inventory_component)
     entities = [player]
+
+    item_component = Item(
+        use_function=cast_fireball,
+        targeting=True,
+        targeting_message=Message(
+            'Left-click a target tile for the fireball, or right-click to cancel.',
+            "light cyan"),
+        damage=15,
+        radius=2)
+
+    item = Entity(0,
+                  0,
+                  0x1007,
+                  "red",
+                  'Scroll of Fireball',
+                  render_order=RenderOrder.ITEM,
+                  item=item_component)
+
+    player.inventory.add_item(item)
 
     message_log = MessageLog(constants["message_x"],
                              constants["message_width"],
