@@ -8,9 +8,13 @@ from enum import Enum, auto
 from components.fighter import Fighter
 from components.ai import BasicMonster
 from components.stairs import Stairs
+from components.equipment import Equipment
+from components.inventory import Inventory
+from components.attributes import generate_attributes
 from entity import Entity
 from game_messages import Message
 from item_functions import heal, cast_chaos_bolt, cast_fireball, cast_confuse
+from random_utils import from_dungeon_level,random_choice_from_dict
 
 WALL_NORTH = 0x3000
 WALL_SOUTH = 0x3001
@@ -88,8 +92,7 @@ class GameMap(Map):
         return not self.walkable[x, y]
 
     def make_map(self, max_rooms, room_min_size, room_max_size, map_width,
-                 map_height, player, entities, max_monsters_per_room,
-                 max_items_per_room):
+                 map_height, player, entities):
 
         self.explored = numpy.zeros((self.width, self.height), dtype=bool, order='F')
         self.transparent[:] = False
@@ -154,8 +157,7 @@ class GameMap(Map):
                         self.create_v_tunnel(prev_y, new_y, prev_x)
                         self.create_h_tunnel(prev_x, new_x, new_y)
 
-                self.place_entities(new_room, entities, max_monsters_per_room,
-                                    max_items_per_room)
+                self.place_entities(new_room, entities)
 
                 # finally, append the new room to the list
                 rooms.append(new_room)
@@ -165,11 +167,30 @@ class GameMap(Map):
         down_stairs = Entity(center_of_last_room_x, center_of_last_room_y, 0x1001, "white", "Stairs", render_order=RenderOrder.STAIRS, stairs=stairs_component)
         entities.append(down_stairs)
 
-    def place_entities(self, room, entities, max_monsters_per_room,
-                       max_items_per_room):
+    def place_entities(self, room, entities):
         # Get a random number of monsters
+
+        max_monsters_per_room = from_dungeon_level([[2, 1], [3, 4], [5, 6]], self.dungeon_level)
+        max_items_per_room = from_dungeon_level([[1, 1], [2, 4]], self.dungeon_level)
+
         number_of_monsters = randint(0, max_monsters_per_room)
         number_of_items = randint(0, max_items_per_room)
+
+        monster_chances = {
+            'orc':
+            80,
+            'troll':
+            from_dungeon_level([[15, 3], [30, 5], [60, 7]], self.dungeon_level)
+        }
+        item_chances = {
+            'healing_potion': 35,
+            'lightning_scroll': from_dungeon_level([[25, 4]],
+                                                   self.dungeon_level),
+            'fireball_scroll': from_dungeon_level([[25, 6]],
+                                                  self.dungeon_level),
+            'confusion_scroll': from_dungeon_level([[10, 2]],
+                                                   self.dungeon_level)
+        }
 
         for _i in range(number_of_monsters):
             # Choose a random location in the room
@@ -180,8 +201,37 @@ class GameMap(Map):
                     entity
                     for entity in entities if entity.x == x and entity.y == y
             ]):
-                if randint(0, 100) < 80:
-                    fighter_component = Fighter(hp=10, defense=0, power=3)
+                monster_choice = random_choice_from_dict(monster_chances)
+                equipment_component = Equipment()
+                inventory_component = Inventory(26)
+
+                if monster_choice == "orc":
+                    inventory_seed = randint(1, 20)
+                    fighter_component = Fighter(
+                        generate_attributes(16, 13, 12, 16, 7, 11, 10, 10),
+                        current_hp=25,
+                        base_armor_class=12,
+                        base_armor=0,
+                        base_cth_modifier=0,
+                        base_speed=95,
+                        base_attack_cost=100,
+                        base_movement_cost=100,
+                        base_natural_hp_regeneration_speed=25,
+                        xp_reward=35,
+                        base_damage_modifiers={
+                            "physical": 2,
+                            "fire": 1
+                        },
+                        base_damage_dice={
+                            "physical": [[1, 6]],
+                            "fire": [[1, 1]],
+                            "ice": [],
+                            "lightning": [],
+                            "holy": [],
+                            "chaos": [],
+                            "arcane": [],
+                            "poison": [],
+                        })
                     ai_component = BasicMonster()
                     monster = Entity(x=x,
                                      y=y,
@@ -191,9 +241,49 @@ class GameMap(Map):
                                      blocks=True,
                                      render_order=RenderOrder.ACTOR,
                                      fighter=fighter_component,
-                                     ai=ai_component)
+                                     ai=ai_component,
+                                     inventory=inventory_component,
+                                     equipment=equipment_component)
+
+                    item_component = Item(use_function=heal, amount=4)
+
+                    item = Entity(x,
+                                  y,
+                                  0x1005,
+                                  "violet",
+                                  'Potion of Healing',
+                                  render_order=RenderOrder.ITEM,
+                                  item=item_component)
+
+                    if inventory_seed >= 10:
+                        monster.inventory.items.append(item)
                 else:
-                    fighter_component = Fighter(hp=16, defense=1, power=4)
+                    fighter_component = Fighter(
+                        generate_attributes(19, 14, 13, 20, 7, 9, 7, 14),
+                        current_hp=30,
+                        base_armor_class=9,
+                        base_armor=2,
+                        base_cth_modifier=5,
+                        base_speed=80,
+                        base_attack_cost=100,
+                        base_movement_cost=100,
+                        base_natural_hp_regeneration_speed=33,
+                        base_damage_modifiers={
+                            "physical": 10,
+                            "fire": 2
+                        },
+                        base_damage_dice={
+                            "physical": [[1, 10]],
+                            "fire": [],
+                            "ice": [],
+                            "lightning": [],
+                            "holy": [],
+                            "chaos": [],
+                            "arcane": [],
+                            "poison": [],
+                        },
+                        xp_reward=100,
+                    )
                     ai_component = BasicMonster()
                     monster = Entity(x=x,
                                      y=y,
@@ -203,7 +293,9 @@ class GameMap(Map):
                                      blocks=True,
                                      render_order=RenderOrder.ACTOR,
                                      fighter=fighter_component,
-                                     ai=ai_component)
+                                     ai=ai_component,
+                                     inventory=inventory_component,
+                                     equipment=equipment_component)
 
                 entities.append(monster)
 
@@ -215,9 +307,9 @@ class GameMap(Map):
                     entity
                     for entity in entities if entity.x == x and entity.y == y
             ]):
-                item_chance = randint(0, 100)
+                item_choice = random_choice_from_dict(item_chances)
 
-                if item_chance < 70:
+                if item_choice == "potion_of_healing":
                     item_component = Item(use_function=heal, amount=4)
 
                     item = Entity(x,
@@ -227,7 +319,7 @@ class GameMap(Map):
                                   'Potion of Healing',
                                   render_order=RenderOrder.ITEM,
                                   item=item_component)
-                elif item_chance < 80:
+                elif item_choice == "scroll_of_fireball":
                     item_component = Item(
                         use_function=cast_fireball,
                         targeting=True,
@@ -244,7 +336,7 @@ class GameMap(Map):
                                   'Scroll of Fireball',
                                   render_order=RenderOrder.ITEM,
                                   item=item_component)
-                elif item_chance < 90:
+                elif item_choice == "scroll_of_confusion":
                     item_component = Item(
                         use_function=cast_confuse,
                         targeting=True,
@@ -613,9 +705,7 @@ class GameMap(Map):
 
         self.make_map(constants["max_rooms"], constants["room_min_size"],
                           constants["room_max_size"], constants["map_width"],
-                          constants["map_height"], player, entities,
-                          constants["max_monsters_per_room"],
-                          constants["max_items_per_room"])
+                          constants["map_height"], player, entities)
 
         player.fighter.heal(player.fighter.max_hp // 4)
 

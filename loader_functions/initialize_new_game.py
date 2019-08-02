@@ -1,13 +1,16 @@
 from components.inventory import Inventory
 from components.item import Item
-from item_functions import cast_fireball
+from item_functions import cast_fireball, cast_chaos_bolt
 from components.fighter import Fighter
 from components.equipment import Equipment
+from components.level import Level
+from components.attributes import roll_character_attributes
 from entity import Entity
 from render_order import RenderOrder
 from game_states import GameStates
 from game_messages import MessageLog, Message
 from map_objects.game_map import GameMap
+from random import randint
 
 
 def get_constants():
@@ -64,8 +67,28 @@ def get_constants():
 
 
 def get_game_variables(constants):
-    fighter_component = Fighter(hp=30, defense=20, power=5)
+    fighter_component = Fighter(roll_character_attributes(),
+                                current_hp=100,
+                                base_armor_class=10,
+                                base_armor=10,
+                                base_cth_modifier=3,
+                                base_speed=100,
+                                base_attack_cost=100,
+                                base_movement_cost=100,
+                                base_natural_hp_regeneration_speed=50,
+                                base_damage_dice={
+                                    "physical": [[1, 3]],
+                                    "fire": [],
+                                    "ice": [],
+                                    "lightning": [],
+                                    "holy": [],
+                                    "chaos": [],
+                                    "arcane": [],
+                                    "poison": [],
+                                })
     inventory_component = Inventory(26)
+    level_component = Level()
+    equipment_component = Equipment()
     player = Entity(0,
                     0,
                     0x1004,
@@ -74,27 +97,10 @@ def get_game_variables(constants):
                     blocks=True,
                     render_order=RenderOrder.ACTOR,
                     fighter=fighter_component,
-                    inventory=inventory_component)
+                    inventory=inventory_component,
+                    equipment=equipment_component,
+                    level=level_component)
     entities = [player]
-
-    item_component = Item(
-        use_function=cast_fireball,
-        targeting=True,
-        targeting_message=Message(
-            'Left-click a target tile for the fireball, or right-click to cancel.',
-            "light cyan"),
-        damage=15,
-        radius=2)
-
-    item = Entity(0,
-                  0,
-                  0x1007,
-                  "red",
-                  'Scroll of Fireball',
-                  render_order=RenderOrder.ITEM,
-                  item=item_component)
-
-    player.inventory.add_item(item)
 
     message_log = MessageLog(constants["message_x"],
                              constants["message_width"],
@@ -104,9 +110,7 @@ def get_game_variables(constants):
                                 height=constants["map_height"])
     game_map.make_map(constants["max_rooms"], constants["room_min_size"],
                       constants["room_max_size"], constants["map_width"],
-                      constants["map_height"], player, entities,
-                      constants["max_monsters_per_room"],
-                      constants["max_items_per_room"])
+                      constants["map_height"], player, entities)
 
     game_state = GameStates.PLAYERS_TURN
 

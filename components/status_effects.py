@@ -1,7 +1,7 @@
 from random import randint, random
 from types import MethodType
 from game_messages import Message
-import tcod as libtcod
+import tcod
 
 
 class Effect():
@@ -13,7 +13,9 @@ class Effect():
                  resist_message=None,
                  stacking=True,
                  modifiers=None,
-                 owner=None):
+                 owner=None,
+                 resolve_effect=None,
+                 on_apply=None):
         self.name = name
         self.duration = duration
         self.start_message = start_message
@@ -22,8 +24,8 @@ class Effect():
         self.stacking = stacking
         self.modifiers = modifiers
         self.owner = owner
-        self.resolve_effect = None
-        self.on_apply = None
+        self.resolve_effect = resolve_effect
+        self.on_apply = on_apply
 
 
 # SLOW #
@@ -39,25 +41,25 @@ def Slow():
                   10, {
                       "player": {
                           "message": "Your movements slow down!",
-                          "message_color": libtcod.purple
+                          "message_color": "purple"
                       },
                       "monster": {
                           "message": "'s movements seem to slow down!",
-                          "message_color": libtcod.light_purple
+                          "message_color": "light purple"
                       }
                   }, {
                       "player": {
                           "message": "Your movements speed up again!",
-                          "message_color": libtcod.light_green
+                          "message_color": "light green"
                       },
                       "monster": {
                           "message": "'s movements seem to speed up again!",
-                          "message_color": libtcod.yellow
+                          "message_color": "yellow"
                       }
                   },
-                  modifiers=[["speed_modifier", -50]])
-    Slow.resolve_effect = MethodType(resolve_slow, Slow)
-    Slow.on_apply = MethodType(on_apply_modifiers, Slow)
+                  modifiers=[["speed_modifier", -50]],
+                  resolve_effect=resolve_slow,
+                  on_apply=on_apply_modifiers)
     return Slow
 
 
@@ -94,35 +96,35 @@ def Poison():
                     start_message={
                         "player": {
                             "message": "You are poisoned!",
-                            "message_color": libtcod.dark_green
+                            "message_color": "dark green"
                         },
                         "monster": {
                             "message": " is poisoned!",
-                            "message_color": libtcod.dark_green
+                            "message_color": "dark green"
                         }
                     },
                     end_message={
                         "player": {
                             "message": "You feel the poison wearing off!",
-                            "message_color": libtcod.lighter_green
+                            "message_color": "lighter green"
                         },
                         "monster": {
                             "message": " is no longer poisoned!",
-                            "message_color": libtcod.yellow
+                            "message_color": "yellow"
                         }
                     },
                     resist_message={
                         "player": {
                             "message": "You resist the effects of the poison!",
-                            "message_color": libtcod.light_green
+                            "message_color": "light green"
                         },
                         "monster": {
                             "message":
                             " doesn't seem to be affected by the poison!",
-                            "message_color": libtcod.red
+                            "message_color": "red"
                         }
-                    })
-    Poison.resolve_effect = MethodType(resolve_poison, Poison)
+                    },
+                    resolve_effect=resolve_poison)
     return Poison
 
 
@@ -141,25 +143,25 @@ def Bleed():
                    start_message={
                        "player": {
                            "message": "Your wounds start to bleed!",
-                           "message_color": libtcod.dark_red
+                           "message_color": "dark red"
                        },
                        "monster": {
                            "message": "'s wounds start to bleed!",
-                           "message_color": libtcod.red
+                           "message_color": "red"
                        }
                    },
                    end_message={
                        "player": {
                            "message": "The bleeding suddenly stops!",
-                           "message_color": libtcod.light_red
+                           "message_color": "light red"
                        },
                        "monster": {
                            "message": " is no longer bleeding!",
-                           "message_color": libtcod.yellow
+                           "message_color": "yellow"
                        }
                    },
-                   stacking=False)
-    Bleed.resolve_effect = MethodType(resolve_bleed, Bleed)
+                   stacking=False,
+                   resolve_effect=resolve_bleed)
     return Bleed
 
 
@@ -197,35 +199,35 @@ def Burn():
         start_message={
             "player": {
                 "message": "You burst into flames!",
-                "message_color": libtcod.flame
+                "message_color": "flame"
             },
             "monster": {
                 "message": " bursts into flames!",
-                "message_color": libtcod.flame
+                "message_color": "flame"
             }
         },
         end_message={
             "player": {
                 "message": "The flames around you dissipate!",
-                "message_color": libtcod.light_flame
+                "message_color": "ligth flame"
             },
             "monster": {
                 "message": " is no longer burning!",
-                "message_color": libtcod.yellow
+                "message_color": "yellow"
             }
         },
         resist_message={
             "player": {
                 "message": "You resist the searing flames!",
-                "message_color": libtcod.light_green
+                "message_color": "light green"
             },
             "monster": {
                 "message":
                 " doesn't seem to be affected by the searing flames!",
-                "message_color": libtcod.red
+                "message_color": "red"
             }
-        })
-    Burn.resolve_effect = MethodType(resolve_burn, Burn)
+        },
+        resolve_effect=resolve_burn)
     return Burn
 
 
@@ -265,38 +267,38 @@ def Chilled():
         start_message={
             "player": {
                 "message": "The freezing cold slows down your movements!",
-                "message_color": libtcod.azure
+                "message_color": "azure"
             },
             "monster": {
                 "message": " slows down from the freezing cold!",
-                "message_color": libtcod.light_azure
+                "message_color": "light azure"
             }
         },
         end_message={
             "player": {
                 "message": "You feel much warmer again!",
-                "message_color": libtcod.lighter_azure
+                "message_color": "lighter azure"
             },
             "monster": {
                 "message": " is no longer slowed down from the cold!",
-                "message_color": libtcod.yellow
+                "message_color": "yellow"
             }
         },
         resist_message={
             "player": {
                 "message": "You resist freezing cold!",
-                "message_color": libtcod.light_green
+                "message_color": "light green"
             },
             "monster": {
                 "message":
                 " doesn't seem to slow down from the freezing cold!",
-                "message_color": libtcod.red
+                "message_color": "red"
             }
         },
-        modifiers=[["movement_cost_modifier", 1000],
-                   ["attack_cost_modifier", 1000]])
-    Chilled.resolve_effect = MethodType(resolve_chilled, Chilled)
-    Chilled.on_apply = MethodType(on_apply_modifiers, Chilled)
+        modifiers=[["movement_cost_modifier", 100],
+                   ["attack_cost_modifier", 100]],
+        resolve_effect=resolve_chilled,
+        on_apply=on_apply_modifiers)
     return Chilled
 
 
@@ -307,9 +309,9 @@ def resolve_effects(fighter):
     results = []
     for effect in fighter.status_effects:
         if fighter.current_hp > 0 and effect.resolve_effect and effect.duration > 0:
-            resolve_effect_result = effect.resolve_effect()
+            resolve_effect_result = effect.resolve_effect(effect)
             if resolve_effect_result is not None:
-                results.extend(effect.resolve_effect())
+                results.extend(effect.resolve_effect(effect))
         if effect.duration == 0:
             fighter.status_effects.remove(effect)
             if effect.modifiers:

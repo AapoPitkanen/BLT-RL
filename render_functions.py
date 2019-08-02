@@ -6,6 +6,7 @@ from map_objects.game_map import GameMap
 import itertools
 import tcod
 from utils import disk
+import time
 
 
 def get_names_under_mouse(cur_coord, camera, entities, game_map):
@@ -82,7 +83,7 @@ def render_all(entities, player, game_map, message_log, bar_width, panel_y,
             game_map.effects.remove(efx)
         elif efx.render:
             (term_x, term_y) = camera.map_to_term_coord(efx.x, efx.y)
-            terminal.put(term_x, term_y, efx.effect_tile)
+            terminal.put(term_x, term_y, efx.gfx_effect_tile)
 
     if game_state == GameStates.TARGETING:
         from entity import get_blocking_entities_at_location
@@ -144,7 +145,7 @@ def render_all(entities, player, game_map, message_log, bar_width, panel_y,
     clear_layer()
 
     # HP bar
-    render_bar(1, panel_y + 6, bar_width, 'HP', player.fighter.hp,
+    render_bar(1, panel_y + 6, bar_width, 'HP', player.fighter.current_hp,
                player.fighter.max_hp, "red", "darker red")
 
     terminal.printf(1, panel_y + 7, f"Dungeon Level: {game_map.dungeon_level}")

@@ -3,7 +3,7 @@ import tcod
 from game_messages import Message
 from components.ai import ConfusedMonster
 from utils import disk
-from effect import Effect
+from effect import GFX_Effect
 
 
 def heal(*args, **kwargs):
@@ -12,7 +12,7 @@ def heal(*args, **kwargs):
 
     results = []
 
-    if entity.fighter.hp == entity.fighter.max_hp:
+    if entity.fighter.current_hp == entity.fighter.max_hp:
         results.append({
             'consumed':
             False,
@@ -64,7 +64,8 @@ def cast_chaos_bolt(*args, **kwargs):
                 "crimson")
         })
         results.extend(target.fighter.take_damage(damage))
-        game_map.effects.append(Effect(target.x, target.y, effect_tile=0x1009))
+        game_map.effects.append(
+            GFX_Effect(target.x, target.y, gfx_effect_tile=0x1009))
     else:
         results.append({
             "consumed":
@@ -122,7 +123,9 @@ def cast_fireball(*args, **kwargs):
 
     for map_coordinates in target_area:
         game_map.effects.append(
-            Effect(map_coordinates[0], map_coordinates[1], effect_tile=0x1008))
+            GFX_Effect(map_coordinates[0],
+                       map_coordinates[1],
+                       gfx_effect_tile=0x1008))
 
     return results
 

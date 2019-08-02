@@ -1,6 +1,7 @@
 from typing import List
 import math
 from bearlibterminal import terminal
+from components.item import Item
 import tcod
 from copy import deepcopy
 from render_order import RenderOrder, RenderLayer
@@ -12,21 +13,24 @@ class Entity:
     """
 
     # def __init__(self, x, y, char, color):
-    def __init__(self,
-                 x: int,
-                 y: int,
-                 char,
-                 color,
-                 name: str,
-                 blocks: bool = False,
-                 render_order=RenderOrder.CORPSE,
-                 fighter=None,
-                 ai=None,
-                 item=None,
-                 inventory=None,
-                 stairs=None,
-                 equipment=None,
-                 equippable=None):
+    def __init__(
+            self,
+            x: int,
+            y: int,
+            char,
+            color,
+            name: str,
+            blocks: bool = False,
+            render_order=RenderOrder.CORPSE,
+            fighter=None,
+            ai=None,
+            item=None,
+            inventory=None,
+            stairs=None,
+            level=None,
+            equipment=None,
+            equippable=None,
+    ):
         self.x: int = x
         self.y: int = y
         self.char = char
@@ -39,6 +43,7 @@ class Entity:
         self.item = item
         self.inventory = inventory
         self.stairs = stairs
+        self.level = level
         self.equipment = equipment
         self.equippable = equippable
 
@@ -57,8 +62,22 @@ class Entity:
         if self.stairs:
             self.stairs.owner = self
 
+        if self.level:
+            self.level.owner = self
+
+        if self.equipment:
+            self.equipment.owner = self
+
         if self.equippable:
             self.equippable.owner = self
+
+            if not self.item:
+                item = Item()
+                self.item = item
+                self.item.owner = self
+
+        if self.fighter and self.equipment:
+            self.fighter.recalculate_hp()
 
     def draw(self, camera, game_map):
         # Draw the entity to the terminal

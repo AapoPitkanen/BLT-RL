@@ -4,6 +4,7 @@ from entity import Entity, get_blocking_entities_at_location
 from loader_functions.initialize_new_game import get_constants, get_game_variables
 from loader_functions.data_loaders import save_game, load_game
 from map_objects.game_map import GameMap
+from components.status_effects import resolve_effects
 from input_handlers import handle_keys, handle_mouse, handle_main_menu
 from death_functions import kill_monster, kill_player
 from game_messages import MessageLog, Message
@@ -308,9 +309,24 @@ def play_game(player, entities, game_map, message_log, game_state, constants):
                     message_log.add_message(
                         targeting_item.item.targeting_message)
 
+            player_effect_results = resolve_effects(player.fighter)
+            for effect_result in player_effect_results:
+
+                message = effect_result.get("message")
+                dead_entity = effect_result.get("dead")
+
+                if message:
+                    message_log.add_message(message)
+
+                if dead_entity:
+                    message, game_state = kill_player(dead_entity)
+                    message_log.add_message(message)
+                    break
+
             if game_state == GameStates.ENEMY_TURN:
                 for entity in entities:
                     if entity.ai:
+                        monster = entity.fighter
                         enemy_turn_results = entity.ai.take_turn(
                             player, game_map, entities)
 
@@ -335,6 +351,35 @@ def play_game(player, entities, game_map, message_log, game_state, constants):
 
                         if game_state == GameStates.PLAYER_DEAD:
                             break
+
+                        monster_effect_results = resolve_effects(monster)
+
+                        for effect_result in monster_effect_results:
+
+                            message = effect_result.get("message")
+                            dead_entity = effect_result.get("dead")
+                            drop_loot = effect_result.get("drop_loot")
+
+                            if message:
+                                message_log.add_message(message)
+
+                            if dead_entity:
+                                if dead_entity == player:
+                                    message, game_state = kill_player(
+                                        dead_entity)
+                                else:
+                                    message = kill_monster(dead_entity)
+
+                                message_log.add_message(message)
+
+                                if game_state == GameStates.PLAYER_DEAD:
+                                    break
+
+                            if drop_loot:
+                                for item in drop_loot["items"]:
+                                    item.x = drop_loot["x"]
+                                    item.y = drop_loot["y"]
+                                    entities.append(item)
                 else:
                     game_state = GameStates.PLAYERS_TURN
 
