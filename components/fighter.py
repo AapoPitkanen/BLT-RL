@@ -385,7 +385,6 @@ class Fighter:
         results = []
         effect_copy = new_effect()
         effect_copy.owner = self.owner
-        print(effect_copy)
         if not self.status_effects:
             self.status_effects.append(effect_copy)
             if effect_copy.on_apply:

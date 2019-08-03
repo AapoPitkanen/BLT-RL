@@ -70,14 +70,14 @@ def get_game_variables(constants):
     fighter_component = Fighter(roll_character_attributes(),
                                 current_hp=100,
                                 base_armor_class=10,
-                                base_armor=10,
+                                base_armor=30,
                                 base_cth_modifier=3,
                                 base_speed=100,
                                 base_attack_cost=100,
                                 base_movement_cost=100,
                                 base_natural_hp_regeneration_speed=50,
                                 base_damage_dice={
-                                    "physical": [[1, 3]],
+                                    "physical": [[5, 10]],
                                     "fire": [],
                                     "ice": [],
                                     "lightning": [],
@@ -101,6 +101,25 @@ def get_game_variables(constants):
                     equipment=equipment_component,
                     level=level_component)
     entities = [player]
+
+    item_component = Item(
+        use_function=cast_fireball,
+        targeting=True,
+        targeting_message=Message(
+            'Left-click a target tile for the fireball, or right-click to cancel.',
+            "light cyan"),
+        damage=15,
+        radius=2)
+
+    item = Entity(0,
+                  0,
+                  0x1007,
+                  "red",
+                  'Scroll of Fireball',
+                  render_order=RenderOrder.ITEM,
+                  item=item_component)
+
+    player.inventory.add_item(item)
 
     message_log = MessageLog(constants["message_x"],
                              constants["message_width"],

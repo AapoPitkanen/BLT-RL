@@ -58,24 +58,19 @@ def render_all(entities, player, game_map, message_log, bar_width, panel_y,
 
     entities_in_render_order = sorted(entities,
                                       key=lambda x: x.render_order.value)
-    # Draw the map
 
-    camera_moved = camera.move_camera(player.x, player.y, game_map)
+    camera.move_camera(player.x, player.y, game_map)
 
     terminal.layer(RenderLayer.MAP.value)
 
-    if camera_moved:
-        clear_map_layer()
-
     game_map.render_from_camera(camera)
 
-    # Draw all entities in the list
     terminal.layer(RenderLayer.ENTITIES.value)
     for entity in entities_in_render_order:
         entity.draw(camera, game_map)
 
+    # This layer contains all stuff that goes over the entities, such as targeting assistance and graphical effects
     terminal.layer(RenderLayer.OVERLAY.value)
-    clear_layer()
 
     for efx in game_map.effects:
         efx.update()
@@ -142,7 +137,6 @@ def render_all(entities, player, game_map, message_log, bar_width, panel_y,
                                          c=0x3014)
 
     terminal.layer(RenderLayer.HUD.value)
-    clear_layer()
 
     # HP bar
     render_bar(1, panel_y + 6, bar_width, 'HP', player.fighter.current_hp,
@@ -152,10 +146,11 @@ def render_all(entities, player, game_map, message_log, bar_width, panel_y,
 
     entity_names = get_names_under_mouse(coordinates, camera, entities,
                                          game_map)
+
     terminal.printf(1, panel_y, f"[color=white]{entity_names.title()}")
 
-    terminal.layer(RenderLayer.HUD.value)
     line_y = panel_y + 1
+
     for message in message_log.messages:
         terminal.color(terminal.color_from_name(message.color))
         print_shadowed_text(message_log.x, line_y, message.text)
@@ -237,28 +232,6 @@ def clear_menu_layer():
     terminal.layer(RenderLayer.MENU_ICON.value)
     terminal.clear_area(0, 0, terminal.state(terminal.TK_WIDTH),
                         terminal.state(terminal.TK_HEIGHT))
-
-    terminal.layer(prev_layer)
-
-
-def clear_all_entities(entities, camera):
-    # Clear all entities on the terminal.
-    prev_layer = terminal.state(terminal.TK_LAYER)
-    terminal.layer(RenderLayer.ENTITIES.value)
-
-    for ent in entities:
-        clear_entity(ent, camera)
-
-    terminal.layer(prev_layer)
-
-
-def clear_entity(ent, camera):
-    # Clear an entity display on the terminal.
-    prev_layer = terminal.state(terminal.TK_LAYER)
-    terminal.layer(RenderLayer.ENTITIES.value)
-
-    (term_x, term_y) = camera.to_camera_coordinates(ent.x, ent.y)
-    terminal.put_ext(term_x, term_y, 0, 0, ' ', None)
 
     terminal.layer(prev_layer)
 
