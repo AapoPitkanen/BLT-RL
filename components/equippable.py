@@ -11,8 +11,8 @@ class Equippable:
             armor_class_modifier=0,
             max_hp_modifier=0,
             speed_modifier=0,
-            movement_cost_modifier=0,
-            attack_cost_modifier=0,
+            movement_energy_bonus_modifier=0,
+            attack_energy_bonus_modifier=0,
             critical_hit_chance_modifier=0,
             critical_hit_multiplier_modifier=0,
             strength_modifier=0,
@@ -70,8 +70,8 @@ class Equippable:
         self.armor_class_modifier = armor_class_modifier
         self.max_hp_modifier = max_hp_modifier
         self.speed_modifier = speed_modifier
-        self.movement_cost_modifier = movement_cost_modifier
-        self.attack_cost_modifier = attack_cost_modifier
+        self.movement_energy_bonus_modifier = movement_energy_bonus_modifier
+        self.attack_energy_bonus_modifier = attack_energy_bonus_modifier
         self.critical_hit_chance_modifier = critical_hit_chance_modifier / 100
         self.critical_hit_multiplier_modifier = critical_hit_multiplier_modifier / 100
         self.strength_modifier = strength_modifier

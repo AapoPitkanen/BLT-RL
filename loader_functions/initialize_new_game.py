@@ -70,11 +70,11 @@ def get_game_variables(constants):
     fighter_component = Fighter(roll_character_attributes(),
                                 current_hp=300,
                                 base_armor_class=10,
-                                base_armor=30,
+                                base_armor=20,
                                 base_cth_modifier=3,
-                                base_speed=200,
-                                base_attack_cost=100,
-                                base_movement_cost=100,
+                                base_speed=36,
+                                base_attack_energy_bonus=0,
+                                base_movement_energy_bonus=0,
                                 base_natural_hp_regeneration_speed=50,
                                 base_damage_dice={
                                     "physical": [[1, 6]],
@@ -101,6 +101,10 @@ def get_game_variables(constants):
                     equipment=equipment_component,
                     level=level_component)
     entities = [player]
+
+    player.fighter.energy += player.fighter.speed
+    player.fighter.actions = int(player.fighter.energy / 24)
+    player.fighter.energy -= player.fighter.actions * 24
 
     item_component = Item(
         use_function=cast_fireball,

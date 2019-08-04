@@ -9,50 +9,6 @@ import math
 import itertools
 
 
-def wrap_tagged(text, width, **kwargs):
-    """Wrap text which contains BearLibTerminal tags like '[color=red]something[/color]'.
-
-    Can pass kwargs to textwrap.wrap().
-    drop_whitespace=False by default."""
-    lines = text.splitlines()
-    wrapped_lines = []
-
-    # handling bearlibterminal's tag with textwrap, it was hard for me!
-    # 1. find and extract tag and its positions
-    # 2. textwrap (w/o tag strings)
-    # 3. insert extracted tags at original position
-    pattern = r'\[.*?\]'  # tag syntax
-    for line_ in lines:
-        iterator = re.finditer(pattern, line_)
-        tags = []
-
-        for match in iterator:
-            tags.append((match.start(), match.group()))
-
-        line_ = re.sub(pattern, '', line_)
-
-        wrapped_line = textwrap.wrap(line_,
-                                     width,
-                                     drop_whitespace=False,
-                                     **kwargs)
-
-        compensation = 0  # we need this because textwrap does not count tag strings
-        for start, group in tags:
-            # cur = start + compensation
-            cur = start
-            num = cur // (width + compensation)
-
-            # insert
-            wrapped_line[num] = group.join(
-                [wrapped_line[num][:cur], wrapped_line[num][cur:]])
-
-            compensation += len(group)
-
-        wrapped_lines.extend(wrapped_line)
-
-    return wrapped_lines
-
-
 def degree_between(src_x, src_y, dst_x, dst_y):
     """Return degree between two coordinates.
 

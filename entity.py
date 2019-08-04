@@ -81,7 +81,7 @@ class Entity:
 
     def draw(self, camera, game_map):
         # Draw the entity to the terminal
-        terminal.color(terminal.color_from_name("white"))
+        terminal.color(terminal.color_from_name(self.color))
 
         if game_map.fov[self.x, self.y] or (self.stairs and
                                             game_map.explored[self.x, self.y]):

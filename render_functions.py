@@ -1,7 +1,7 @@
 from render_order import RenderLayer, Visible
 from bearlibterminal import terminal
 from game import GameStates
-from menu import inventory_menu
+from menu import new_inventory_menu
 from map_objects.game_map import GameMap
 import itertools
 import tcod
@@ -125,7 +125,6 @@ def render_all(entities, player, game_map, message_log, bar_width, panel_y,
                                                game_map.height):
                         (cell_term_x, cell_term_y) = camera.map_to_term_coord(
                             cell_x, cell_y)
-                        print(cell_term_x, cell_term_y)
                         if cell_term_x and cell_term_y:  # Omit cells outside of the terminal window
                             if get_blocking_entities_at_location(
                                     entities, cell_x,
@@ -164,7 +163,9 @@ def render_all(entities, player, game_map, message_log, bar_width, panel_y,
             title = "INVENTORY – press key next to item to use it"
         elif game_state == GameStates.DROP_INVENTORY:
             title = "INVENTORY – press key next to item to drop it"
-        inventory_menu(player, title).draw()
+        new_inventory_menu(title, player.inventory, 90,
+                           terminal.state(terminal.TK_WIDTH),
+                           terminal.state(terminal.TK_HEIGHT))
 
 
 def print_shadowed_text(

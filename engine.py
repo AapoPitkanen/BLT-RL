@@ -9,7 +9,7 @@ from render_order import RenderOrder
 from render_functions import render_all, clear_map_layer, clear_menu_layer, main_screen
 from camera import Camera
 from copy import deepcopy
-from menu import main_menu, Menu
+from menu import main_menu, message_box
 import sys
 import time
 from collections import deque
@@ -59,10 +59,13 @@ def main():
 
         if show_main_menu:
             main_screen()
-            main_menu().draw()
+            main_menu(constants['screen_width'], constants['screen_height'])
 
             if show_load_error_message:
-                Menu("No save game to load", 60).draw()
+                message_box(header='No saved game to load.',
+                            width=50,
+                            screen_width=constants['screen_width'],
+                            screen_height=constants['screen_height'])
 
             terminal.refresh()
 
@@ -111,7 +114,6 @@ def main():
 
 def play_game(game):
     while True:
-        print("game state is", game.state)
         if game.fov_recompute:
             game.game_map.compute_fov(
                 x=game.player.x,

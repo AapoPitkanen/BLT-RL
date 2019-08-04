@@ -51,14 +51,17 @@ def player_turn(player, entities, camera, game_map, game_state,
                     player_turn_results.extend(attack_results)
                     player_turn_results.append(
                         {"game_state": GameStates.ENEMY_TURN})
+                    player_turn_results.append({"action_consumed": True})
 
                 else:
                     player_turn_results.append({"move": (dx, dy)})
                     player_turn_results.append(
                         {"game_state": GameStates.ENEMY_TURN})
+                    player_turn_results.append({"action_consumed": True})
 
         if pass_turn:
             player_turn_results.append({"game_state": GameStates.ENEMY_TURN})
+            player_turn_results.append({"action_consumed": True})
 
         if pickup:
             for entity in entities:
@@ -67,6 +70,7 @@ def player_turn(player, entities, camera, game_map, game_state,
                     player_turn_results.extend(pickup_results)
                     player_turn_results.append(
                         {"game_state": GameStates.ENEMY_TURN})
+                    player_turn_results.append({"action_consumed": True})
                     break
             else:
                 player_turn_results.append({
@@ -102,10 +106,13 @@ def player_turn(player, entities, camera, game_map, game_state,
                     player_turn_results.extend(
                         player.inventory.drop_item(item))
 
+                player_turn_results.append({"action_consumed": True})
+
         if take_stairs:
             for entity in entities:
                 if entity.stairs and entity.x == player.x and entity.y == player.y:
                     player_turn_results.append({"stairs_taken": True})
+                    player_turn_results.append({"action_consumed": True})
                     break
             else:
                 player_turn_results.append({
@@ -123,6 +130,7 @@ def player_turn(player, entities, camera, game_map, game_state,
                                                         target_x=target_x,
                                                         target_y=target_y)
                 player_turn_results.extend(item_use_results)
+                player_turn_results.append({"action_consumed": True})
             elif right_click:
                 player_turn_results.append({'targeting_cancelled': True})
 
@@ -139,6 +147,8 @@ def player_turn(player, entities, camera, game_map, game_state,
 
 
 def process_player_turn_results(results, game):
+    player = game.player
+    fighter = game.player.fighter
     for player_turn_result in results:
         message = player_turn_result.get("message")
         dead_entity = player_turn_result.get("dead")
@@ -157,6 +167,7 @@ def process_player_turn_results(results, game):
         new_game_state = player_turn_result.get("game_state")
         new_previous_game_state = player_turn_result.get("previous_game_state")
         new_mouse_coordinates = player_turn_result.get("mouse_coordinates")
+        action_consumed = player_turn_result.get("action_consumed")
 
         if new_mouse_coordinates:
             game.mouse_coordinates = new_mouse_coordinates
@@ -176,10 +187,10 @@ def process_player_turn_results(results, game):
             game.message_log.add_message(Message('Targeting cancelled'))
 
         if dead_entity:
-            if dead_entity == game.player:
-                message, game.state = kill_player(dead_entity)
+            if dead_entity == player:
+                message, game.state = kill_player(dead_entity, game)
             else:
-                message = kill_monster(dead_entity)
+                message = kill_monster(dead_entity, game)
 
             game.message_log.add_message(message)
 
@@ -214,26 +225,32 @@ def process_player_turn_results(results, game):
             if leveled_up:
                 game.message_log.add_message(
                     Message(
-                        f"Congratulations! You reached level {game.player.level.current_level}.",
+                        f"Congratulations! You reached level {player.level.current_level}.",
                         "gold"))
                 #previous_game_state = game_state
                 #game_state = GameStates.LEVEL_UP
 
         if game_saved:
-            save_game(game.player, game.entities, game.game_map,
-                      game.message_log, game.state)
+            save_game(player, game.entities, game.game_map, game.message_log,
+                      game.state)
             game.exit = True
 
         if stairs_taken:
-            game.entities = game.game_map.next_floor(game.player,
-                                                     game.message_log,
+            game.entities = game.game_map.next_floor(player, game.message_log,
                                                      game.constants)
             game.fov_recompute = True
             terminal.clear()
 
         if move:
-            game.player.move(move[0], move[1])
+            player.move(move[0], move[1])
             game.fov_recompute = True
+            fighter.energy += fighter.movement_energy_bonus
+
+        if attack:
+            fighter.energy += fighter.attack_energy_bonus
+
+        if action_consumed:
+            fighter.actions -= 1
 
 
 def process_player_effect_results(results, game):
@@ -245,39 +262,46 @@ def process_player_effect_results(results, game):
             game.message_log.add_message(message)
 
         if dead_entity:
-            message, game.state = kill_player(dead_entity)
+            message, game.state = kill_player(dead_entity, game)
             game.message_log.add_message(message)
             break
 
 
-def process_enemy_turn(game):
-
-    monster = game.current_actor
-    enemy_turn_results = monster.owner.ai.take_turn(game.player, game.game_map,
-                                                    game.entities)
+def process_enemy_turn(game, monster_entity):
+    enemy_turn_results = monster_entity.ai.take_turn(game.player,
+                                                     game.game_map,
+                                                     game.entities)
 
     for enemy_turn_result in enemy_turn_results:
-        message = enemy_turn_result.get('message')
-        dead_entity = enemy_turn_result.get('dead')
+        message = enemy_turn_result.get("message")
+        dead_entity = enemy_turn_result.get("dead")
+        attack = enemy_turn_result.get("attack")
+        move = enemy_turn_result.get("move")
 
         if message:
             game.message_log.add_message(message)
 
         if dead_entity:
             if dead_entity == game.player:
-                message, game.state = kill_player(dead_entity)
+                message, game.state = kill_player(dead_entity, game)
             else:
-                message = kill_monster(dead_entity)
+                message = kill_monster(dead_entity, game)
 
             game.message_log.add_message(message)
 
             if game.state == GameStates.PLAYER_DEAD:
                 break
 
+        if attack:
+            monster_entity.fighter.energy += monster_entity.fighter.attack_energy_bonus
+
+        if move:
+            monster_entity.fighter.energy += monster_entity.fighter.movement_energy_bonus
+
     if game.state == GameStates.PLAYER_DEAD:
         return
 
-    monster_effect_results = resolve_effects(monster)
+    monster_effect_results = resolve_effects(monster_entity.fighter)
 
     for effect_result in monster_effect_results:
 
@@ -290,9 +314,9 @@ def process_enemy_turn(game):
 
         if dead_entity:
             if dead_entity == game.player:
-                message, game.state = kill_player(dead_entity)
+                message, game.state = kill_player(dead_entity, game)
             else:
-                message = kill_monster(dead_entity)
+                message = kill_monster(dead_entity, game)
 
             game.message_log.add_message(message)
 
@@ -304,65 +328,3 @@ def process_enemy_turn(game):
                 item.x = drop_loot["x"]
                 item.y = drop_loot["y"]
                 game.entities.append(item)
-
-    game.state = GameStates.PLAYERS_TURN
-
-
-def process_enemy_turns(game):
-    for entity in game.entities:
-        if entity.ai:
-            monster = entity.fighter
-            enemy_turn_results = entity.ai.take_turn(game.player,
-                                                     game.game_map,
-                                                     game.entities)
-
-            for enemy_turn_result in enemy_turn_results:
-                message = enemy_turn_result.get('message')
-                dead_entity = enemy_turn_result.get('dead')
-
-                if message:
-                    game.message_log.add_message(message)
-
-                if dead_entity:
-                    if dead_entity == game.player:
-                        message, game.state = kill_player(dead_entity)
-                    else:
-                        message = kill_monster(dead_entity)
-
-                    game.message_log.add_message(message)
-
-                    if game.state == GameStates.PLAYER_DEAD:
-                        break
-
-            if game.state == GameStates.PLAYER_DEAD:
-                break
-
-            monster_effect_results = resolve_effects(monster)
-
-            for effect_result in monster_effect_results:
-
-                message = effect_result.get("message")
-                dead_entity = effect_result.get("dead")
-                drop_loot = effect_result.get("drop_loot")
-
-                if message:
-                    game.message_log.add_message(message)
-
-                if dead_entity:
-                    if dead_entity == game.player:
-                        message, game.state = kill_player(dead_entity)
-                    else:
-                        message = kill_monster(dead_entity)
-
-                    game.message_log.add_message(message)
-
-                    if game.state == GameStates.PLAYER_DEAD:
-                        break
-
-                if drop_loot:
-                    for item in drop_loot["items"]:
-                        item.x = drop_loot["x"]
-                        item.y = drop_loot["y"]
-                        game.entities.append(item)
-    else:
-        game.state = GameStates.PLAYERS_TURN

@@ -5,19 +5,19 @@ from render_order import RenderOrder
 from game_messages import Message
 
 
-def kill_player(player):
+def kill_player(player, game):
     player.char = 0x1006
-    player.color = terminal.color_from_name("dark red")
-
+    player.color = "dark red"
+    game.fighter_entities.remove(player.fighter)
     return Message('You are killed!', "red"), GameStates.PLAYER_DEAD
 
 
-def kill_monster(monster):
+def kill_monster(monster, game):
     death_message = Message(f'{monster.name.capitalize()} is killed!',
                             "orange")
-
+    game.fighter_entities.remove(monster.fighter)
     monster.char = 0x1006
-    monster.color = terminal.color_from_name("dark red")
+    monster.color = "dark_red"
     monster.blocks = False
     monster.fighter = None
     monster.ai = None

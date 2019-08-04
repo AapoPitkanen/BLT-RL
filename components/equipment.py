@@ -174,12 +174,14 @@ class Equipment:
         return self.calculate_equipment_modifier("speed_modifier")
 
     @property
-    def movement_cost_modifier(self):
-        return self.calculate_equipment_modifier("movement_cost_modifier")
+    def movement_energy_bonus_modifier(self):
+        return self.calculate_equipment_modifier(
+            "movement_energy_bonus_modifier")
 
     @property
-    def attack_cost_modifier(self):
-        return self.calculate_equipment_modifier("attack_cost_modifier")
+    def attack_energy_bonus_modifier(self):
+        return self.calculate_equipment_modifier(
+            "attack_energy_bonus_modifier")
 
     @property
     def armor_modifier(self):

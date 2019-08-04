@@ -15,8 +15,8 @@ class Fighter:
             base_armor,
             base_cth_modifier,
             base_speed,
-            base_attack_cost,
-            base_movement_cost,
+            base_attack_energy_bonus,
+            base_movement_energy_bonus,
             base_natural_hp_regeneration_speed,
             base_resistances={
                 "physical": 0,
@@ -61,8 +61,8 @@ class Fighter:
         self.base_armor = base_armor
         self.base_cth_modifier = base_cth_modifier
         self.base_speed = base_speed
-        self.base_attack_cost = base_attack_cost
-        self.base_movement_cost = base_movement_cost
+        self.base_attack_energy_bonus = base_attack_energy_bonus
+        self.base_movement_energy_bonus = base_movement_energy_bonus
         self.base_natural_hp_regeneration_speed = base_natural_hp_regeneration_speed
         self.turns_to_natural_regenerate = 0
         self.base_resistances = base_resistances
@@ -82,8 +82,8 @@ class Fighter:
             "armor_class_modifier": 0,
             "max_hp_modifier": 0,
             "speed_modifier": 0,
-            "movement_cost_modifier": 0,
-            "attack_cost_modifier": 0,
+            "movement_energy_bonus_modifier": 0,
+            "attack_energy_bonus_modifier": 0,
             "critical_hit_chance_modifier": 0,
             "critical_hit_multiplier_modifier": 0,
             "strength_modifier": 0,
@@ -129,7 +129,7 @@ class Fighter:
             }
         }
         self.owner = None
-        self.can_take_turn = False
+        self.actions = 0
 
     def recalculate_hp(self):
         self.current_hp = self.max_hp
@@ -205,22 +205,22 @@ class Fighter:
             "speed_modifier"]
 
     @property
-    def attack_cost(self):
+    def attack_energy_bonus(self):
         if self.owner and self.owner.equipment:
-            modifier = self.owner.equipment.attack_cost_modifier
+            modifier = self.owner.equipment.attack_energy_bonus_modifier
         else:
             modifier = 0
-        return self.base_attack_cost + modifier + self.temporary_modifiers[
-            "attack_cost_modifier"]
+        return self.base_attack_energy_bonus + modifier + self.temporary_modifiers[
+            "attack_energy_bonus_modifier"]
 
     @property
-    def movement_cost(self):
+    def movement_energy_bonus(self):
         if self.owner and self.owner.equipment:
-            modifier = self.owner.equipment.movement_cost_modifier
+            modifier = self.owner.equipment.movement_energy_bonus_modifier
         else:
             modifier = 0
-        return self.base_movement_cost + modifier + self.temporary_modifiers[
-            "movement_cost_modifier"]
+        return self.base_movement_energy_bonus + modifier + self.temporary_modifiers[
+            "movement_energy_bonus_modifier"]
 
     @property
     def max_hp(self):
