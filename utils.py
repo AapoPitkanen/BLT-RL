@@ -9,6 +9,14 @@ import math
 import itertools
 
 
+def circle(size, radius):
+    tiles_affected = []
+    for x in range(-size, size + 1):
+        for y in range(-size, size + 1):
+            if x * x + y * y < radius * radius:
+                tiles_affected.append(get_tile(x, y))
+
+
 def degree_between(src_x, src_y, dst_x, dst_y):
     """Return degree between two coordinates.
 
