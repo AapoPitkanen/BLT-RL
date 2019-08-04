@@ -129,6 +129,7 @@ class Fighter:
             }
         }
         self.owner = None
+        self.can_take_turn = False
 
     def recalculate_hp(self):
         self.current_hp = self.max_hp

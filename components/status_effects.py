@@ -32,8 +32,10 @@ class Effect():
 
 
 def resolve_slow(self):
+    results = []
     if self.duration > 0:
         self.duration -= 1
+    return results
 
 
 def Slow():
@@ -209,7 +211,7 @@ def Burn():
         end_message={
             "player": {
                 "message": "The flames around you dissipate!",
-                "message_color": "ligth flame"
+                "message_color": "light flame"
             },
             "monster": {
                 "message": " is no longer burning!",
@@ -309,9 +311,7 @@ def resolve_effects(fighter):
     results = []
     for effect in fighter.status_effects:
         if fighter.current_hp > 0 and effect.resolve_effect and effect.duration > 0:
-            resolve_effect_result = effect.resolve_effect(effect)
-            if resolve_effect_result is not None:
-                results.extend(effect.resolve_effect(effect))
+            results.extend(effect.resolve_effect(effect))
         if effect.duration == 0:
             fighter.status_effects.remove(effect)
             if effect.modifiers:

@@ -1,6 +1,6 @@
 from render_order import RenderLayer, Visible
 from bearlibterminal import terminal
-from game_states import GameStates
+from game import GameStates
 from menu import inventory_menu
 from map_objects.game_map import GameMap
 import itertools
@@ -97,20 +97,22 @@ def render_all(entities, player, game_map, message_log, bar_width, panel_y,
                 continue
             cell_term_x, cell_term_y = camera.map_to_term_coord(
                 coord[0], coord[1])
-            if coord[0] == mouse_map_x and coord[
-                    1] == mouse_map_y and game_map.fov[
-                        coord[0], coord[1]] and not game_map.is_blocked(
-                            coord[0], coord[1]):
-                terminal.color(terminal.color_from_argb(125, 0, 255, 0))
-            elif get_blocking_entities_at_location(entities, coord[0],
-                                                   coord[1]):
-                terminal.color(terminal.color_from_argb(125, 255, 0, 0))
-            elif not game_map.fov[coord[0], coord[1]] or game_map.is_blocked(
-                    coord[0], coord[1]):
-                terminal.color(terminal.color_from_argb(125, 255, 0, 0))
-            else:
-                terminal.color(terminal.color_from_argb(125, 255, 255, 0))
-            terminal.put(x=cell_term_x, y=cell_term_y, c=0x3014)
+            if cell_term_x and cell_term_y:
+                if coord[0] == mouse_map_x and coord[
+                        1] == mouse_map_y and game_map.fov[
+                            coord[0], coord[1]] and not game_map.is_blocked(
+                                coord[0], coord[1]):
+                    terminal.color(terminal.color_from_argb(125, 0, 255, 0))
+                elif get_blocking_entities_at_location(entities, coord[0],
+                                                       coord[1]):
+                    terminal.color(terminal.color_from_argb(125, 255, 0, 0))
+                elif not game_map.fov[coord[0],
+                                      coord[1]] or game_map.is_blocked(
+                                          coord[0], coord[1]):
+                    terminal.color(terminal.color_from_argb(125, 255, 0, 0))
+                else:
+                    terminal.color(terminal.color_from_argb(125, 255, 255, 0))
+                terminal.put(x=cell_term_x, y=cell_term_y, c=0x3014)
             terminal.composition(terminal.TK_OFF)
 
         if targeting_item:
@@ -123,6 +125,7 @@ def render_all(entities, player, game_map, message_log, bar_width, panel_y,
                                                game_map.height):
                         (cell_term_x, cell_term_y) = camera.map_to_term_coord(
                             cell_x, cell_y)
+                        print(cell_term_x, cell_term_y)
                         if cell_term_x and cell_term_y:  # Omit cells outside of the terminal window
                             if get_blocking_entities_at_location(
                                     entities, cell_x,
