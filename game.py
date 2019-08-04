@@ -29,30 +29,21 @@ class Game:
         self.targeting_item = targeting_item
 
     def tick(self):
-        print(
-            f"{self.player.name}'s actions are before action {self.player.fighter.actions}"
-        )
         player_turn_results = player_turn(self.player, self.entities,
                                           self.camera, self.game_map,
                                           self.state, self.previous_state,
                                           self.targeting_item)
         if not player_turn_results:
-            print("no action, returning")
             return
 
         if player_turn_results:
             process_player_turn_results(player_turn_results, self)
-            print("player turn results were", player_turn_results)
-            print("actions processed, actions are now",
-                  self.player.fighter.actions)
 
         if self.state == GameStates.ENEMY_TURN:
             if self.player.fighter.actions > 0:
-                print(
-                    "player has actions left, switching back to player's turn")
                 self.state = GameStates.PLAYERS_TURN
                 return
-            print("player didn't have actions left, processing enemies")
+
             player_effect_results = resolve_effects(self.player.fighter)
             process_player_effect_results(player_effect_results, self)
 
@@ -60,16 +51,9 @@ class Game:
                 fighter.energy += fighter.speed
                 if fighter.owner.ai:
                     fighter.energy += randint(-2, 3)
-                print(f"fighter {fighter.owner.name}'s energy is now",
-                      fighter.energy)
-
             for fighter in self.fighter_entities:
                 fighter.actions += int(fighter.energy / 24)
                 fighter.energy -= fighter.actions * 24
-                print(f"fighter {fighter.owner.name}'s actions are now",
-                      fighter.actions)
-                print(f"fighter {fighter.owner.name}'s energy is now",
-                      fighter.energy)
 
             for monster in self.monster_fighter_entities:
                 while (monster.actions > 0):

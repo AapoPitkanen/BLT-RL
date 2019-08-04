@@ -232,7 +232,7 @@ class GameMap(Map):
                             "arcane": [],
                             "poison": [],
                         })
-                    ai_component = BasicMonster()
+                    ai_component = BasicMonster(extra_movements=3, extra_attacks=2)
                     monster = Entity(x=x,
                                      y=y,
                                      char=0x1002,

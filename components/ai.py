@@ -5,12 +5,15 @@ from entity import get_blocking_entities_at_location
 
 
 class BasicMonster:
-    def __init__(self):
+    def __init__(self, extra_movements=0, extra_attacks=0):
         self.owner = None
+        self.extra_movements = extra_movements
+        self.extra_attacks = extra_attacks
 
     def take_turn(self, target, game_map, entities):
         results = []
-
+        extra_move_count = self.extra_movements
+        extra_attack_count = self.extra_attacks
         monster = self.owner
 
         if game_map.fov[monster.x][monster.y]:
@@ -18,11 +21,19 @@ class BasicMonster:
             if monster.distance_to(target) >= 2:
                 monster.move_astar(target, game_map, entities)
                 results.append({"move": True})
+                while extra_move_count > 0:
+                    if monster.distance_to(target) < 2:
+                        break
+                    monster.move_astar(target, game_map, entities)
 
             elif target.fighter.current_hp > 0:
                 attack_results = monster.fighter.attack(target)
                 results.extend(attack_results)
                 results.append({"attack": True})
+                while extra_attack_count > 0:
+                    attack_results = monster.fighter.attack(target)
+                    results.extend(attack_results)
+                    extra_attack_count -= 1
         return results
 
 
