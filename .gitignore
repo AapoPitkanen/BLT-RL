@@ -1,6 +1,7 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
+.mypy_cache/
 
 # C extensions
 *.so
@@ -62,4 +63,4 @@ savegame.dat
 savegame.dir
 
 # VSCode settings
-/.vscode/settings.json
+.vscode/settings.json

@@ -14,8 +14,13 @@ class Effect():
                  stacking=True,
                  modifiers=None,
                  owner=None,
-                 resolve_effect=None,
-                 on_apply=None):
+                 resolve=None,
+                 on_apply=None,
+                 on_expire=None,
+                 on_deal_damage=None,
+                 on_take_damage=None,
+                 on_critical_hit=None,
+                 on_critical_miss=None):
         self.name = name
         self.duration = duration
         self.start_message = start_message
@@ -24,8 +29,13 @@ class Effect():
         self.stacking = stacking
         self.modifiers = modifiers
         self.owner = owner
-        self.resolve_effect = resolve_effect
+        self.resolve = resolve
         self.on_apply = on_apply
+        self.on_expire = on_expire
+        self.on_deal_damage = on_deal_damage
+        self.on_take_damage = on_take_damage
+        self.on_critical_hit = on_critical_hit
+        self.on_critical_miss = on_critical_miss
 
 
 # SLOW #
@@ -60,8 +70,8 @@ def Slow():
                       }
                   },
                   modifiers=[["speed_modifier", -50]],
-                  resolve_effect=resolve_slow,
-                  on_apply=on_apply_modifiers)
+                  resolve=resolve_slow,
+                  on_apply=on_apply_temporary_modifiers)
     return Slow
 
 
@@ -126,7 +136,7 @@ def Poison():
                             "message_color": "red"
                         }
                     },
-                    resolve_effect=resolve_poison)
+                    resolve=resolve_poison)
     return Poison
 
 
@@ -163,7 +173,7 @@ def Bleed():
                        }
                    },
                    stacking=False,
-                   resolve_effect=resolve_bleed)
+                   resolve=resolve_bleed)
     return Bleed
 
 
@@ -229,7 +239,7 @@ def Burn():
                 "message_color": "red"
             }
         },
-        resolve_effect=resolve_burn)
+        resolve=resolve_burn)
     return Burn
 
 
@@ -299,8 +309,8 @@ def Chilled():
         },
         modifiers=[["movement_cost_modifier", 100],
                    ["attack_cost_modifier", 100]],
-        resolve_effect=resolve_chilled,
-        on_apply=on_apply_modifiers)
+        resolve=resolve_chilled,
+        on_apply=on_apply_temporary_modifiers)
     return Chilled
 
 
@@ -309,16 +319,23 @@ def Chilled():
 
 def resolve_effects(fighter):
     results = []
+
     for effect in fighter.status_effects:
-        if fighter.current_hp > 0 and effect.resolve_effect and effect.duration > 0:
-            results.extend(effect.resolve_effect(effect))
+
+        if fighter.current_hp > 0 and effect.resolve and effect.duration > 0:
+            results.extend(effect.resolve(effect))
+
         if effect.duration == 0:
             fighter.status_effects.remove(effect)
+
             if effect.modifiers:
+
                 for modifier_name, modifier_value in effect.modifiers:
                     fighter.temporary_modifiers[
                         modifier_name] -= modifier_value
+
             if fighter.current_hp > 0:
+
                 if fighter.owner.ai:
                     results.append({
                         "message":
@@ -326,6 +343,7 @@ def resolve_effects(fighter):
                             f"The {fighter.owner.name}{effect.end_message['monster']['message']}",
                             effect.end_message['monster']['message_color'])
                     })
+
                 else:
                     results.append({
                         "message":
@@ -335,10 +353,10 @@ def resolve_effects(fighter):
     return results
 
 
-# GENERAL "ON APPLY" FUNCTION FOR MODIFIERS
+# GENERAL "ON APPLY" FUNCTION FOR EFFECT TEMPORARY MODIFIERS
 
 
-def on_apply_modifiers(self):
+def on_apply_temporary_modifiers(self):
     for modifier_name, modifier_value in self.modifiers:
         self.owner.fighter.temporary_modifiers[modifier_name] += modifier_value
 

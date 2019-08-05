@@ -1,16 +1,21 @@
+from typing import Any, List, TYPE_CHECKING
 from bearlibterminal import terminal
 import render_functions
 from render_order import RenderLayer
 import itertools
 
+if TYPE_CHECKING:
+    from components.inventory import Inventory
 
-def menu(header,
-         options,
-         width,
-         screen_width,
-         screen_height,
-         background_color="white",
-         header_margin=1):
+
+def menu(header: str,
+         options: List[Any],
+         width: int,
+         screen_width: int,
+         screen_height: int,
+         background_color: Any = "white",
+         header_margin: int = 1) -> None:
+
     if len(options) > 26:
         raise ValueError('Cannot have a menu with more than 26 options.')
 
@@ -32,7 +37,14 @@ def menu(header,
     letter_index = ord("a")
 
     terminal.color(terminal.color_from_name("white"))
-    render_functions.print_shadowed_text(x, y, header)
+
+    # Draw menu header to the center of the menu
+
+    render_functions.print_shadowed_text(
+        int(screen_width / 2) + 1,
+        y,
+        header,
+        align=[terminal.TK_ALIGN_DEFAULT, terminal.TK_ALIGN_CENTER])
 
     y += header_margin
 
@@ -46,8 +58,9 @@ def menu(header,
     terminal.layer(previous_layer)
 
 
-def new_inventory_menu(header, inventory, inventory_width, screen_width,
-                       screen_height):
+def new_inventory_menu(header: str, inventory: "Inventory",
+                       inventory_width: int, screen_width: int,
+                       screen_height: int) -> None:
     if len(inventory.items) == 0:
         options = ["Your inventory is empty."]
 
@@ -66,12 +79,12 @@ def new_inventory_menu(header, inventory, inventory_width, screen_width,
          header_margin=2)
 
 
-def draw_menu_background(width,
-                         height,
-                         topleft_x,
-                         topleft_y,
-                         margin=2,
-                         background_color="white"):
+def draw_menu_background(width: int,
+                         height: int,
+                         topleft_x: int,
+                         topleft_y: int,
+                         margin: int = 2,
+                         background_color: Any = "white") -> None:
     # Draw the menu background.
     terminal.color(background_color)
 
@@ -106,16 +119,18 @@ def draw_menu_background(width,
             terminal.put(topleft_x + term_x, topleft_y + term_y, 0x2008)
 
 
-def main_menu(screen_width, screen_height):
+def main_menu(screen_width: int, screen_height: int) -> None:
     menu(header="VOIDSTONE",
          options=["Start a new game", "Load saved game", "Quit game"],
          width=24,
          screen_width=screen_width,
          screen_height=screen_height,
-         background_color=terminal.color_from_argb(200, 128, 0, 0))
+         background_color=terminal.color_from_argb(200, 128, 0, 0),
+         header_margin=2)
 
 
-def message_box(header, width, screen_width, screen_height):
+def message_box(header: str, width: int, screen_width: int,
+                screen_height: int) -> None:
     menu(header=header,
          options=[],
          width=width,

@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional, Any, TYPE_CHECKING
 import math
 from bearlibterminal import terminal
 from components.item import Item
@@ -6,22 +6,21 @@ import tcod
 from copy import deepcopy
 from render_order import RenderOrder, RenderLayer
 
+if TYPE_CHECKING:
+    from map_objects.game_map import GameMap
+    from camera import Camera
+
 
 class Entity:
-    """
-    A generic object to represent players, enemies, items, etc.
-    """
-
-    # def __init__(self, x, y, char, color):
+    # A generic class to represent objects in the game world
     def __init__(
             self,
             x: int,
             y: int,
-            char,
-            color,
+            char: int,
             name: str,
             blocks: bool = False,
-            render_order=RenderOrder.CORPSE,
+            render_order: RenderOrder = RenderOrder.CORPSE,
             fighter=None,
             ai=None,
             item=None,
@@ -31,13 +30,12 @@ class Entity:
             equipment=None,
             equippable=None,
     ):
-        self.x: int = x
-        self.y: int = y
+        self.x = x
+        self.y = y
         self.char = char
-        self.color = color
-        self.name: str = name
-        self.blocks: bool = blocks
-        self.render_order = render_order
+        self.name = name
+        self.blocks = blocks
+        self.render_order: RenderOrder = render_order
         self.fighter = fighter
         self.ai = ai
         self.item = item
@@ -79,9 +77,9 @@ class Entity:
         if self.fighter and self.equipment:
             self.fighter.recalculate_hp()
 
-    def draw(self, camera, game_map):
-        # Draw the entity to the terminal
-        terminal.color(terminal.color_from_name(self.color))
+    def draw(self, camera: "Camera", game_map: "GameMap") -> None:
+
+        terminal.color(terminal.color_from_name("white"))
 
         if game_map.fov[self.x, self.y] or (self.stairs and
                                             game_map.explored[self.x, self.y]):
@@ -89,46 +87,50 @@ class Entity:
             if x is not None:
                 terminal.put(x=x * 4, y=y * 2, c=self.char)
 
-    def move(self, dx, dy):
+    def move(self, dx: int, dy: int) -> None:
         # Move the entity by a given amount
         self.x += dx
         self.y += dy
 
-    def move_towards(self, target_x, target_y, game_map, entities):
-        dx = target_x - self.x
-        dy = target_y - self.y
-        distance = math.sqrt(dx**2 + dy**2)
+    def move_towards(self, target_x: int, target_y: int, game_map: "GameMap",
+                     entities: List["Entity"]) -> None:
+        astar = tcod.path.AStar(game_map.walkable, diagonal=1.41)
+        path = astar.get_path(self.x, self.y, target_x, target_y)
 
-        dx = int(round(dx / distance))
-        dy = int(round(dy / distance))
+        if path:
+            dx = path[0][0] - self.x
+            dy = path[0][1] - self.y
 
-        if not (game_map.is_blocked(self.x + dx, self.y + dy)
-                and not get_blocking_entities_at_location(
-                    entities, self.x + dx, self.y + dy)):
-            self.move(dx, dy)
+            if game_map.walkable[path[0][0], path[0][
+                    1]] and not get_blocking_entities_at_location(
+                        entities, self.x + dx, self.y + dy):
+                self.move(dx, dy)
 
-    def distance(self, x, y):
+    def distance(self, x: int, y: int) -> float:
         return math.sqrt((x - self.x)**2 + (y - self.y)**2)
 
-    def distance_to(self, other):
-        dx = other.x - self.x
-        dy = other.y - self.y
+    def distance_to(self, other) -> float:
+        dx: int = other.x - self.x
+        dy: int = other.y - self.y
         return math.sqrt(dx**2 + dy**2)
 
     def move_astar(
             self,
-            target,
-            game_map,
-            entities,
-    ):
-        map_copy = deepcopy(game_map)
+            target: "Entity",
+            game_map: "GameMap",
+            entities: List["Entity"],
+    ) -> None:
+
+        fov: Any = tcod.map_new(game_map.width, game_map.height)
 
         for entity in entities:
             if entity.blocks and entity != self and entity != target:
-                map_copy.walkable[entity.x][entity.y] = False
+                fov.walkable[entity.x][entity.y] = False
 
-        astar = tcod.path.AStar(map_copy.walkable)
+        astar: Any = tcod.path.AStar(fov.walkable)
+
         new_path = astar.get_path(self.x, self.y, target.x, target.y)
+
         if new_path and len(new_path) < 25:
             x, y = new_path[0]
             if x or y:
@@ -142,7 +144,7 @@ class Entity:
 
 def get_blocking_entities_at_location(entities: List[Entity],
                                       destination_x: int,
-                                      destination_y: int) -> [Entity, None]:
+                                      destination_y: int) -> Optional[Entity]:
     for entity in entities:
         if entity.blocks and entity.x == destination_x and entity.y == destination_y:
             return entity

@@ -1,3 +1,4 @@
+from typing import List, TYPE_CHECKING
 from bearlibterminal import terminal
 import tcod
 from loader_functions.initialize_new_game import get_constants, get_game_variables
@@ -16,8 +17,12 @@ from collections import deque
 from game_states import GameStates
 from game import Game
 
+if TYPE_CHECKING:
+    from entity import Entity
 
-def main():
+
+def main() -> None:
+
     terminal.open()
     constants = get_constants()
     terminal.set(
@@ -37,26 +42,21 @@ def main():
         "0x4000: voidstone_background.png, size=1280x768, align=top-left")
 
     player = None
-    entities = []
+    entities: List["Entity"] = []
     game_map = None
     message_log = None
     game_state = None
     game = None
     camera = None
     targeting_item = None
-    fov_recompute = True
+    fov_recompute: bool = True
 
-    show_main_menu = True
-    show_load_error_message = False
+    show_main_menu: bool = True
+    show_load_error_message: bool = False
 
     in_main_menu: bool = True
 
     while in_main_menu:
-
-        key = None
-        if terminal.has_input():
-            key: int = terminal.read()
-
         if show_main_menu:
             main_screen()
             main_menu(constants['screen_width'], constants['screen_height'])
@@ -67,58 +67,63 @@ def main():
                             screen_width=constants['screen_width'],
                             screen_height=constants['screen_height'])
 
-            terminal.refresh()
+            if terminal.has_input():
+                key: int = terminal.read()
 
-            action = handle_main_menu(key)
+                action = handle_main_menu(key)
 
-            new_game = action.get("new_game")
-            load_saved_game = action.get("load_game")
-            exit_game = action.get("exit")
+                new_game = action.get("new_game")
+                load_saved_game = action.get("load_game")
+                exit_game = action.get("exit")
 
-            if show_load_error_message and (new_game or load_saved_game
-                                            or exit_game):
-                show_load_error_message = False
-            elif new_game:
-                player, entities, game_map, message_log, game_state = get_game_variables(
-                    constants)
-                mouse_coordinates = (player.x, player.y)
-                game_state = GameStates.PLAYERS_TURN
-                camera = Camera()
-                show_main_menu = False
-                game = Game(player, entities, game_map, message_log,
-                            game_state, game_state, fov_recompute, constants,
-                            camera, mouse_coordinates, targeting_item)
-            elif load_saved_game:
-                try:
-                    player, entities, game_map, message_log, game_state = load_game(
-                    )
+                if show_load_error_message and (new_game or load_saved_game
+                                                or exit_game):
+                    show_load_error_message = False
+                elif new_game:
+                    player, entities, game_map, message_log, game_state = get_game_variables(
+                        constants)
                     mouse_coordinates = (player.x, player.y)
+                    game_state = GameStates.PLAYERS_TURN
                     camera = Camera()
                     show_main_menu = False
                     game = Game(player, entities, game_map, message_log,
                                 game_state, game_state, fov_recompute,
                                 constants, camera, mouse_coordinates,
                                 targeting_item)
-                except FileNotFoundError:
-                    show_load_error_message = True
-            elif exit_game:
-                break
+                elif load_saved_game:
+                    try:
+                        player, entities, game_map, message_log, game_state = load_game(
+                        )
+                        mouse_coordinates = (player.x, player.y)
+                        camera = Camera()
+                        show_main_menu = False
+                        game = Game(player, entities, game_map, message_log,
+                                    game_state, game_state, fov_recompute,
+                                    constants, camera, mouse_coordinates,
+                                    targeting_item)
+                    except FileNotFoundError:
+                        show_load_error_message = True
+                elif exit_game:
+                    break
+
+            terminal.refresh()
         else:
             terminal.clear()
 
-            play_game(game)
+            if game:
+                play_game(game)
 
             terminal.clear()
             show_main_menu = True
 
 
-def play_game(game):
+def play_game(game: Game) -> None:
     while True:
         if game.fov_recompute:
             game.game_map.compute_fov(
                 x=game.player.x,
                 y=game.player.y,
-                radius=game.constants["fov_radius"],
+                radius=game.player.fighter.fov_radius,
                 light_walls=game.constants["fov_light_walls"],
                 algorithm=game.constants["fov_algorithm"])
 
@@ -140,7 +145,7 @@ def play_game(game):
         game.tick()
 
         if game.exit:
-            return True
+            return
 
         terminal.clear()
 

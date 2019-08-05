@@ -20,5 +20,5 @@ class Level:
             self.current_xp -= self.experience_to_next_level
             self.current_level += 1
             return True
-        else:
-            return False
+
+        return False

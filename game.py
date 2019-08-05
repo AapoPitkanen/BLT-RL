@@ -1,8 +1,12 @@
+from typing import TYPE_CHECKING
 from game_states import GameStates
 from components.status_effects import resolve_effects
 from turn_processing import player_turn, process_player_turn_results, process_player_effect_results, process_enemy_turn
 from collections import deque
 from random import randint
+
+if TYPE_CHECKING:
+    from entity import Entity
 
 
 class Game:
@@ -28,7 +32,7 @@ class Game:
         self.exit = False
         self.targeting_item = targeting_item
 
-    def tick(self):
+    def tick(self) -> None:
         player_turn_results = player_turn(self.player, self.entities,
                                           self.camera, self.game_map,
                                           self.state, self.previous_state,
@@ -50,10 +54,12 @@ class Game:
             for fighter in self.fighter_entities:
                 fighter.energy += fighter.speed
                 if fighter.owner.ai:
-                    fighter.energy += randint(-2, 3)
+                    fighter.energy += randint(-5, 10)
             for fighter in self.fighter_entities:
-                fighter.actions += int(fighter.energy / 24)
-                fighter.energy -= fighter.actions * 24
+                fighter.actions += int(fighter.energy /
+                                       self.constants["speed_action_divisor"])
+                fighter.energy -= fighter.actions * self.constants[
+                    "speed_action_divisor"]
 
             for monster in self.monster_fighter_entities:
                 while (monster.actions > 0):

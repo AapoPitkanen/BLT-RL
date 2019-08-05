@@ -65,8 +65,8 @@ attribute_modifier_values = {
 
 
 class Attribute:
-    def __init__(self, attribute_name, attribute_short, attribute_value,
-                 attribute_modifier):
+    def __init__(self, attribute_name: str, attribute_short: str,
+                 attribute_value: int, attribute_modifier: int):
         self.attribute_name = attribute_name
         self.attribute_short = attribute_short
         self.attribute_value = attribute_value
@@ -74,7 +74,9 @@ class Attribute:
 
 
 class Attributes:
-    def __init__(self, STR, PER, DEX, CON, INT, WIS, CHA, LCK):
+    def __init__(self, STR: Attribute, PER: Attribute, DEX: Attribute,
+                 CON: Attribute, INT: Attribute, WIS: Attribute,
+                 CHA: Attribute, LCK: Attribute):
         self.STR = STR
         self.PER = PER
         self.DEX = DEX
@@ -85,8 +87,9 @@ class Attributes:
         self.LCK = LCK
 
 
-def generate_attributes(STR_value, PER_value, DEX_value, CON_value, INT_value,
-                        WIS_value, CHA_value, LCK_value):
+def generate_attributes(STR_value: int, PER_value: int, DEX_value: int,
+                        CON_value: int, INT_value: int, WIS_value: int,
+                        CHA_value: int, LCK_value: int) -> Attributes:
 
     return Attributes(
         Attribute("Strength", "STR", STR_value,
@@ -107,7 +110,7 @@ def generate_attributes(STR_value, PER_value, DEX_value, CON_value, INT_value,
                   attribute_modifier_values[CHA_value]))
 
 
-def roll_character_attributes():
+def roll_character_attributes() -> Attributes:
     attribute_names = ["STR", "PER", "DEX", "CON", "INT", "WIS", "CHA", "LCK"]
     attribute_values = {}
     for _i in range(0, 8):

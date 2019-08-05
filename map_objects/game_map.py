@@ -213,7 +213,7 @@ class GameMap(Map):
                         base_armor_class=12,
                         base_armor=0,
                         base_cth_modifier=0,
-                        base_speed=23,
+                        base_speed=98,
                         base_attack_energy_bonus=0,
                         base_movement_energy_bonus=0,
                         base_natural_hp_regeneration_speed=25,
@@ -232,11 +232,10 @@ class GameMap(Map):
                             "arcane": [],
                             "poison": [],
                         })
-                    ai_component = BasicMonster(extra_movements=3, extra_attacks=2)
+                    ai_component = BasicMonster()
                     monster = Entity(x=x,
                                      y=y,
                                      char=0x1002,
-                                     color="white",
                                      name='Orc',
                                      blocks=True,
                                      render_order=RenderOrder.ACTOR,
@@ -250,7 +249,6 @@ class GameMap(Map):
                     item = Entity(x,
                                   y,
                                   0x1005,
-                                  "violet",
                                   'Potion of Healing',
                                   render_order=RenderOrder.ITEM,
                                   item=item_component)
@@ -264,7 +262,7 @@ class GameMap(Map):
                         base_armor_class=9,
                         base_armor=2,
                         base_cth_modifier=5,
-                        base_speed=22,
+                        base_speed=95,
                         base_attack_energy_bonus=0,
                         base_movement_energy_bonus=0,
                         base_natural_hp_regeneration_speed=33,
@@ -288,7 +286,6 @@ class GameMap(Map):
                     monster = Entity(x=x,
                                      y=y,
                                      char=0x1003,
-                                     color="white",
                                      name='Troll',
                                      blocks=True,
                                      render_order=RenderOrder.ACTOR,
@@ -315,7 +312,6 @@ class GameMap(Map):
                     item = Entity(x,
                                   y,
                                   0x1005,
-                                  "violet",
                                   'Potion of Healing',
                                   render_order=RenderOrder.ITEM,
                                   item=item_component)
@@ -332,7 +328,6 @@ class GameMap(Map):
                     item = Entity(x,
                                   y,
                                   0x1007,
-                                  "red",
                                   'Scroll of Fireball',
                                   render_order=RenderOrder.ITEM,
                                   item=item_component)
@@ -346,7 +341,6 @@ class GameMap(Map):
                     item = Entity(x,
                                   y,
                                   0x1007,
-                                  "light pink",
                                   'Confusion Scroll',
                                   render_order=RenderOrder.ITEM,
                                   item=item_component)
@@ -363,7 +357,6 @@ class GameMap(Map):
                     item = Entity(x,
                                   y,
                                   0x1007,
-                                  "crimson",
                                   'Scroll of Chaos Bolt',
                                   render_order=RenderOrder.ITEM,
                                   item=item_component)

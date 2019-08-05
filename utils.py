@@ -91,7 +91,7 @@ def sector(src_x, src_y, dst_x, dst_y, angle, radius, bnd_x=1000, bnd_y=1000):
     bottom = max(src_y - radius, 0)
     top = min(src_y + radius + 1, bnd_y)
 
-    # return empty list if given two identical points
+    # Return an empty list if given two identical points
     # degree_between() raise an error if given those points
     if src_x == dst_x and src_y == dst_y:
         return []
@@ -100,7 +100,7 @@ def sector(src_x, src_y, dst_x, dst_y, angle, radius, bnd_x=1000, bnd_y=1000):
 
     cells = []
 
-    # limit search area within square
+    # Öimit search area within square
     for cur_x, cur_y in itertools.product(range(left, right),
                                           range(bottom, top)):
         if (distance(src_x, src_y, cur_x, cur_y) <= radius
@@ -111,7 +111,7 @@ def sector(src_x, src_y, dst_x, dst_y, angle, radius, bnd_x=1000, bnd_y=1000):
 
 
 def disk(center_x, center_y, radius, bnd_x=1000, bnd_y=1000):
-    # Return a list of cells which shapes a disk.
+    # Returns a list of cells which shapes a disk.
     left = max(center_x - radius, 0)
     right = min(center_x + radius + 1, bnd_x)
     bottom = max(center_y - radius, 0)
@@ -119,7 +119,7 @@ def disk(center_x, center_y, radius, bnd_x=1000, bnd_y=1000):
 
     cells = []
 
-    # limit search area within square
+    # Limit the search area within square
     for cur_y in range(bottom, top):
         for cur_x in range(left, right):
             if distance(center_x, center_y, cur_x, cur_y) <= radius:

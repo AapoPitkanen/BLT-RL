@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING, List, Dict, Any
 from game_messages import Message
 import tcod
 from random import randint, random
@@ -5,20 +6,22 @@ from components.attributes import attribute_modifier_values
 from components.status_effects import status_effects_by_damage_type
 from copy import deepcopy
 
+if TYPE_CHECKING:
+    from components.attributes import Attributes
 
 class Fighter:
     def __init__(
             self,
-            attributes,
-            current_hp,
-            base_armor_class,
-            base_armor,
-            base_cth_modifier,
-            base_speed,
-            base_attack_energy_bonus,
-            base_movement_energy_bonus,
-            base_natural_hp_regeneration_speed,
-            base_resistances={
+            attributes: "Attributes",
+            current_hp: int,
+            base_armor_class: int,
+            base_armor: int,
+            base_cth_modifier: int,
+            base_speed: int,
+            base_attack_energy_bonus: int,
+            base_movement_energy_bonus: int,
+            base_natural_hp_regeneration_speed: int,
+            base_resistances: Dict[str, float]={
                 "physical": 0,
                 "fire": 0,
                 "ice": 0,
@@ -28,11 +31,11 @@ class Fighter:
                 "arcane": 0,
                 "poison": 0,
             },
-            base_critical_hit_chance=(5 / 100),
-            base_critical_hit_multiplier=(150 / 100),
-            base_life_steal=0,
-            base_damage_reflection=0,
-            base_damage_modifiers={
+            base_critical_hit_chance: float=0.05,
+            base_critical_hit_multiplier: float=1.5,
+            base_life_steal: float=0,
+            base_damage_reflection: float=0,
+            base_damage_modifiers: Dict[str, int]={
                 "physical": 0,
                 "fire": 0,
                 "ice": 0,
@@ -42,7 +45,7 @@ class Fighter:
                 "arcane": 0,
                 "poison": 0,
             },
-            base_damage_dice={
+            base_damage_dice: Dict[str, List]={
                 "physical": [],
                 "fire": [],
                 "ice": [],
@@ -52,19 +55,19 @@ class Fighter:
                 "arcane": [],
                 "poison": [],
             },
-            xp_reward=0,
+            xp_reward: int=0,
     ):
         self.attributes = attributes
         self.current_hp = current_hp
         self.base_armor_class = base_armor_class
-        self.base_max_hp = self.current_hp
+        self.base_max_hp: int = self.current_hp
         self.base_armor = base_armor
         self.base_cth_modifier = base_cth_modifier
         self.base_speed = base_speed
         self.base_attack_energy_bonus = base_attack_energy_bonus
         self.base_movement_energy_bonus = base_movement_energy_bonus
         self.base_natural_hp_regeneration_speed = base_natural_hp_regeneration_speed
-        self.turns_to_natural_regenerate = 0
+        self.turns_to_natural_regenerate: int = 0
         self.base_resistances = base_resistances
         self.base_critical_hit_chance = base_critical_hit_chance
         self.base_critical_hit_multiplier = base_critical_hit_multiplier
@@ -72,11 +75,11 @@ class Fighter:
         self.base_damage_reflection = base_damage_reflection
         self.base_damage_modifiers = base_damage_modifiers
         self.base_damage_dice = base_damage_dice
-        self.status_effects = []
+        self.status_effects: List = []
         self.xp_reward = xp_reward
-        self.energy = 0
-        self.base_fov_radius = 10
-        self.temporary_modifiers = {
+        self.energy: int = 0
+        self.base_fov_radius: int = 10
+        self.temporary_modifiers: Dict[str, Any] = {
             "chance_to_hit_modifier": 0,
             "armor_modifier": 0,
             "armor_class_modifier": 0,
@@ -131,21 +134,21 @@ class Fighter:
         self.owner = None
         self.actions = 0
 
-    def recalculate_hp(self):
+    def recalculate_hp(self) -> None:
         self.current_hp = self.max_hp
 
-    def apply_natural_regeneration(self):
+    def apply_natural_regeneration(self) -> None:
         self.turns_to_natural_regenerate += 1
         if self.turns_to_natural_regenerate == self.natural_hp_regeneration_speed and self.current_hp < self.max_hp:
             self.current_hp += 1
             self.turns_to_natural_regenerate = 0
 
     @property
-    def fov_radius(self):
+    def fov_radius(self) -> int:
         return self.base_fov_radius + self.perception["attribute_modifier"]
 
     @property
-    def natural_hp_regeneration_speed(self):
+    def natural_hp_regeneration_speed(self) -> int:
         if self.owner and self.owner.equipment:
             modifier = self.owner.equipment.natural_hp_regeneration_speed + self.constitution[
                 "attribute_modifier"]
@@ -155,7 +158,7 @@ class Fighter:
         return self.base_natural_hp_regeneration_speed + modifier
 
     @property
-    def chance_to_hit_modifier(self):
+    def chance_to_hit_modifier(self) -> int:
         if self.owner and self.owner.equipment:
             modifier = round((self.strength["attribute_modifier"] +
                               self.dexterity["attribute_modifier"] +
@@ -168,7 +171,7 @@ class Fighter:
         return modifier
 
     @property
-    def critical_hit_multiplier(self):
+    def critical_hit_multiplier(self) -> float:
         if self.owner and self.owner.equipment:
             modifier = (
                 self.luck["attribute_modifier"] *
@@ -178,7 +181,7 @@ class Fighter:
         return self.base_critical_hit_multiplier + modifier
 
     @property
-    def critical_hit_chance(self):
+    def critical_hit_chance(self) -> float:
         if self.owner and self.owner.equipment:
             modifier = (self.luck["attribute_modifier"] / 100
                         ) + self.owner.equipment.critical_hit_chance_modifier
@@ -187,7 +190,7 @@ class Fighter:
         return round(self.base_critical_hit_chance + modifier, 2)
 
     @property
-    def armor_class(self):
+    def armor_class(self) -> int:
         if self.owner and self.owner.equipment:
             modifier = self.dexterity[
                 "attribute_modifier"] + self.owner.equipment.armor_class_modifier
@@ -196,7 +199,7 @@ class Fighter:
         return self.base_armor_class + modifier
 
     @property
-    def speed(self):
+    def speed(self) -> int:
         if self.owner and self.owner.equipment:
             modifier = self.owner.equipment.speed_modifier
         else:
@@ -205,7 +208,7 @@ class Fighter:
             "speed_modifier"]
 
     @property
-    def attack_energy_bonus(self):
+    def attack_energy_bonus(self) -> int:
         if self.owner and self.owner.equipment:
             modifier = self.owner.equipment.attack_energy_bonus_modifier
         else:
@@ -214,7 +217,7 @@ class Fighter:
             "attack_energy_bonus_modifier"]
 
     @property
-    def movement_energy_bonus(self):
+    def movement_energy_bonus(self) -> int:
         if self.owner and self.owner.equipment:
             modifier = self.owner.equipment.movement_energy_bonus_modifier
         else:
@@ -223,7 +226,7 @@ class Fighter:
             "movement_energy_bonus_modifier"]
 
     @property
-    def max_hp(self):
+    def max_hp(self) -> int:
         if self.owner and self.owner.equipment:
             modifier = self.constitution[
                 "attribute_modifier"] + self.owner.equipment.max_hp_modifier
@@ -233,19 +236,21 @@ class Fighter:
         return self.base_max_hp + modifier
 
     @property
-    def damage(self):
+    def damage(self) -> Dict[str, int]:
         if self.owner and self.owner.equipment:
             return self.owner.equipment.calculate_damage_modifiers
+        else:
+            return self.base_damage_modifiers
 
     @property
-    def damage_dice(self):
+    def damage_dice(self) -> Dict[str, List]:
         if self.owner and self.owner.equipment:
             return self.owner.equipment.calculate_total_damage_dice
         else:
             return self.base_damage_dice
 
     @property
-    def damage_reflection(self):
+    def damage_reflection(self) -> float:
         if self.owner and self.owner.equipment:
             modifier = self.owner.equipment.damage_reflection_modifier
         else:
@@ -254,7 +259,7 @@ class Fighter:
         return self.base_damage_reflection + modifier
 
     @property
-    def life_steal(self):
+    def life_steal(self) -> float:
         if self.owner and self.owner.equipment:
             modifier = self.owner.equipment.life_steal_modifier
         else:
@@ -263,7 +268,7 @@ class Fighter:
         return self.base_life_steal + modifier
 
     @property
-    def armor(self):
+    def armor(self) -> int:
         if self.owner and self.owner.equipment:
             modifier = self.owner.equipment.armor_modifier
         else:
@@ -272,7 +277,7 @@ class Fighter:
         return self.base_armor + modifier
 
     @property
-    def strength(self):
+    def strength(self) -> Dict[str, int]:
         if self.owner and self.owner.equipment:
             modifier = self.owner.equipment.strength_modifier
         else:
@@ -285,7 +290,7 @@ class Fighter:
         return attribute
 
     @property
-    def perception(self):
+    def perception(self) -> Dict[str, int]:
         if self.owner and self.owner.equipment:
             modifier = self.owner.equipment.perception_modifier
         else:
@@ -298,7 +303,7 @@ class Fighter:
         return attribute
 
     @property
-    def dexterity(self):
+    def dexterity(self) -> Dict[str, int]:
         if self.owner and self.owner.equipment:
             modifier = self.owner.equipment.dexterity_modifier
         else:
@@ -311,7 +316,7 @@ class Fighter:
         return attribute
 
     @property
-    def constitution(self):
+    def constitution(self) -> Dict[str, int]:
         if self.owner and self.owner.equipment:
             modifier = self.owner.equipment.constitution_modifier
         else:
@@ -324,7 +329,7 @@ class Fighter:
         return attribute
 
     @property
-    def intelligence(self):
+    def intelligence(self) -> Dict[str, int]:
         if self.owner and self.owner.equipment:
             modifier = self.owner.equipment.intelligence_modifier
         else:
@@ -337,7 +342,7 @@ class Fighter:
         return attribute
 
     @property
-    def wisdom(self):
+    def wisdom(self) -> Dict[str, int]:
         if self.owner and self.owner.equipment:
             modifier = self.owner.equipment.wisdom_modifier
         else:
@@ -350,7 +355,7 @@ class Fighter:
         return attribute
 
     @property
-    def charisma(self):
+    def charisma(self) -> Dict[str, int]:
         if self.owner and self.owner.equipment:
             modifier = self.owner.equipment.charisma_modifier
         else:
@@ -363,7 +368,7 @@ class Fighter:
         return attribute
 
     @property
-    def luck(self):
+    def luck(self) -> Dict[str, int]:
         if self.owner and self.owner.equipment:
             modifier = self.owner.equipment.luck_modifier
         else:
@@ -376,7 +381,7 @@ class Fighter:
         return attribute
 
     @property
-    def resistances(self):
+    def resistances(self) -> Dict[str, float]:
         if self.owner and self.owner.equipment:
             return self.owner.equipment.calculate_resistances
         else:
@@ -384,49 +389,49 @@ class Fighter:
 
     def apply_effect(self, new_effect):
         results = []
-        effect_copy = new_effect()
-        effect_copy.owner = self.owner
+        effect = new_effect()
+        effect.owner = self.owner
         if not self.status_effects:
-            self.status_effects.append(effect_copy)
-            if effect_copy.on_apply:
-                effect_copy.on_apply()
+            self.status_effects.append(effect)
+            if effect.on_apply:
+                effect.on_apply(effect)
             if self.owner.ai:
                 results.append({
                     "message":
                     Message(
-                        f"The {self.owner.name}{effect_copy.start_message['monster']['message']}",
-                        effect_copy.start_message['monster']['message_color'])
+                        f"The {self.owner.name}{effect.start_message['monster']['message']}",
+                        effect.start_message['monster']['message_color'])
                 })
             else:
                 results.append({
                     "message":
                     Message(
-                        f"{effect_copy.start_message['player']['message']}",
-                        effect_copy.start_message['player']['message_color'])
+                        f"{effect.start_message['player']['message']}",
+                        effect.start_message['player']['message_color'])
                 })
         else:
             for effect in self.status_effects:
-                if effect.name == effect_copy.name and effect.stacking:
-                    effect.duration += effect_copy.duration
+                if effect.name == effect.name and effect.stacking:
+                    effect.duration += effect.duration
                     break
             else:
-                self.status_effects.append(effect_copy)
-                if effect_copy.on_apply:
-                    effect_copy.on_apply()
+                self.status_effects.append(effect)
+                if effect.on_apply:
+                    effect.on_apply(effect)
                 if self.owner.ai:
                     results.append({
                         "message":
                         Message(
-                            f"The {self.owner.name}{effect_copy.start_message['monster']['message']}",
-                            effect_copy.start_message['monster']
+                            f"The {self.owner.name}{effect.start_message['monster']['message']}",
+                            effect.start_message['monster']
                             ['message_color'])
                     })
                 else:
                     results.append({
                         "message":
                         Message(
-                            f"{effect_copy.start_message['player']['message']}",
-                            effect_copy.start_message['player']
+                            f"{effect.start_message['player']['message']}",
+                            effect.start_message['player']
                             ['message_color'])
                     })
         return results
@@ -448,7 +453,7 @@ class Fighter:
                 results.append({"drop_loot": drop_loot})
         return results
 
-    def heal(self, amount):
+    def heal(self, amount: int) -> None:
         self.current_hp += amount
 
         if self.current_hp > self.max_hp:

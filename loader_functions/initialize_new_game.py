@@ -14,10 +14,10 @@ from game import GameStates
 
 
 def get_constants():
-    window_title: str = 'Voidstone'
+    window_title: str = "Voidstone"
 
-    screen_width: int = 160
-    screen_height: int = 48
+    screen_width: int = 192
+    screen_height: int = 54
 
     map_width: int = 80
     map_height: int = 80
@@ -28,7 +28,6 @@ def get_constants():
 
     fov_algorithm: int = 0
     fov_light_walls: bool = True
-    fov_radius: int = 10
 
     max_monsters_per_room: int = 3
     max_items_per_room: int = 2
@@ -41,26 +40,28 @@ def get_constants():
     message_width = screen_width - bar_width - 2
     message_height = panel_height - 1
 
+    speed_action_divisor = 100
+
     constants = {
-        'window_title': window_title,
-        'screen_width': screen_width,
-        'screen_height': screen_height,
-        'bar_width': bar_width,
-        'panel_height': panel_height,
-        'panel_y': panel_y,
-        'message_x': message_x,
-        'message_width': message_width,
-        'message_height': message_height,
-        'map_width': map_width,
-        'map_height': map_height,
-        'room_max_size': room_max_size,
-        'room_min_size': room_min_size,
-        'max_rooms': max_rooms,
-        'fov_algorithm': fov_algorithm,
-        'fov_light_walls': fov_light_walls,
-        'fov_radius': fov_radius,
-        'max_monsters_per_room': max_monsters_per_room,
-        'max_items_per_room': max_items_per_room,
+        "window_title": window_title,
+        "screen_width": screen_width,
+        "screen_height": screen_height,
+        "bar_width": bar_width,
+        "panel_height": panel_height,
+        "panel_y": panel_y,
+        "message_x": message_x,
+        "message_width": message_width,
+        "message_height": message_height,
+        "map_width": map_width,
+        "map_height": map_height,
+        "room_max_size": room_max_size,
+        "room_min_size": room_min_size,
+        "max_rooms": max_rooms,
+        "fov_algorithm": fov_algorithm,
+        "fov_light_walls": fov_light_walls,
+        "max_monsters_per_room": max_monsters_per_room,
+        "max_items_per_room": max_items_per_room,
+        "speed_action_divisor": speed_action_divisor
     }
 
     return constants
@@ -72,7 +73,7 @@ def get_game_variables(constants):
                                 base_armor_class=10,
                                 base_armor=20,
                                 base_cth_modifier=3,
-                                base_speed=36,
+                                base_speed=100,
                                 base_attack_energy_bonus=0,
                                 base_movement_energy_bonus=0,
                                 base_natural_hp_regeneration_speed=50,
@@ -92,8 +93,7 @@ def get_game_variables(constants):
     player = Entity(0,
                     0,
                     0x1004,
-                    "white",
-                    'Player',
+                    "Player",
                     blocks=True,
                     render_order=RenderOrder.ACTOR,
                     fighter=fighter_component,
@@ -103,14 +103,16 @@ def get_game_variables(constants):
     entities = [player]
 
     player.fighter.energy += player.fighter.speed
-    player.fighter.actions = int(player.fighter.energy / 24)
-    player.fighter.energy -= player.fighter.actions * 24
+    player.fighter.actions = int(player.fighter.energy /
+                                 constants["speed_action_divisor"])
+    player.fighter.energy -= player.fighter.actions * constants[
+        "speed_action_divisor"]
 
     item_component = Item(
         use_function=cast_fireball,
         targeting=True,
         targeting_message=Message(
-            'Left-click a target tile for the fireball, or right-click to cancel.',
+            "Left-click a target tile for the fireball, or right-click to cancel.",
             "light cyan"),
         damage=15,
         radius=2)
@@ -118,8 +120,7 @@ def get_game_variables(constants):
     item = Entity(0,
                   0,
                   0x1007,
-                  "red",
-                  'Scroll of Fireball',
+                  "Scroll of Fireball",
                   render_order=RenderOrder.ITEM,
                   item=item_component)
 
@@ -129,13 +130,12 @@ def get_game_variables(constants):
         use_function=cast_confuse,
         targeting=True,
         targeting_message=Message(
-            'Left-click an enemy to confuse it, or right-click to cancel.',
+            "Left-click an enemy to confuse it, or right-click to cancel.",
             "light cyan"))
     item = Entity(0,
                   0,
                   0x1007,
-                  "light pink",
-                  'Confusion Scroll',
+                  "Confusion Scroll",
                   render_order=RenderOrder.ITEM,
                   item=item_component)
 

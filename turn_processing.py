@@ -1,3 +1,4 @@
+from typing import List, Dict, Any, Union, Tuple, TYPE_CHECKING
 from components.status_effects import resolve_effects
 from bearlibterminal import terminal
 from death_functions import kill_monster, kill_player
@@ -8,6 +9,10 @@ from game_messages import Message
 from copy import deepcopy
 from input_handlers import handle_keys, handle_mouse, handle_main_menu
 from game_states import GameStates
+
+if TYPE_CHECKING:
+    from camera import Camera
+    from map_objects.game_map import GameMap
 
 
 def player_turn(player, entities, camera, game_map, game_state,
