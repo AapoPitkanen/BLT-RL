@@ -115,7 +115,7 @@ def get_game_variables(constants):
             "Left-click a target tile for the fireball, or right-click to cancel.",
             "light cyan"),
         damage=15,
-        radius=2)
+        radius=7)
 
     item = Entity(0,
                   0,

@@ -247,6 +247,7 @@ def process_player_turn_results(results, game):
             terminal.clear()
 
         if move:
+            game.game_map.scent_tiles.update({(player.x, player.y): 100})
             player.move(move[0], move[1])
             game.fov_recompute = True
             fighter.energy += fighter.movement_energy_bonus

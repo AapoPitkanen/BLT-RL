@@ -1,20 +1,25 @@
 # -*- coding: utf-8 -*-
-"""Utilities.
-
-Cells coordinates are represented in tuple (x, y).
 """
+Utility functions, such as calculating differently shaped areas
+on the map grid.
+
+Cell coordinates are represented as a tuple with x and y coordinates
+in the map grid (x, y).
+"""
+from typing import List, Tuple
 import re
 import textwrap
 import math
 import itertools
 
 
-def circle(size, radius):
-    tiles_affected = []
+def circle(center_x, center_y, size, radius):
+    cells = []
     for x in range(-size, size + 1):
         for y in range(-size, size + 1):
             if x * x + y * y < radius * radius:
-                tiles_affected.append(get_tile(x, y))
+                cells.append((center_x + x, center_y + y))
+    return cells
 
 
 def degree_between(src_x, src_y, dst_x, dst_y):
@@ -100,7 +105,7 @@ def sector(src_x, src_y, dst_x, dst_y, angle, radius, bnd_x=1000, bnd_y=1000):
 
     cells = []
 
-    # Öimit search area within square
+    # Limit search area within square
     for cur_x, cur_y in itertools.product(range(left, right),
                                           range(bottom, top)):
         if (distance(src_x, src_y, cur_x, cur_y) <= radius

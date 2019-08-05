@@ -39,7 +39,8 @@ def main() -> None:
         "0x3000: wall_tiles.png, size=32x32, resize-filter=nearest, align=top-left"
     )
     terminal.set(
-        "0x4000: voidstone_background.png, size=1280x768, align=top-left")
+        "0x4000: voidstone_background_1536x864.png, size=1536x864, align=top-left"
+    )
 
     player = None
     entities: List["Entity"] = []

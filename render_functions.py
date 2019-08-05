@@ -5,7 +5,7 @@ from menu import new_inventory_menu
 from map_objects.game_map import GameMap
 import itertools
 import tcod
-from utils import disk
+from utils import disk, circle, sector
 import time
 
 
@@ -69,16 +69,17 @@ def render_all(entities, player, game_map, message_log, bar_width, panel_y,
     for entity in entities_in_render_order:
         entity.draw(camera, game_map)
 
-    # This layer contains all stuff that goes over the entities, such as targeting assistance and graphical effects
+    # This layer contains all stuff that goes over the entities,
+    # such as targeting assistance and graphical effects
     terminal.layer(RenderLayer.OVERLAY.value)
 
-    for efx in game_map.effects:
-        efx.update()
-        if efx.expired:
-            game_map.effects.remove(efx)
-        elif efx.render:
-            (term_x, term_y) = camera.map_to_term_coord(efx.x, efx.y)
-            terminal.put(term_x, term_y, efx.gfx_effect_tile)
+    for gfx in game_map.gfx_effects:
+        gfx.update()
+        if gfx.expired:
+            game_map.gfx_effects.remove(gfx)
+        elif gfx.render:
+            (term_x, term_y) = camera.map_to_term_coord(gfx.x, gfx.y)
+            terminal.put(term_x, term_y, gfx.gfx_effect_tile)
 
     if game_state == GameStates.TARGETING:
         from entity import get_blocking_entities_at_location
@@ -119,6 +120,7 @@ def render_all(entities, player, game_map, message_log, bar_width, panel_y,
             function_kwargs = targeting_item.item.function_kwargs
             if function_kwargs:
                 radius = function_kwargs.get("radius")
+
                 if radius:
                     for cell_x, cell_y in disk(mouse_map_x, mouse_map_y,
                                                radius, game_map.width,

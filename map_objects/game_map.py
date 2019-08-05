@@ -68,7 +68,12 @@ class GameMap(Map):
                 self.floor_seed[map_x][map_y] = floor_tile
 
         self.dungeon_level = dungeon_level
-        self.effects = []
+        # The game map contains cells where special effects should be rendered
+        self.gfx_effects = []
+        # The game map also contains cells where there's scent left by the player
+        # The monsters will follow the player's scent even if they are not in the player's
+        # field of view.
+        self.scent_tiles = {}
 
     def create_h_tunnel(self, x1, x2, y):
         min_x: int = min(x1, x2)
@@ -91,6 +96,15 @@ class GameMap(Map):
     def is_blocked(self, x, y):
         return not self.walkable[x, y]
 
+    def update_scent_tiles(self):
+
+        for scent_value in self.scent_tiles.values():
+            scent_value -= 1
+
+        self.scent_tiles = {
+            coord: scent_value for coord, scent_value in scent_tiles.items() if scent_value > 0
+        }
+
     def make_map(self, max_rooms, room_min_size, room_max_size, map_width,
                  map_height, player, entities):
 
@@ -109,6 +123,11 @@ class GameMap(Map):
         center_of_last_room_x = None
         center_of_last_room_y = None
 
+        new_x = None
+        new_y = None
+        prev_x = None
+        prev_y = None
+
         for r in range(max_rooms):
             # random width and height
             w = randint(room_min_size, room_max_size)
@@ -126,7 +145,6 @@ class GameMap(Map):
                     break
             else:
                 # this means there are no intersections, so this room is valid
-
                 # "paint" it to the map's tiles
                 self.create_room(new_room)
 

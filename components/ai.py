@@ -4,11 +4,18 @@ from game_messages import Message
 from entity import get_blocking_entities_at_location
 
 
+class GenericTarget:
+    def __init__(self, x: int, y: int):
+        self.x = x
+        self.y = y
+
+
 class BasicMonster:
     def __init__(self, extra_movements=0, extra_attacks=0):
         self.owner = None
         self.extra_movements = extra_movements
         self.extra_attacks = extra_attacks
+        self.last_player_position = None
 
     def take_turn(self, target, game_map, entities):
         results = []
@@ -17,6 +24,8 @@ class BasicMonster:
         monster = self.owner
 
         if game_map.fov[monster.x][monster.y]:
+
+            self.last_player_position = GenericTarget(target.x, target.y)
 
             if monster.distance_to(target) >= 2:
                 monster.move_astar(target, game_map, entities)
@@ -34,6 +43,19 @@ class BasicMonster:
                     attack_results = monster.fighter.attack(target)
                     results.extend(attack_results)
                     extra_attack_count -= 1
+
+        elif self.last_player_position:
+            monster.move_astar(self.last_player_position, game_map, entities)
+            results.append({"move": True})
+            while extra_move_count > 0:
+                if self.owner.x == self.last_player_position.x and self.owner.y == self.last_player_position.y:
+                    break
+                monster.move_astar(self.last_player_position, game_map,
+                                   entities)
+
+            if self.owner.x == self.last_player_position.x and self.owner.y == self.last_player_position.y:
+                self.last_player_position = None
+
         return results
 
 

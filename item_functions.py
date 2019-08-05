@@ -64,7 +64,7 @@ def cast_chaos_bolt(*args, **kwargs):
                 "crimson")
         })
         results.extend(target.fighter.take_damage(damage))
-        game_map.effects.append(
+        game_map.gfx_effects.append(
             GFX_Effect(target.x, target.y, gfx_effect_tile=0x1009))
     else:
         results.append({
