@@ -23,7 +23,8 @@ def circle(center_x, center_y, size, radius):
 
 
 def degree_between(src_x, src_y, dst_x, dst_y):
-    """Return degree between two coordinates.
+    """
+    Return the degree between two coordinates.
 
     Return value: [0, 360)
 
@@ -33,18 +34,16 @@ def degree_between(src_x, src_y, dst_x, dst_y):
     """
     dist = distance(src_x, src_y, dst_x, dst_y)
 
-    # avoid zero dividing
     if dist == 0:
         raise ValueError(
-            'Function degree_between() receives two identical points.')
+            'Cannot calculate degree if source and destination coordinates are the same.'
+        )
 
-    # degree in [-90, 90]
     degree = math.degrees(math.asin((dst_y - src_y) / dist))
 
-    # imagine graph
     if dst_x - src_x < 0:
         degree = 180 - degree
-    elif degree < 0:  # delta x > 0 and...
+    elif degree < 0:
         degree += 360
 
     return degree
@@ -85,7 +84,7 @@ def in_angle(src_x, src_y, dst_x, dst_y, direction, angle_range):
 
 
 def sector(src_x, src_y, dst_x, dst_y, angle, radius, bnd_x=1000, bnd_y=1000):
-    """Return a list of cells which shapes sector (fan shaped figure).
+    """Return a list of cells which shapes sector.
 
     direction: float in [0, 360)
     angle: float in [0, 360)
@@ -96,8 +95,6 @@ def sector(src_x, src_y, dst_x, dst_y, angle, radius, bnd_x=1000, bnd_y=1000):
     bottom = max(src_y - radius, 0)
     top = min(src_y + radius + 1, bnd_y)
 
-    # Return an empty list if given two identical points
-    # degree_between() raise an error if given those points
     if src_x == dst_x and src_y == dst_y:
         return []
 
@@ -105,7 +102,6 @@ def sector(src_x, src_y, dst_x, dst_y, angle, radius, bnd_x=1000, bnd_y=1000):
 
     cells = []
 
-    # Limit search area within square
     for cur_x, cur_y in itertools.product(range(left, right),
                                           range(bottom, top)):
         if (distance(src_x, src_y, cur_x, cur_y) <= radius
@@ -116,7 +112,9 @@ def sector(src_x, src_y, dst_x, dst_y, angle, radius, bnd_x=1000, bnd_y=1000):
 
 
 def disk(center_x, center_y, radius, bnd_x=1000, bnd_y=1000):
-    # Returns a list of cells which shapes a disk.
+    """
+    Return a list of cells that shapes a disk (a diamond shape).
+    """
     left = max(center_x - radius, 0)
     right = min(center_x + radius + 1, bnd_x)
     bottom = max(center_y - radius, 0)
@@ -134,9 +132,8 @@ def disk(center_x, center_y, radius, bnd_x=1000, bnd_y=1000):
 
 
 def frame(center_x, center_y, radius, bnd_x=1000, bnd_y=1000):
-    """Return a list of cells which shapes a frame.
-
-    You can specify boundary.
+    """
+    Return a list of cells that shape a frame.
     """
     left = center_x - radius
     right = center_x + radius

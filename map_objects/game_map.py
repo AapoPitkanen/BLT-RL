@@ -15,6 +15,8 @@ from entity import Entity
 from game_messages import Message
 from item_functions import heal, cast_chaos_bolt, cast_fireball, cast_confuse
 from random_utils import from_dungeon_level,random_choice_from_dict
+from utils import distance
+import numpy as np
 
 WALL_NORTH = 0x3000
 WALL_SOUTH = 0x3001
@@ -96,13 +98,25 @@ class GameMap(Map):
     def is_blocked(self, x, y):
         return not self.walkable[x, y]
 
-    def update_scent_tiles(self):
+    def update_scent_tiles(self, player):
 
-        for scent_value in self.scent_tiles.values():
-            scent_value -= 1
+        for coordinates in self.scent_tiles.keys():
+            x, y = coordinates
+
+            distance_to_player = distance(x, y, player.x, player.y)
+
+
+            if not distance_to_player:
+                continue
+            elif 0 < distance_to_player < 2:
+                self.scent_tiles[(x, y)] -= 1
+            elif 2 <= distance_to_player < 3:
+                self.scent_tiles[(x, y)] -= 2
+            elif distance_to_player >= 3:
+                self.scent_tiles[(x, y)] -= 3
 
         self.scent_tiles = {
-            coord: scent_value for coord, scent_value in scent_tiles.items() if scent_value > 0
+            coord: scent_value for coord, scent_value in self.scent_tiles.items() if scent_value > 0
         }
 
     def make_map(self, max_rooms, room_min_size, room_max_size, map_width,
@@ -182,13 +196,13 @@ class GameMap(Map):
                 num_rooms += 1
 
         stairs_component = Stairs(self.dungeon_level + 1)
-        down_stairs = Entity(center_of_last_room_x, center_of_last_room_y, 0x1001, "white", "Stairs", render_order=RenderOrder.STAIRS, stairs=stairs_component)
+        down_stairs = Entity(center_of_last_room_x, center_of_last_room_y, 0x1001, "Stairs", render_order=RenderOrder.STAIRS, stairs=stairs_component)
         entities.append(down_stairs)
 
     def place_entities(self, room, entities):
         # Get a random number of monsters
 
-        max_monsters_per_room = from_dungeon_level([[2, 1], [3, 4], [5, 6]], self.dungeon_level)
+        max_monsters_per_room = from_dungeon_level([[3, 1], [5, 4], [7, 6]], self.dungeon_level)
         max_items_per_room = from_dungeon_level([[1, 1], [2, 4]], self.dungeon_level)
 
         number_of_monsters = randint(0, max_monsters_per_room)
@@ -198,7 +212,7 @@ class GameMap(Map):
             'orc':
             80,
             'troll':
-            from_dungeon_level([[15, 3], [30, 5], [60, 7]], self.dungeon_level)
+            from_dungeon_level([[1, 3], [30, 5], [60, 7]], self.dungeon_level)
         }
         item_chances = {
             'potion_of_healing': 35,
@@ -725,3 +739,14 @@ class GameMap(Map):
                     "violet"))
 
         return entities
+
+    def game_map_to_numpy_array(self):
+        numpy_array = np.empty([self.width, self.height], dtype=np.int8)
+        for x in range(self.width):
+            for y in range(self.height):
+                if self.is_blocked(x, y):
+                    numpy_array[x][y] = 0
+                else:
+                    numpy_array[x][y] = 1
+
+        return numpy_array

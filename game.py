@@ -44,12 +44,12 @@ class Game:
             process_player_turn_results(player_turn_results, self)
 
         if self.state == GameStates.ENEMY_TURN:
+            self.game_map.update_scent_tiles(self.player)
+            player_effect_results = resolve_effects(self.player.fighter)
+            process_player_effect_results(player_effect_results, self)
             if self.player.fighter.actions > 0:
                 self.state = GameStates.PLAYERS_TURN
                 return
-
-            player_effect_results = resolve_effects(self.player.fighter)
-            process_player_effect_results(player_effect_results, self)
 
             for fighter in self.fighter_entities:
                 fighter.energy += fighter.speed

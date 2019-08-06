@@ -13,23 +13,22 @@ if TYPE_CHECKING:
 
 class Entity:
     # A generic class to represent objects in the game world
-    def __init__(
-            self,
-            x: int,
-            y: int,
-            char: int,
-            name: str,
-            blocks: bool = False,
-            render_order: RenderOrder = RenderOrder.CORPSE,
-            fighter=None,
-            ai=None,
-            item=None,
-            inventory=None,
-            stairs=None,
-            level=None,
-            equipment=None,
-            equippable=None,
-    ):
+    def __init__(self,
+                 x: int,
+                 y: int,
+                 char: int,
+                 name: str,
+                 blocks: bool = False,
+                 render_order: RenderOrder = RenderOrder.CORPSE,
+                 fighter=None,
+                 ai=None,
+                 item=None,
+                 inventory=None,
+                 stairs=None,
+                 level=None,
+                 equipment=None,
+                 equippable=None,
+                 path=None):
         self.x = x
         self.y = y
         self.char = char
@@ -44,6 +43,7 @@ class Entity:
         self.level = level
         self.equipment = equipment
         self.equippable = equippable
+        self.path = path
 
         if self.fighter:
             self.fighter.owner = self
@@ -80,12 +80,14 @@ class Entity:
     def draw(self, camera: "Camera", game_map: "GameMap") -> None:
 
         terminal.color(terminal.color_from_name("white"))
-
-        if game_map.fov[self.x, self.y] or (self.stairs and
+        """ if game_map.fov[self.x, self.y] or (self.stairs and
                                             game_map.explored[self.x, self.y]):
             (x, y) = camera.to_camera_coordinates(self.x, self.y)
             if x is not None:
-                terminal.put(x=x * 4, y=y * 2, c=self.char)
+                terminal.put(x=x * 4, y=y * 2, c=self.char) """
+        (x, y) = camera.to_camera_coordinates(self.x, self.y)
+        if x is not None:
+            terminal.put(x=x * 4, y=y * 2, c=self.char)
 
     def move(self, dx: int, dy: int) -> None:
         # Move the entity by a given amount
@@ -94,6 +96,16 @@ class Entity:
 
     def move_towards(self, target_x: int, target_y: int, game_map: "GameMap",
                      entities: List["Entity"]) -> None:
+        dx = target_x - self.x
+        dy = target_y - self.y
+        distance = math.sqrt(dx**2 + dy**2)
+        dx = int(round(dx / distance))
+        dy = int(round(dy / distance))
+        if not (game_map.is_blocked(self.x + dx, self.y + dy)
+                ) and not get_blocking_entities_at_location(
+                    entities, self.x + dx, self.y + dy):
+            self.move(dx, dy)
+        """
         astar = tcod.path.AStar(game_map.walkable, diagonal=1.41)
         path = astar.get_path(self.x, self.y, target_x, target_y)
 
@@ -105,7 +117,7 @@ class Entity:
                     1]] and not get_blocking_entities_at_location(
                         entities, self.x + dx, self.y + dy):
                 self.move(dx, dy)
-
+        """
     def distance(self, x: int, y: int) -> float:
         return math.sqrt((x - self.x)**2 + (y - self.y)**2)
 
@@ -120,26 +132,55 @@ class Entity:
             game_map: "GameMap",
             entities: List["Entity"],
     ) -> None:
+        '''
+        Calculate the A* path toward a target Entity and save it to the Entity
+        '''
+        # Create a numpy array of the map for tcod astar path calculation (the recommended way)
+        map_array = game_map.game_map_to_numpy_array()
 
-        fov: Any = tcod.map_new(game_map.width, game_map.height)
+        path = None
+        new_path = None
 
+        # Scan all the objects to see if there are objects that must be navigated around
+        # Check also that the object isn't self or the target (so that the start and the end points are free)
         for entity in entities:
-            if entity.blocks and entity != self and entity != target:
-                fov.walkable[entity.x][entity.y] = False
+            if entity.blocks and entity is not self and entity is not target:
+                map_array[entity.x][entity.y] = 0
 
-        astar: Any = tcod.path.AStar(fov.walkable)
+        # Allocate a A* path, store it to the entity if there isn't one
+        astar = tcod.path.AStar(map_array)
+        path = astar.get_path(self.x, self.y, target.x, target.y)
 
-        new_path = astar.get_path(self.x, self.y, target.x, target.y)
+        if path and not self.path and len(path) < 30:
+            self.path = path
 
-        if new_path and len(new_path) < 25:
-            x, y = new_path[0]
-            if x or y:
-                self.x = x
-                self.y = y
+        # Check the stored path and move to the first path coordinates
+        if self.path:
+            x, y = self.path[0]
+            dx = x - self.x
+            dy = y - self.y
+            if not get_blocking_entities_at_location(entities, x, y):
+                self.move(dx, dy)
+            else:
+                new_map_array = game_map.game_map_to_numpy_array()
+                for entity in entities:
+                    if entity.blocks and entity is not self and entity is not target:
+                        new_map_array[entity.x][entity.y] = 0
+                new_astar = tcod.path.AStar(new_map_array)
+                new_path = new_astar.get_path(self.x, self.y, target.x,
+                                              target.y)
+                if new_path and len(new_path) < 30:
+                    self.path = new_path
+                    x, y = self.path[0]
+                    dx = x - self.x
+                    dy = y - self.y
+                    if not get_blocking_entities_at_location(entities, x, y):
+                        self.move(dx, dy)
+            # Remove the coordinates from the list so the next coordinates on the path are available
+            self.path.pop(0)
+        # Fallback if the path doesn't exist so the entity can still move
         else:
             self.move_towards(target.x, target.y, game_map, entities)
-
-        tcod.path_delete(new_path)
 
 
 def get_blocking_entities_at_location(entities: List[Entity],

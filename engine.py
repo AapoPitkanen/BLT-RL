@@ -16,6 +16,8 @@ import time
 from collections import deque
 from game_states import GameStates
 from game import Game
+import cProfile
+import pstats
 
 if TYPE_CHECKING:
     from entity import Entity
@@ -147,9 +149,12 @@ def play_game(game: Game) -> None:
 
         if game.exit:
             return
-
+        end = time.perf_counter()
         terminal.clear()
 
 
 if __name__ == '__main__':
     main()
+
+p = pstats.Stats("performance.txt")
+p.sort_stats("time").print_stats(300)

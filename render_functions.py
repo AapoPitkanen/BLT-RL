@@ -17,10 +17,13 @@ def get_names_under_mouse(cur_coord, camera, entities, game_map):
 
     (x, y) = (mouse_x, mouse_y)
     (x, y) = (camera.camera_x + x, camera.camera_y + y)
-
-    names = [
+    """ names = [
         entity.name for entity in entities
         if entity.x == x and entity.y == y and game_map.fov[entity.x, entity.y]
+    ] """
+
+    names = [
+        str(entity) for entity in entities if entity.x == x and entity.y == y
     ]
 
     names = ', '.join(names)

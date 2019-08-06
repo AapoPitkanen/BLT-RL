@@ -41,7 +41,7 @@ def menu(header: str,
     # Draw menu header to the center of the menu
 
     render_functions.print_shadowed_text(
-        int(screen_width / 2) + 1,
+        int(round(screen_width / 2)) + 1,
         y,
         header,
         align=[terminal.TK_ALIGN_DEFAULT, terminal.TK_ALIGN_CENTER])

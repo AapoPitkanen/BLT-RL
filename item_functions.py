@@ -122,7 +122,7 @@ def cast_fireball(*args, **kwargs):
             results.extend(entity.fighter.take_damage(damage))
 
     for map_coordinates in target_area:
-        game_map.effects.append(
+        game_map.gfx_effects.append(
             GFX_Effect(map_coordinates[0],
                        map_coordinates[1],
                        gfx_effect_tile=0x1008))

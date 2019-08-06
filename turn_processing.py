@@ -42,6 +42,9 @@ def player_turn(player, entities, camera, game_map, game_state,
         left_click = mouse_action.get("left_click")
         right_click = mouse_action.get('right_click')
 
+        if left_click:
+            print(left_click)
+
         if movement and game_state == GameStates.PLAYERS_TURN:
             dx, dy = movement
             destination_x: int = player.x + dx
@@ -247,7 +250,10 @@ def process_player_turn_results(results, game):
             terminal.clear()
 
         if move:
-            game.game_map.scent_tiles.update({(player.x, player.y): 100})
+            if (player.x, player.y) not in game.game_map.scent_tiles:
+                game.game_map.scent_tiles.update({(player.x, player.y): 150})
+            else:
+                game.game_map.scent_tiles[(player.x, player.y)] = 150
             player.move(move[0], move[1])
             game.fov_recompute = True
             fighter.energy += fighter.movement_energy_bonus

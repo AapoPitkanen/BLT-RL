@@ -33,7 +33,7 @@ def get_constants():
     max_items_per_room: int = 2
 
     bar_width: int = 20
-    panel_height: int = 8
+    panel_height: int = 9
     panel_y: int = (screen_height - panel_height)
 
     message_x = bar_width + 2
@@ -72,13 +72,13 @@ def get_game_variables(constants):
                                 current_hp=300,
                                 base_armor_class=10,
                                 base_armor=20,
-                                base_cth_modifier=3,
-                                base_speed=100,
+                                base_cth_modifier=30,
+                                base_speed=125,
                                 base_attack_energy_bonus=0,
                                 base_movement_energy_bonus=0,
                                 base_natural_hp_regeneration_speed=50,
                                 base_damage_dice={
-                                    "physical": [[1, 6]],
+                                    "physical": [[5, 60]],
                                     "fire": [],
                                     "ice": [],
                                     "lightning": [],
@@ -115,7 +115,7 @@ def get_game_variables(constants):
             "Left-click a target tile for the fireball, or right-click to cancel.",
             "light cyan"),
         damage=15,
-        radius=7)
+        radius=2)
 
     item = Entity(0,
                   0,
