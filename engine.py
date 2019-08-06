@@ -157,4 +157,4 @@ if __name__ == '__main__':
     main()
 
 p = pstats.Stats("performance.txt")
-p.sort_stats("time").print_stats(300)
+p.sort_stats("tottime").print_stats(300)

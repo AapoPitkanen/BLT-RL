@@ -27,8 +27,8 @@ class BasicMonster:
         """
         scent_coordinates = {}
 
-        for x in range(-6, 7):
-            for y in range(-6, 7):
+        for x in range(-5, 6):
+            for y in range(-5, 6):
                 target_x = min(game_map.width - 1, self.owner.x + x)
                 target_y = min(game_map.height - 1, self.owner.y + y)
 
@@ -98,6 +98,7 @@ class BasicMonster:
         elif self.scent_tile:
             monster.move_astar(self.scent_tile, game_map, entities)
             results.append({"move": True})
+
         return results
 
 

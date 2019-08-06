@@ -246,6 +246,7 @@ def process_player_turn_results(results, game):
         if stairs_taken:
             game.entities = game.game_map.next_floor(player, game.message_log,
                                                      game.constants)
+            game.refresh_entities()
             game.fov_recompute = True
             terminal.clear()
 

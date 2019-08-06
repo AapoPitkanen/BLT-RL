@@ -16,6 +16,7 @@ def kill_monster(monster, game):
     death_message = Message(f'{monster.name.capitalize()} is killed!',
                             "orange")
     game.fighter_entities.remove(monster.fighter)
+    game.monster_fighter_entities.remove(monster.fighter)
     monster.char = 0x1006
     monster.color = "dark_red"
     monster.blocks = False

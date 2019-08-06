@@ -1,8 +1,7 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 from game_states import GameStates
 from components.status_effects import resolve_effects
 from turn_processing import player_turn, process_player_turn_results, process_player_effect_results, process_enemy_turn
-from collections import deque
 from random import randint
 
 if TYPE_CHECKING:
@@ -31,6 +30,14 @@ class Game:
         self.mouse_coordinates = mouse_coordinates
         self.exit = False
         self.targeting_item = targeting_item
+
+    def refresh_entities(self) -> None:
+        self.fighter_entities = [
+            entity.fighter for entity in self.entities if entity.fighter
+        ]
+        self.monster_fighter_entities = [
+            entity.fighter for entity in self.entities if entity.ai
+        ]
 
     def tick(self) -> None:
         player_turn_results = player_turn(self.player, self.entities,
