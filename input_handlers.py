@@ -9,8 +9,11 @@ def handle_keys(key, game_state):
         return handle_player_dead_keys(key)
     elif game_state == GameStates.TARGETING:
         return handle_targeting_keys(key)
-    elif game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY):
+    elif game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY,
+                        GameStates.SHOW_EQUIPMENT, GameStates.DROP_EQUIPMENT):
         return handle_inventory_keys(key)
+    elif game_state == GameStates.CHARACTER_SCREEN:
+        return handle_character_screen_keys(key)
 
     return {}
 
@@ -40,6 +43,12 @@ def handle_player_turn_keys(key):
         return {"show_inventory": True}
     elif key == terminal.TK_D:
         return {"drop_inventory": True}
+    elif key == terminal.TK_O:
+        return {"show_equipment": True}
+    elif key == terminal.TK_TAB:
+        return {"drop_equipment": True}
+    elif key == terminal.TK_K:
+        return {"show_character_screen": True}
     elif key == terminal.TK_ENTER:
         return {"take_stairs": True}
     elif key == terminal.TK_ESCAPE:
@@ -59,6 +68,10 @@ def handle_player_dead_keys(key):
 
     if key == terminal.TK_I:
         return {"show_inventory": True}
+    elif key == terminal.TK_O:
+        return {"show_equipment": True}
+    elif key == terminal.TK_K:
+        return {"show_character_screen": True}
     elif key == terminal.TK_ESCAPE:
         return {"escape": True}
 
@@ -72,6 +85,13 @@ def handle_inventory_keys(key):
     if index >= 0:
         return {"inventory_index": index}
 
+    if key == terminal.TK_ESCAPE:
+        return {"escape": True}
+
+    return {}
+
+
+def handle_character_screen_keys(key):
     if key == terminal.TK_ESCAPE:
         return {"escape": True}
 

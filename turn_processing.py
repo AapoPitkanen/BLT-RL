@@ -35,14 +35,17 @@ def player_turn(player, entities, camera, game_map, game_state,
         pickup = action.get("pickup")
         show_inventory = action.get("show_inventory")
         drop_inventory = action.get("drop_inventory")
+        show_equipment = action.get("show_equipment")
+        drop_equipment = action.get("drop_equipment")
         inventory_index = action.get("inventory_index")
         take_stairs = action.get("take_stairs")
         pass_turn = action.get("pass_turn")
+        show_character_screen = action.get("show_character_screen")
 
         left_click = mouse_action.get("left_click")
         right_click = mouse_action.get('right_click')
 
-        if movement and game_state == GameStates.PLAYERS_TURN:
+        if movement:
             dx, dy = movement
             destination_x: int = player.x + dx
             destination_y: int = player.y + dy
@@ -94,6 +97,21 @@ def player_turn(player, entities, camera, game_map, game_state,
             player_turn_results.append(
                 {"game_state": GameStates.DROP_INVENTORY})
 
+        if show_equipment:
+            player_turn_results.append({"previous_game_state": game_state})
+            player_turn_results.append(
+                {"game_state": GameStates.SHOW_EQUIPMENT})
+
+        if drop_equipment:
+            player_turn_results.append({"previous_game_state": game_state})
+            player_turn_results.append(
+                {"game_state": GameStates.DROP_EQUIPMENT})
+
+        if show_character_screen:
+            player_turn_results.append({"previous_game_state": game_state})
+            player_turn_results.append(
+                {"game_state": GameStates.CHARACTER_SCREEN})
+
         if game_state in (GameStates.SHOW_INVENTORY,
                           GameStates.DROP_INVENTORY):
             if inventory_index is not None and previous_game_state != GameStates.PLAYER_DEAD and inventory_index < len(
@@ -110,6 +128,25 @@ def player_turn(player, entities, camera, game_map, game_state,
                 elif game_state == GameStates.DROP_INVENTORY:
                     player_turn_results.extend(
                         player.inventory.drop_item(item))
+
+                player_turn_results.append({"action_consumed": True})
+
+        if game_state in (GameStates.SHOW_EQUIPMENT,
+                          GameStates.DROP_EQUIPMENT):
+            if inventory_index is not None and previous_game_state != GameStates.PLAYER_DEAD and inventory_index < len(
+                    player.inventory.equipment):
+
+                equipment = player.inventory.equipment[inventory_index]
+
+                if game_state == GameStates.SHOW_EQUIPMENT:
+                    player_turn_results.extend(
+                        player.inventory.use(equipment,
+                                             entities=entities,
+                                             game_map=game_map))
+
+                elif game_state == GameStates.DROP_EQUIPMENT:
+                    player_turn_results.extend(
+                        player.inventory.drop_item(equipment))
 
                 player_turn_results.append({"action_consumed": True})
 
@@ -141,7 +178,10 @@ def player_turn(player, entities, camera, game_map, game_state,
 
         if escape:
             if game_state in (GameStates.SHOW_INVENTORY,
-                              GameStates.DROP_INVENTORY):
+                              GameStates.DROP_INVENTORY,
+                              GameStates.CHARACTER_SCREEN,
+                              GameStates.SHOW_EQUIPMENT,
+                              GameStates.DROP_EQUIPMENT):
                 player_turn_results.append({"game_state": previous_game_state})
             elif game_state == GameStates.TARGETING:
                 player_turn_results.append({'targeting_cancelled': True})
@@ -154,6 +194,7 @@ def player_turn(player, entities, camera, game_map, game_state,
 def process_player_turn_results(results, game):
     player = game.player
     fighter = game.player.fighter
+
     for player_turn_result in results:
         message = player_turn_result.get("message")
         dead_entity = player_turn_result.get("dead")
@@ -173,6 +214,7 @@ def process_player_turn_results(results, game):
         new_previous_game_state = player_turn_result.get("previous_game_state")
         new_mouse_coordinates = player_turn_result.get("mouse_coordinates")
         action_consumed = player_turn_result.get("action_consumed")
+        equip = player_turn_result.get("equip")
 
         if new_mouse_coordinates:
             game.mouse_coordinates = new_mouse_coordinates
@@ -212,6 +254,38 @@ def process_player_turn_results(results, game):
             item_copy = deepcopy(item_quantity_dropped)
             item_copy.item.quantity = 1
             game.entities.append(item_copy)
+
+        if equip:
+            equip_results = player.equipment.toggle_equip(equip)
+
+            for equip_result in equip_results:
+                equipped = equip_result.get("equipped")
+                unequipped = equip_result.get("unequipped")
+                cannot_equip_message = equip_result.get("cannot_equip")
+                dual_wield = equip_result.get("dual_wield")
+
+                if equipped:
+                    game.message_log.add_message(
+                        Message(f"You equip the {equipped.name}.", "white"))
+
+                if unequipped:
+                    game.message_log.add_message(
+                        Message(f"You unequip the {unequipped.name}.",
+                                "white"))
+
+                if cannot_equip_message:
+                    game.message_log.add_message(cannot_equip_message)
+                    # I think this is the easy way to get the action back from a succesful action. The
+                    # better way to do this would be in general to see if the action is succesful or not and
+                    # only decrement actions if it was succesful.
+                    # Might have to implement this later.
+                    fighter.actions += 1
+
+                if dual_wield:
+                    game.message_log.add_message(
+                        Message(
+                            f"You dual wield the {dual_wield.name} and {player.equipment.MAIN_HAND.name}"
+                        ))
 
         if targeting:
             game.previous_state = GameStates.PLAYERS_TURN

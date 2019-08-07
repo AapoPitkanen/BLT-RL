@@ -40,37 +40,55 @@ class Game:
         ]
 
     def tick(self) -> None:
+        print("game state is", self.state)
+        # Get a list of dicts where the results are specified as dicts e.g. {"move": True}
         player_turn_results = player_turn(self.player, self.entities,
                                           self.camera, self.game_map,
                                           self.state, self.previous_state,
                                           self.targeting_item)
+        # Wait for player input, the list will be empty if the player didn't do anything
         if not player_turn_results:
             return
 
+        # After getting input the results will be processed
         if player_turn_results:
             process_player_turn_results(player_turn_results, self)
 
         if self.state == GameStates.ENEMY_TURN:
             self.game_map.update_scent_tiles(self.player)
+
+            # Resolve and process all status effects
             player_effect_results = resolve_effects(self.player.fighter)
             process_player_effect_results(player_effect_results, self)
+
+            # If the player has actions remaining after his turn, switch back to player
             if self.player.fighter.actions > 0:
                 self.state = GameStates.PLAYERS_TURN
                 return
 
-            for fighter in self.fighter_entities:
-                fighter.energy += fighter.speed
-                if fighter.owner.ai:
-                    fighter.energy += randint(-5, 10)
-            for fighter in self.fighter_entities:
-                fighter.actions += int(fighter.energy /
-                                       self.constants["speed_action_divisor"])
-                fighter.energy -= fighter.actions * self.constants[
-                    "speed_action_divisor"]
+            # Run enemy turns until the player gets enough energy to act
+            while self.player.fighter.actions <= 0:
 
-            for monster in self.monster_fighter_entities:
-                while (monster.actions > 0):
-                    process_enemy_turn(self, monster.owner)
-                    monster.actions -= 1
+                for fighter in self.fighter_entities:
+                    if fighter.speed > 0:
+                        fighter.energy += fighter.speed
+                        if fighter.owner.ai:
+                            fighter.energy += randint(-5, 10)
 
-            self.state = GameStates.PLAYERS_TURN
+                for fighter in self.fighter_entities:
+                    fighter.actions += int(
+                        fighter.energy /
+                        self.constants["speed_action_divisor"])
+                    if fighter.actions > 0:
+                        fighter.energy -= fighter.actions * self.constants[
+                            "speed_action_divisor"]
+
+                for monster in self.monster_fighter_entities:
+                    turns_taken = 0
+                    while (monster.actions > 0):
+                        turns_taken += 1
+                        process_enemy_turn(self, monster.owner)
+                        monster.actions -= 1
+
+            if self.state != GameStates.PLAYER_DEAD:
+                self.state = GameStates.PLAYERS_TURN

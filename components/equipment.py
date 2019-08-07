@@ -226,14 +226,13 @@ class Equipment:
         if equippable_entity_slot == EquipmentSlots.OFF_HAND and self.MAIN_HAND and self.MAIN_HAND.equippable.equippable_type.two_handed:
             results.append({
                 "cannot_equip":
-                Message("Your both hands are in use!", libtcod.orange)
+                Message("Your both hands are in use!", "orange")
             })
             return results
         elif equippable_entity_slot == EquipmentSlots.MAIN_HAND and self.OFF_HAND and equippable_entity.equippable.equippable_type.two_handed:
             results.append({
                 "cannot_equip":
-                Message("You'll need to free your other hand first!",
-                        libtcod.orange)
+                Message("You'll need to free your other hand first!", "orange")
             })
             return results
 

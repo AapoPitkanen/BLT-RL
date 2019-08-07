@@ -5,6 +5,7 @@ from components.fighter import Fighter
 from components.equipment import Equipment
 from components.level import Level
 from components.attributes import roll_character_attributes
+from components.armors import generate_random_armor
 from entity import Entity
 from render_order import RenderOrder
 from game_messages import MessageLog, Message
@@ -71,16 +72,16 @@ def get_constants():
 
 def get_game_variables(constants):
     fighter_component = Fighter(roll_character_attributes(),
-                                current_hp=300,
+                                current_hp=30,
                                 base_armor_class=10,
-                                base_armor=20,
-                                base_cth_modifier=30,
-                                base_speed=125,
+                                base_armor=2,
+                                base_cth_modifier=3,
+                                base_speed=100,
                                 base_attack_energy_bonus=0,
                                 base_movement_energy_bonus=0,
                                 base_natural_hp_regeneration_speed=50,
                                 base_damage_dice={
-                                    "physical": [[5, 60]],
+                                    "physical": [[1, 6]],
                                     "fire": [],
                                     "ice": [],
                                     "lightning": [],
@@ -104,44 +105,11 @@ def get_game_variables(constants):
                     level=level_component)
     entities = [player]
 
-    player.fighter.energy += player.fighter.speed
-    player.fighter.actions = int(player.fighter.energy /
-                                 constants["speed_action_divisor"])
-    player.fighter.energy -= player.fighter.actions * constants[
-        "speed_action_divisor"]
+    for _i in range(25):
+        armor = generate_random_armor()
+        player.inventory.add_item(armor)
 
-    item_component = Item(
-        use_function=cast_fireball,
-        targeting=True,
-        targeting_message=Message(
-            "Left-click a target tile for the fireball, or right-click to cancel.",
-            "light cyan"),
-        damage=15,
-        radius=2)
-
-    item = Entity(0,
-                  0,
-                  0x1007,
-                  "Scroll of Fireball",
-                  render_order=RenderOrder.ITEM,
-                  item=item_component)
-
-    player.inventory.add_item(item)
-
-    item_component = Item(
-        use_function=cast_confuse,
-        targeting=True,
-        targeting_message=Message(
-            "Left-click an enemy to confuse it, or right-click to cancel.",
-            "light cyan"))
-    item = Entity(0,
-                  0,
-                  0x1007,
-                  "Confusion Scroll",
-                  render_order=RenderOrder.ITEM,
-                  item=item_component)
-
-    player.inventory.add_item(item)
+    player.fighter.actions = 1
 
     message_log = MessageLog(constants["message_x"],
                              constants["message_width"],

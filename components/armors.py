@@ -110,19 +110,11 @@ armor_rarities = {
     ["normal", "common", "uncommon", "rare", "epic", "mythical"],
     "rarity_weights": [0.535, 0.255, 0.125, 0.055, 0.029, 0.001],
     "rarity_colors": {
-        "normal": libtcod.white,
-        "common": libtcod.green,
-        "uncommon": libtcod.blue,
-        "rare": libtcod.gold,
-        "epic": libtcod.purple,
-        "mythical": libtcod.red
-    },
-    "rarity_color_names": {
         "normal": "white",
         "common": "green",
-        "uncommon": "blue",
-        "rare": "yellow",
-        "epic": "purple",
+        "uncommon": "#308CE8",
+        "rare": "#FFD700",
+        "epic": "#E600E6",
         "mythical": "red"
     }
 }
@@ -1314,8 +1306,7 @@ def generate_random_armor():
 
     rarity = {
         "rarity_level": rarity_level,
-        "rarity_color": armor_rarities["rarity_colors"][rarity_level],
-        "rarity_color_name": armor_rarities["rarity_color_names"][rarity_level]
+        "rarity_color": armor_rarities["rarity_colors"][rarity_level]
     }
 
     armor_material = material
@@ -1499,7 +1490,6 @@ def generate_random_armor():
     new_armor = Entity(0,
                         0,
                         armor_characters[slot._name_],
-                        random_armor.rarity["rarity_color"],
                         random_armor.identified_name,
                         equippable=equippable_component)
 

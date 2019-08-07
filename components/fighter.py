@@ -9,6 +9,7 @@ from copy import deepcopy
 if TYPE_CHECKING:
     from components.attributes import Attributes
 
+
 class Fighter:
     def __init__(
             self,
@@ -21,7 +22,7 @@ class Fighter:
             base_attack_energy_bonus: int,
             base_movement_energy_bonus: int,
             base_natural_hp_regeneration_speed: int,
-            base_resistances: Dict[str, float]={
+            base_resistances: Dict[str, float] = {
                 "physical": 0,
                 "fire": 0,
                 "ice": 0,
@@ -31,11 +32,11 @@ class Fighter:
                 "arcane": 0,
                 "poison": 0,
             },
-            base_critical_hit_chance: float=0.05,
-            base_critical_hit_multiplier: float=1.5,
-            base_life_steal: float=0,
-            base_damage_reflection: float=0,
-            base_damage_modifiers: Dict[str, int]={
+            base_critical_hit_chance: float = 0.05,
+            base_critical_hit_multiplier: float = 1.5,
+            base_life_steal: float = 0,
+            base_damage_reflection: float = 0,
+            base_damage_modifiers: Dict[str, int] = {
                 "physical": 0,
                 "fire": 0,
                 "ice": 0,
@@ -45,7 +46,7 @@ class Fighter:
                 "arcane": 0,
                 "poison": 0,
             },
-            base_damage_dice: Dict[str, List]={
+            base_damage_dice: Dict[str, List] = {
                 "physical": [],
                 "fire": [],
                 "ice": [],
@@ -55,7 +56,7 @@ class Fighter:
                 "arcane": [],
                 "poison": [],
             },
-            xp_reward: int=0,
+            xp_reward: int = 0,
     ):
         self.attributes = attributes
         self.current_hp = current_hp
@@ -160,15 +161,23 @@ class Fighter:
     @property
     def chance_to_hit_modifier(self) -> int:
         if self.owner and self.owner.equipment:
-            modifier = round((self.strength["attribute_modifier"] +
+            modifier = int(round((self.strength["attribute_modifier"] +
                               self.dexterity["attribute_modifier"] +
                               self.perception["attribute_modifier"]) /
-                             2) + self.owner.equipment.chance_to_hit_modifier
+                             2)) + self.owner.equipment.chance_to_hit_modifier
         else:
-            modifier = round((self.strength["attribute_modifier"] +
+            modifier = int(round((self.strength["attribute_modifier"] +
                               self.dexterity["attribute_modifier"] +
-                              self.perception["attribute_modifier"]) / 2)
+                              self.perception["attribute_modifier"]) / 2))
         return modifier
+
+    @property
+    def chance_to_hit_lower_bound_modifier(self) -> int:
+        return int(
+            round((self.strength["attribute_modifier"] +
+                    self.luck["attribute_modifier"] +
+                   self.dexterity["attribute_modifier"] +
+                   self.perception["attribute_modifier"]) / 4))
 
     @property
     def critical_hit_multiplier(self) -> float:
@@ -405,9 +414,8 @@ class Fighter:
             else:
                 results.append({
                     "message":
-                    Message(
-                        f"{effect.start_message['player']['message']}",
-                        effect.start_message['player']['message_color'])
+                    Message(f"{effect.start_message['player']['message']}",
+                            effect.start_message['player']['message_color'])
                 })
         else:
             for effect in self.status_effects:
@@ -423,16 +431,14 @@ class Fighter:
                         "message":
                         Message(
                             f"The {self.owner.name}{effect.start_message['monster']['message']}",
-                            effect.start_message['monster']
-                            ['message_color'])
+                            effect.start_message['monster']['message_color'])
                     })
                 else:
                     results.append({
                         "message":
                         Message(
                             f"{effect.start_message['player']['message']}",
-                            effect.start_message['player']
-                            ['message_color'])
+                            effect.start_message['player']['message_color'])
                     })
         return results
 
@@ -466,8 +472,9 @@ class Fighter:
         target_roll = target.fighter.armor_class
         critical_seed = random()
         cth_modifier = self.chance_to_hit_modifier
-
-        dice_roll = randint(1, 20 + cth_modifier)
+        lower_bound_cth_modifier = self.chance_to_hit_lower_bound_modifier
+        print("lower bound modifier is", lower_bound_cth_modifier)
+        dice_roll = randint(1, 20 + cth_modifier) + lower_bound_cth_modifier
         damage_dice = self.damage_dice
         damage_modifiers = self.damage
         rolled_damage = 0

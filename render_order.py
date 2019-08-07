@@ -6,6 +6,7 @@ class RenderLayer(Enum):
     MAP = auto()
     ENTITIES = auto()
     OVERLAY = auto()
+    HUD_BACKGROUND = auto()
     HUD = auto()
     MENU = auto()
     MENU_ICON = auto()

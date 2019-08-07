@@ -8,12 +8,12 @@ from game_messages import Message
 def kill_player(player, game):
     player.char = 0x1006
     player.color = "dark red"
-    game.fighter_entities.remove(player.fighter)
+    player.fighter.actions = 0
     return Message('You are killed!', "red"), GameStates.PLAYER_DEAD
 
 
 def kill_monster(monster, game):
-    death_message = Message(f'{monster.name.capitalize()} is killed!',
+    death_message = Message(f'The {monster.name.capitalize()} is killed!',
                             "orange")
     game.fighter_entities.remove(monster.fighter)
     game.monster_fighter_entities.remove(monster.fighter)

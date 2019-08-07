@@ -1,12 +1,11 @@
 from render_order import RenderLayer, Visible
 from bearlibterminal import terminal
 from game import GameStates
-from menu import new_inventory_menu
+from menu import new_inventory_menu, hud_background_menu, menu, equipment_menu
 from map_objects.game_map import GameMap
-import itertools
 import tcod
 from utils import disk, circle, sector
-import time
+import re
 
 
 def get_names_under_mouse(cur_coord, camera, entities, game_map):
@@ -17,13 +16,10 @@ def get_names_under_mouse(cur_coord, camera, entities, game_map):
 
     (x, y) = (mouse_x, mouse_y)
     (x, y) = (camera.camera_x + x, camera.camera_y + y)
-    """ names = [
-        entity.name for entity in entities
-        if entity.x == x and entity.y == y and game_map.fov[entity.x, entity.y]
-    ] """
 
     names = [
-        str(entity) for entity in entities if entity.x == x and entity.y == y
+        entity.name for entity in entities
+        if entity.x == x and entity.y == y and game_map.fov[entity.x, entity.y]
     ]
 
     names = ', '.join(names)
@@ -143,18 +139,22 @@ def render_all(entities, player, game_map, message_log, bar_width, panel_y,
                                          y=cell_term_y,
                                          c=0x3014)
 
+    terminal.layer(RenderLayer.HUD_BACKGROUND.value)
+
+    hud_background_menu(9)
+
     terminal.layer(RenderLayer.HUD.value)
 
     # HP bar
-    render_bar(1, panel_y + 6, bar_width, 'HP', player.fighter.current_hp,
+    render_bar(1, panel_y + 7, bar_width, 'HP', player.fighter.current_hp,
                player.fighter.max_hp, "red", "darker red")
 
-    terminal.printf(1, panel_y + 7, f"Dungeon Level: {game_map.dungeon_level}")
+    terminal.printf(1, panel_y + 8, f"Dungeon Level: {game_map.dungeon_level}")
 
     entity_names = get_names_under_mouse(coordinates, camera, entities,
                                          game_map)
 
-    terminal.printf(1, panel_y, f"[color=white]{entity_names.title()}")
+    terminal.printf(1, panel_y - 1, f"[color=white]{entity_names.title()}")
 
     line_y = panel_y + 1
 
@@ -171,6 +171,19 @@ def render_all(entities, player, game_map, message_log, bar_width, panel_y,
         new_inventory_menu(title, player.inventory, 90,
                            terminal.state(terminal.TK_WIDTH),
                            terminal.state(terminal.TK_HEIGHT))
+
+    if game_state in (GameStates.SHOW_EQUIPMENT, GameStates.DROP_EQUIPMENT):
+        if game_state == GameStates.SHOW_EQUIPMENT:
+            title = "EQUIPMENT – press key next to equipment to equip it"
+        elif game_state == GameStates.DROP_EQUIPMENT:
+            title = "EQUIPMENT – press key next to equipment to drop it"
+        equipment_menu(title, player.inventory, player.equipment, 90,
+                       terminal.state(terminal.TK_WIDTH),
+                       terminal.state(terminal.TK_HEIGHT))
+
+    if game_state == GameStates.CHARACTER_SCREEN:
+        menu("Homo", ["Paskaa"], 40, terminal.state(terminal.TK_WIDTH),
+             terminal.state(terminal.TK_HEIGHT))
 
 
 def print_shadowed_text(
@@ -200,6 +213,38 @@ def print_shadowed_text(
         align=vertical_align | horizontal_align)
 
     terminal.puts(x, y, text, align=vertical_align | horizontal_align)
+
+    terminal.composition(terminal.TK_OFF)
+
+
+def print_colored_shadowed_text(
+        x,
+        y,
+        text,
+        colored_text,
+        shadow_offset=1,
+        shadow_color="black",
+        align=[terminal.TK_ALIGN_DEFAULT, terminal.TK_ALIGN_DEFAULT]):
+
+    # Print colored text with colored shadow (default is black). Text alignment can also be set.
+
+    vertical_align = align[0]
+    horizontal_align = align[1]
+
+    terminal.composition(terminal.TK_ON)
+
+    terminal.puts(x,
+                  y,
+                  f"[color={shadow_color}][offset=0, {shadow_offset}]{text}",
+                  align=vertical_align | horizontal_align)
+
+    terminal.puts(
+        x,
+        y,
+        f"[color={shadow_color}][offset={shadow_offset}, {shadow_offset}]{text}",
+        align=vertical_align | horizontal_align)
+
+    terminal.puts(x, y, colored_text, align=vertical_align | horizontal_align)
 
     terminal.composition(terminal.TK_OFF)
 
