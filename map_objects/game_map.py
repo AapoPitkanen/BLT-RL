@@ -16,7 +16,6 @@ from game_messages import Message
 from item_functions import heal, cast_chaos_bolt, cast_fireball, cast_confuse
 from random_utils import from_dungeon_level,random_choice_from_dict
 from utils import distance
-import numpy as np
 
 WALL_NORTH = 0x3000
 WALL_SOUTH = 0x3001
@@ -202,7 +201,7 @@ class GameMap(Map):
     def place_entities(self, room, entities):
         # Get a random number of monsters
 
-        max_monsters_per_room = from_dungeon_level([[10, 1], [5, 4], [7, 6]], self.dungeon_level)
+        max_monsters_per_room = from_dungeon_level([[2, 1], [4, 4], [5, 6]], self.dungeon_level)
         max_items_per_room = from_dungeon_level([[1, 1], [2, 4]], self.dungeon_level)
 
         number_of_monsters = randint(0, max_monsters_per_room)
@@ -741,7 +740,7 @@ class GameMap(Map):
         return entities
 
     def game_map_to_numpy_array(self):
-        numpy_array = np.empty([self.width, self.height], dtype=np.int8)
+        numpy_array = numpy.empty([self.width, self.height], dtype=numpy.int8)
         for x in range(self.width):
             for y in range(self.height):
                 if self.is_blocked(x, y):

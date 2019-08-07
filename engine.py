@@ -16,8 +16,6 @@ import time
 from collections import deque
 from game_states import GameStates
 from game import Game
-import cProfile
-import pstats
 
 if TYPE_CHECKING:
     from entity import Entity
@@ -60,6 +58,7 @@ def main() -> None:
     in_main_menu: bool = True
 
     while in_main_menu:
+        start_time = time.perf_counter()  # Set up fps limiter
         if show_main_menu:
             main_screen()
             main_menu(constants['screen_width'], constants['screen_height'])
@@ -119,9 +118,13 @@ def main() -> None:
             terminal.clear()
             show_main_menu = True
 
+        delta_time = (time.perf_counter() - start_time) * 1000
+        terminal.delay(max(int(1000.0 / constants['fps'] - delta_time), 0))
+
 
 def play_game(game: Game) -> None:
     while True:
+        start_time = time.perf_counter()
         if game.fov_recompute:
             game.game_map.compute_fov(
                 x=game.player.x,
@@ -149,12 +152,13 @@ def play_game(game: Game) -> None:
 
         if game.exit:
             return
-        end = time.perf_counter()
+
         terminal.clear()
+
+        delta_time = (time.perf_counter() - start_time) * 1000
+        terminal.delay(max(int(1000.0 / game.constants['fps'] - delta_time),
+                           0))
 
 
 if __name__ == '__main__':
     main()
-
-p = pstats.Stats("performance.txt")
-p.sort_stats("tottime").print_stats(300)

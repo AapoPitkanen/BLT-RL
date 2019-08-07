@@ -80,11 +80,14 @@ class Entity:
     def draw(self, camera: "Camera", game_map: "GameMap") -> None:
 
         terminal.color(terminal.color_from_name("white"))
-        if game_map.fov[self.x, self.y] or (self.stairs and
+        """ if game_map.fov[self.x, self.y] or (self.stairs and
                                             game_map.explored[self.x, self.y]):
             (x, y) = camera.to_camera_coordinates(self.x, self.y)
             if x is not None:
-                terminal.put(x=x * 4, y=y * 2, c=self.char)
+                terminal.put(x=x * 4, y=y * 2, c=self.char) """
+        (x, y) = camera.to_camera_coordinates(self.x, self.y)
+        if x is not None:
+            terminal.put(x=x * 4, y=y * 2, c=self.char)
 
     def move(self, dx: int, dy: int) -> None:
         # Move the entity by a given amount
@@ -120,24 +123,22 @@ class Entity:
         '''
         Calculate the A* path toward a target Entity and save it to the Entity
         '''
-        # Create a numpy array of the map for tcod astar path calculation (the recommended way)
-        map_array = game_map.game_map_to_numpy_array()
+        if not self.path:
+            # Create a numpy array of the map for tcod astar path calculation (the recommended way)
+            map_array = game_map.game_map_to_numpy_array()
 
-        path = None
-        new_path = None
+            # Scan all the objects to see if there are objects that must be navigated around
+            # Check also that the object isn't self or the target (so that the start and the end points are free)
+            for entity in entities:
+                if entity.blocks and entity is not self and entity is not target:
+                    map_array[entity.x][entity.y] = 0
 
-        # Scan all the objects to see if there are objects that must be navigated around
-        # Check also that the object isn't self or the target (so that the start and the end points are free)
-        for entity in entities:
-            if entity.blocks and entity is not self and entity is not target:
-                map_array[entity.x][entity.y] = 0
+            # Allocate a A* path, store it to the entity if there isn't one
+            astar = tcod.path.AStar(map_array)
+            path = astar.get_path(self.x, self.y, target.x, target.y)
 
-        # Allocate a A* path, store it to the entity if there isn't one
-        astar = tcod.path.AStar(map_array)
-        path = astar.get_path(self.x, self.y, target.x, target.y)
-
-        if path and not self.path and len(path) < 25:
-            self.path = path
+            if path and len(path) < 25:
+                self.path = path
         # Check the stored path and move to the first path coordinates
         if self.path:
             x, y = self.path[0]
@@ -145,6 +146,10 @@ class Entity:
             dy = y - self.y
             if not get_blocking_entities_at_location(entities, x, y):
                 self.move(dx, dy)
+            else:
+                # Reset the path so a new one will be calculated on the next turn
+                self.path = None
+                return
             # Remove the coordinates from the list so the next coordinates on the path are available
             self.path.pop(0)
         # Fallback if the path doesn't exist so the entity can still move

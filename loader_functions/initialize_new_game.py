@@ -15,12 +15,13 @@ from game import GameStates
 
 def get_constants():
     window_title: str = "Voidstone"
+    fps = 30
 
     screen_width: int = 192
     screen_height: int = 54
 
     map_width: int = 80
-    map_height: int = 80
+    map_height: int = 60
 
     room_max_size: int = 12
     room_min_size: int = 5
@@ -34,7 +35,7 @@ def get_constants():
 
     bar_width: int = 20
     panel_height: int = 9
-    panel_y: int = (screen_height - panel_height)
+    panel_y: int = (screen_height - panel_height - 1)
 
     message_x = bar_width + 2
     message_width = screen_width - bar_width - 2
@@ -44,6 +45,7 @@ def get_constants():
 
     constants = {
         "window_title": window_title,
+        "fps": fps,
         "screen_width": screen_width,
         "screen_height": screen_height,
         "bar_width": bar_width,

@@ -42,9 +42,6 @@ def player_turn(player, entities, camera, game_map, game_state,
         left_click = mouse_action.get("left_click")
         right_click = mouse_action.get('right_click')
 
-        if left_click:
-            print(left_click)
-
         if movement and game_state == GameStates.PLAYERS_TURN:
             dx, dy = movement
             destination_x: int = player.x + dx

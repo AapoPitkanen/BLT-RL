@@ -27,8 +27,8 @@ class BasicMonster:
         """
         scent_coordinates = {}
 
-        for x in range(-5, 6):
-            for y in range(-5, 6):
+        for x in range(-1, 2):
+            for y in range(-1, 2):
                 target_x = min(game_map.width - 1, self.owner.x + x)
                 target_y = min(game_map.height - 1, self.owner.y + y)
 
@@ -58,9 +58,9 @@ class BasicMonster:
         extra_attack_count = self.extra_attacks
         monster = self.owner
 
-        if self.owner.distance_to(target) < 20:
+        if self.owner.distance_to(target) < 25:
             self.find_and_update_scent_tile(game_map)
-        elif self.scent_tile and self.owner.distance_to(target) > 20:
+        elif self.scent_tile and self.owner.distance_to(target) > 25:
             self.scent_tile = None
 
         if game_map.fov[monster.x][monster.y]:
@@ -96,7 +96,16 @@ class BasicMonster:
                 self.last_player_position = None
 
         elif self.scent_tile:
-            monster.move_astar(self.scent_tile, game_map, entities)
+            self.owner.x = self.scent_tile.x
+            self.owner.y = self.scent_tile.y
+            results.append({"move": True})
+        else:
+            random_x = self.owner.x + randint(0, 2) - 1
+            random_y = self.owner.y + randint(0, 2) - 1
+
+            if random_x != self.owner.x and random_y != self.owner.y and not get_blocking_entities_at_location(
+                    entities, random_x, random_y):
+                self.owner.move_towards(random_x, random_y, game_map, entities)
             results.append({"move": True})
 
         return results
