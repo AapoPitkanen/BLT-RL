@@ -16,7 +16,8 @@ def menu(header: str,
          screen_height: int,
          background_color: Any = "white",
          background_margin: int = 2,
-         header_margin: int = 1) -> None:
+         header_margin: int = 1,
+         y_offset: int = 0) -> None:
 
     if len(options) > 26:
         raise ValueError('Cannot have a menu with more than 26 options.')
@@ -28,7 +29,7 @@ def menu(header: str,
     height = len(options) + header_height
 
     x = int((screen_width / 2) - (width / 2))
-    y = int((screen_height / 2) - (height / 2))
+    y = int((screen_height / 2) - (height / 2)) + y_offset
 
     draw_menu_background(width,
                          height,
@@ -68,7 +69,8 @@ def menu_colored_options(header: str,
                          screen_height: int,
                          background_color: Any = "white",
                          background_margin: int = 2,
-                         header_margin: int = 1) -> None:
+                         header_margin: int = 1,
+                         y_offset: int = 0) -> None:
 
     if len(options) > 26:
         raise ValueError('Cannot have a menu with more than 26 options.')
@@ -80,7 +82,7 @@ def menu_colored_options(header: str,
     height = len(options) + header_height
 
     x = int((screen_width / 2) - (width / 2))
-    y = int((screen_height / 2) - (height / 2))
+    y = int((screen_height / 2) - (height / 2)) + y_offset
 
     draw_menu_background(width,
                          height,
@@ -134,9 +136,8 @@ def hud_background_menu(panel_height):
     )
 
 
-def new_inventory_menu(header: str, inventory: "Inventory",
-                       inventory_width: int, screen_width: int,
-                       screen_height: int) -> None:
+def inventory_menu(header: str, inventory: "Inventory", inventory_width: int,
+                   screen_width: int, screen_height: int) -> None:
     if len(inventory.items) == 0:
         options = ["Your inventory is empty."]
 
@@ -152,7 +153,8 @@ def new_inventory_menu(header: str, inventory: "Inventory",
          inventory_width,
          screen_width,
          screen_height,
-         header_margin=2)
+         header_margin=2,
+         y_offset=-6)
 
 
 def equipment_menu(header: str, inventory: "Inventory",
@@ -221,7 +223,8 @@ def equipment_menu(header: str, inventory: "Inventory",
                          inventory_width,
                          screen_width,
                          screen_height,
-                         header_margin=2)
+                         header_margin=2,
+                         y_offset=-6)
 
 
 def draw_menu_background(width: int,

@@ -1,7 +1,7 @@
 from render_order import RenderLayer, Visible
 from bearlibterminal import terminal
 from game import GameStates
-from menu import new_inventory_menu, hud_background_menu, menu, equipment_menu
+from menu import inventory_menu, hud_background_menu, menu, equipment_menu
 from map_objects.game_map import GameMap
 import tcod
 from utils import disk, circle, sector
@@ -168,9 +168,9 @@ def render_all(entities, player, game_map, message_log, bar_width, panel_y,
             title = "INVENTORY – press key next to item to use it"
         elif game_state == GameStates.DROP_INVENTORY:
             title = "INVENTORY – press key next to item to drop it"
-        new_inventory_menu(title, player.inventory, 90,
-                           terminal.state(terminal.TK_WIDTH),
-                           terminal.state(terminal.TK_HEIGHT))
+        inventory_menu(title, player.inventory, 90,
+                       terminal.state(terminal.TK_WIDTH),
+                       terminal.state(terminal.TK_HEIGHT))
 
     if game_state in (GameStates.SHOW_EQUIPMENT, GameStates.DROP_EQUIPMENT):
         if game_state == GameStates.SHOW_EQUIPMENT:

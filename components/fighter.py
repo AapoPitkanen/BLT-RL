@@ -156,26 +156,28 @@ class Fighter:
         else:
             modifier = self.constitution["attribute_modifier"]
 
-        return self.base_natural_hp_regeneration_speed + modifier
+        return max(self.base_natural_hp_regeneration_speed + modifier, 1)
 
     @property
     def chance_to_hit_modifier(self) -> int:
         if self.owner and self.owner.equipment:
-            modifier = int(round((self.strength["attribute_modifier"] +
-                              self.dexterity["attribute_modifier"] +
-                              self.perception["attribute_modifier"]) /
-                             2)) + self.owner.equipment.chance_to_hit_modifier
+            modifier = int(
+                round((self.strength["attribute_modifier"] +
+                       self.dexterity["attribute_modifier"] +
+                       self.perception["attribute_modifier"]) /
+                      2)) + self.owner.equipment.chance_to_hit_modifier
         else:
-            modifier = int(round((self.strength["attribute_modifier"] +
-                              self.dexterity["attribute_modifier"] +
-                              self.perception["attribute_modifier"]) / 2))
+            modifier = int(
+                round((self.strength["attribute_modifier"] +
+                       self.dexterity["attribute_modifier"] +
+                       self.perception["attribute_modifier"]) / 2))
         return modifier
 
     @property
     def chance_to_hit_lower_bound_modifier(self) -> int:
         return int(
             round((self.strength["attribute_modifier"] +
-                    self.luck["attribute_modifier"] +
+                   self.luck["attribute_modifier"] +
                    self.dexterity["attribute_modifier"] +
                    self.perception["attribute_modifier"]) / 4))
 
@@ -473,7 +475,6 @@ class Fighter:
         critical_seed = random()
         cth_modifier = self.chance_to_hit_modifier
         lower_bound_cth_modifier = self.chance_to_hit_lower_bound_modifier
-        print("lower bound modifier is", lower_bound_cth_modifier)
         dice_roll = randint(1, 20 + cth_modifier) + lower_bound_cth_modifier
         damage_dice = self.damage_dice
         damage_modifiers = self.damage

@@ -40,7 +40,7 @@ class Game:
         ]
 
     def tick(self) -> None:
-        print("game state is", self.state)
+
         # Get a list of dicts where the results are specified as dicts e.g. {"move": True}
         player_turn_results = player_turn(self.player, self.entities,
                                           self.camera, self.game_map,

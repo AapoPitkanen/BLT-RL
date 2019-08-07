@@ -38,13 +38,26 @@ class Effect():
         self.on_critical_miss = on_critical_miss
 
 
+# NATURAL REGENERATION
+
+
+def resolve_natural_regeneration(self):
+    results = []
+    fighter = self.owner.fighter
+    fighter.turn_to_natural_regenerate += 1
+    if fighter.turns_to_natural_regenerate == fighter.natural_hp_regeneration_speed:
+        results.append({"heal_amount": 1})
+        fighter.turn_to_natural_regenerate = 0
+    return results
+
+
 # SLOW #
 
 
 def resolve_slow(self):
     results = []
     if self.duration > 0:
-        self.duration -= 1
+        results.append({"duration": -1})
     return results
 
 
@@ -82,9 +95,9 @@ def resolve_poison(self):
     results = []
     poison_seed = random()
     if self.duration > 0:
-        self.duration -= 1
+        results.append({"duration": -1})
     if poison_seed > self.owner.fighter.resistances["poison"]:
-        results.extend(self.owner.fighter.take_damage(randint(1, 6)))
+        results.append({"take_damage": randint(1, 6)})
     else:
         if self.owner.ai:
             results.append({
@@ -144,9 +157,11 @@ def Poison():
 
 
 def resolve_bleed(self):
+    results = []
     if self.duration > 0:
-        self.duration -= 1
-    return self.owner.fighter.take_damage(1)
+        results.append({"duration": -1})
+    results.append({"take_damage": 1})
+    return results
 
 
 def Bleed():
@@ -184,9 +199,9 @@ def resolve_burn(self):
     results = []
     burn_seed = random()
     if self.duration > 0:
-        self.duration -= 1
+        results.append({"duration": -1})
     if burn_seed > self.owner.fighter.resistances["fire"]:
-        results.extend(self.owner.fighter.take_damage(self.duration + 1))
+        results.append({"take_damage": self.duration + 1})
     else:
         if self.owner.ai:
             results.append({
@@ -250,9 +265,9 @@ def resolve_chilled(self):
     results = []
     chill_seed = random()
 
-    if chill_seed > self.owner.fighter.resistances["fire"]:
+    if chill_seed > self.owner.fighter.resistances["ice"]:
         if self.duration > 0:
-            self.duration -= 1
+            results.append({"duration": -1})
     else:
         if self.owner.ai:
             results.append({
@@ -261,14 +276,14 @@ def resolve_chilled(self):
                     f"The {self.owner.name} {self.resist_message['monster']}",
                     self.resist_message['monster']['message_color'])
             })
-            self.duration = 0
+            results.append({"duration_reset": True})
         else:
             results.append({
                 "message":
                 Message(f"{self.resist_message['player']['message']}",
                         self.resist_message['player']['message_color'])
             })
-            self.duration = 0
+            results.append({"duration_reset": True})
     return results
 
 
@@ -322,10 +337,31 @@ def resolve_effects(fighter):
 
     for effect in fighter.status_effects:
 
-        if fighter.current_hp > 0 and effect.resolve and effect.duration > 0:
-            results.extend(effect.resolve(effect))
+        if fighter.current_hp > 0 and effect.resolve and effect.duration and effect.duration > 0:
+            effect_results = effect.resolve(effect)
+            for result in effect_results:
+                heal_amount = result.get("heal_amount")
+                duration = result.get("duration")
+                duration_reset = result.get("duration_reset")
+                take_damage = result.get("take_damage")
+                message = result.get("message")
 
-        if effect.duration == 0:
+                if heal_amount:
+                    fighter.heal(heal_amount)
+
+                if duration:
+                    effect.duration -= duration
+
+                if duration_reset:
+                    effect.duration = 0
+
+                if take_damage:
+                    results.extend(fighter.take_damage(take_damage))
+
+                if message:
+                    results.append(message)
+
+        if effect.duration and effect.duration == 0:
             fighter.status_effects.remove(effect)
 
             if effect.modifiers:
