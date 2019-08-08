@@ -64,6 +64,13 @@ class Equipment:
         ):
             for dice in dice_list:
                 total_damage_dice[damage_type].append(dice)
+
+        for effect in self.owner.fighter.effects_with_damage_dice:
+            for damage_type, dice_list in effect.modifiers.get(
+                    "damage_dice", {}).items():
+                for dice in dice_list:
+                    total_damage_dice[damage_type].append(dice)
+
         return total_damage_dice
 
     @property
@@ -86,6 +93,12 @@ class Equipment:
         for damage_type, damage_modifier in self.owner.fighter.base_damage_modifiers.items(
         ):
             damage_modifiers[damage_type] += damage_modifier
+
+        for effect in self.owner.fighter.effects_with_damage_modifiers:
+            for damage_type, damage_modifier in effect.modifiers.get(
+                    "damage_modifiers", {}).items():
+                damage_modifiers[damage_type] += damage_modifier
+
         damage_modifiers["physical"] += self.owner.fighter.strength[
             "attribute_modifier"]
         return damage_modifiers
@@ -110,6 +123,12 @@ class Equipment:
         for resistance_type, resistance_value in self.owner.fighter.base_resistances.items(
         ):
             total_resistances[resistance_type] += resistance_value
+
+        for effect in self.owner.fighter.effects_with_resistances:
+            for resistance_type, resistance_value in effect.modifiers.get(
+                    "resistances", {}).items():
+                total_resistances[resistance_type] += resistance_value
+
         if not self.owner.ai:
             physical_and_poison_resistance_modifier = self.owner.fighter.constitution[
                 "attribute_modifier"] / 100

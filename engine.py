@@ -1,6 +1,7 @@
 from typing import List, TYPE_CHECKING
 from bearlibterminal import terminal
 import tcod
+import time
 from loader_functions.initialize_new_game import get_constants, get_game_variables
 from loader_functions.data_loaders import load_game
 from map_objects.game_map import GameMap
@@ -11,14 +12,13 @@ from render_functions import render_all, clear_map_layer, clear_menu_layer, main
 from camera import Camera
 from copy import deepcopy
 from menu import main_menu, message_box
-import sys
-import time
-from collections import deque
 from game_states import GameStates
 from game import Game
 
 if TYPE_CHECKING:
     from entity import Entity
+
+import cProfile
 
 
 def main() -> None:
@@ -30,16 +30,16 @@ def main() -> None:
     )
     terminal.set("font: clacon.ttf, size=8x16")
     terminal.set(
-        "0x1000: test_tiles.png, size=32x32, resize-filter=nearest, align=top-left"
+        "0x1000: test_tiles3.png, size=32x32, resize-filter=nearest, align=top-left"
     )
     terminal.set(
         "0x2000: inventory-ui.png, size=32x32, resize-filter=nearest, align=top-left"
     )
     terminal.set(
-        "0x3000: wall_tiles.png, size=32x32, resize-filter=nearest, align=top-left"
+        "0x3000: wall_tiles2.png, size=32x32, resize-filter=nearest, align=top-left"
     )
     terminal.set(
-        "0x4000: voidstone_background_1536x864.png, size=1536x864, align=top-left"
+        "0x4000: voidstone_background_1536x864.png, size=1536x864, resize=1792x1008,resize-filter=nearest, align=top-left"
     )
 
     player = None

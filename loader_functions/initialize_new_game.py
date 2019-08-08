@@ -18,8 +18,8 @@ def get_constants():
     window_title: str = "Voidstone"
     fps = 30
 
-    screen_width: int = 192
-    screen_height: int = 54
+    screen_width: int = 224
+    screen_height: int = 63
 
     map_width: int = 80
     map_height: int = 60
@@ -83,13 +83,13 @@ def get_game_variables(constants):
                                 base_life_steal=0.5,
                                 base_natural_hp_regeneration_speed=50,
                                 base_damage_dice={
-                                    "physical": [[3, 8]],
+                                    "physical": [],
                                     "fire": [],
                                     "ice": [],
                                     "lightning": [],
                                     "holy": [],
-                                    "chaos": [],
-                                    "arcane": [],
+                                    "chaos": [[1, 8]],
+                                    "arcane": [[1, 8]],
                                     "poison": [],
                                 })
     inventory_component = Inventory(26)

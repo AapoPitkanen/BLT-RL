@@ -40,6 +40,23 @@ class Effect():
         self.on_critical_miss = on_critical_miss
 
 
+def resolve_curse_of_frailty(self):
+    results = []
+    if self.duration > 0:
+        results.append({"duration": -1})
+    return results
+
+
+def CurseOfFrailty():
+    CurseOfFrailty = Effect("curse_of_frailty",
+                            duration=10,
+                            resolve=resolve_curse_of_frailty,
+                            modifiers={"resistances": {
+                                "physical": -0.5
+                            }})
+    return CurseOfFrailty
+
+
 # LIFE STEAL
 
 
@@ -136,9 +153,8 @@ def Slow():
                           "message_color": "yellow"
                       }
                   },
-                  modifiers=[["speed_modifier", -50]],
-                  resolve=resolve_slow,
-                  on_apply=on_apply_temporary_modifiers)
+                  modifiers={"speed_modifier": -50},
+                  resolve=resolve_slow)
     return Slow
 
 
@@ -376,10 +392,11 @@ def Chilled():
                 "message_color": "red"
             }
         },
-        modifiers=[["movement_cost_modifier", 100],
-                   ["attack_cost_modifier", 100]],
-        resolve=resolve_chilled,
-        on_apply=on_apply_temporary_modifiers)
+        modifiers={
+            "attack_energy_bonus_modifier": -25,
+            "movement_energy_bonus_modifier": -25
+        },
+        resolve=resolve_chilled)
     return Chilled
 
 
@@ -419,13 +436,7 @@ def resolve_effects(fighter):
 
             fighter.status_effects.remove(effect)
 
-            if effect.modifiers:
-
-                for modifier_name, modifier_value in effect.modifiers:
-                    fighter.temporary_modifiers[
-                        modifier_name] -= modifier_value
-
-            if fighter.current_hp > 0:
+            if fighter.current_hp > 0 and effect.end_message:
 
                 if fighter.owner.ai:
                     results.append({
@@ -444,14 +455,6 @@ def resolve_effects(fighter):
     return results
 
 
-# GENERAL "ON APPLY" FUNCTION FOR EFFECT TEMPORARY MODIFIERS
-
-
-def on_apply_temporary_modifiers(self):
-    for modifier_name, modifier_value in self.modifiers:
-        self.owner.fighter.temporary_modifiers[modifier_name] += modifier_value
-
-
 status_effects_by_damage_type = {
     "physical": Bleed,
     "fire": Burn,
@@ -459,6 +462,6 @@ status_effects_by_damage_type = {
     "lightning": Bleed,
     "holy": Bleed,
     "chaos": Bleed,
-    "arcane": Bleed,
+    "arcane": Slow,
     "poison": Poison
 }

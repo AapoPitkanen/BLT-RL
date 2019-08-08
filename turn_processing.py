@@ -288,6 +288,9 @@ def process_player_turn_results(results, game):
                             f"You dual wield the {dual_wield.name} and {player.equipment.MAIN_HAND.name}"
                         ))
 
+            if fighter.current_hp > fighter.max_hp:
+                fighter.recalculate_hp()
+
         if targeting:
             game.previous_state = GameStates.PLAYERS_TURN
             game.state = GameStates.TARGETING

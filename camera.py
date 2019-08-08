@@ -5,7 +5,7 @@ from typing import Tuple, Iterable, Union, TYPE_CHECKING
 class Camera:
     def __init__(self):
         self.width: int = int(terminal.state(terminal.TK_WIDTH) / 4)
-        self.height: int = int((terminal.state(terminal.TK_HEIGHT) - 9) / 2)
+        self.height: int = int((terminal.state(terminal.TK_HEIGHT) - 10) / 2)
         self.camera_x: int = 0
         self.camera_y: int = 0
 
