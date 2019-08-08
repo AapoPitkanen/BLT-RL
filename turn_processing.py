@@ -215,6 +215,7 @@ def process_player_turn_results(results, game):
         new_mouse_coordinates = player_turn_result.get("mouse_coordinates")
         action_consumed = player_turn_result.get("action_consumed")
         equip = player_turn_result.get("equip")
+        heal = player_turn_result.get("heal")
 
         if new_mouse_coordinates:
             game.mouse_coordinates = new_mouse_coordinates
@@ -333,6 +334,9 @@ def process_player_turn_results(results, game):
         if attack:
             fighter.energy += fighter.attack_energy_bonus
 
+        if heal:
+            fighter.heal(heal)
+
         if action_consumed:
             fighter.actions -= 1
 
@@ -362,8 +366,9 @@ def process_enemy_turn(game, monster_entity):
         attack = enemy_turn_result.get("attack")
         move = enemy_turn_result.get("move")
 
-        if message:
-            game.message_log.add_message(message)
+        # Break from result processing if the monster dies during the processing
+        if not monster_entity.fighter:
+            break
 
         if dead_entity:
             if dead_entity == game.player:
@@ -371,10 +376,8 @@ def process_enemy_turn(game, monster_entity):
             else:
                 message = kill_monster(dead_entity, game)
 
+        if message:
             game.message_log.add_message(message)
-
-            if game.state == GameStates.PLAYER_DEAD:
-                break
 
         if attack:
             monster_entity.fighter.energy += monster_entity.fighter.attack_energy_bonus
@@ -382,7 +385,8 @@ def process_enemy_turn(game, monster_entity):
         if move:
             monster_entity.fighter.energy += monster_entity.fighter.movement_energy_bonus
 
-    if game.state == GameStates.PLAYER_DEAD:
+    # Stop processing the enemy turn if the player or the monster dies during the monster's turn
+    if game.state == GameStates.PLAYER_DEAD or not monster_entity.fighter:
         return
 
     monster_effect_results = resolve_effects(monster_entity.fighter)

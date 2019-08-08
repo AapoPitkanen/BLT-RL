@@ -20,7 +20,7 @@ def heal(*args, **kwargs):
             Message('You are already at full health', "yellow")
         })
     else:
-        entity.fighter.heal(amount)
+        results.append({"heal": amount})
         results.append({
             'consumed':
             True,
@@ -61,7 +61,7 @@ def cast_chaos_bolt(*args, **kwargs):
             "message":
             Message(
                 f"A bolt of entropic energies strikes the {target.name} for {damage} damage!",
-                "crimson")
+                "#990000")
         })
         results.extend(target.fighter.take_damage(damage))
         game_map.gfx_effects.append(

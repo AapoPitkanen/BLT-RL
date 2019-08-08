@@ -338,7 +338,7 @@ class GameMap(Map):
                 item_choice = random_choice_from_dict(item_chances)
 
                 if item_choice == "potion_of_healing":
-                    item_component = Item(use_function=heal, amount=4)
+                    item_component = Item(use_function=heal, amount=15)
 
                     item = Entity(x,
                                   y,
@@ -353,7 +353,7 @@ class GameMap(Map):
                         targeting_message=Message(
                             'Left-click a target tile for the fireball, or right-click to cancel.',
                             "light cyan"),
-                        damage=15,
+                        damage={"fire": 25},
                         radius=2)
 
                     item = Entity(x,
@@ -382,7 +382,7 @@ class GameMap(Map):
                         chaos_bolt_damage += randint(1, 6)
 
                     item_component = Item(use_function=cast_chaos_bolt,
-                                          damage=chaos_bolt_damage,
+                                          damage={"chaos":chaos_bolt_damage},
                                           maximum_range=5)
 
                     item = Entity(x,

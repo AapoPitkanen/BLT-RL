@@ -11,6 +11,7 @@ class Effect():
                  start_message=None,
                  end_message=None,
                  resist_message=None,
+                 resolve_message=None,
                  stacking=True,
                  modifiers=None,
                  owner=None,
@@ -26,6 +27,7 @@ class Effect():
         self.start_message = start_message
         self.end_message = end_message
         self.resist_message = resist_message
+        self.resolve_message = resolve_message
         self.stacking = stacking
         self.modifiers = modifiers
         self.owner = owner
@@ -38,18 +40,70 @@ class Effect():
         self.on_critical_miss = on_critical_miss
 
 
+# LIFE STEAL
+
+
+def on_deal_damage_lifesteal(self, **kwargs):
+    results = []
+    fighter = self.owner.fighter
+    damage_dealt = kwargs.get("damage_dealt")
+    target = kwargs.get("target")
+    healed_amount = int(round(fighter.life_steal * damage_dealt))
+    if healed_amount > 0:
+        results.append({"heal": healed_amount})
+        if self.owner.ai:
+            message = f"The {self.owner.name} {self.resolve_message['monster']['message']}"
+            results.append({
+                "message":
+                Message(message,
+                        self.resolve_message['monster']['message_color'])
+            })
+        else:
+            message = f"{self.resolve_message['player']['message']} {target.name}!"
+            results.append({
+                "message":
+                Message(message,
+                        self.resolve_message['player']['message_color'])
+            })
+    return results
+
+
+def LifeSteal():
+    LifeSteal = Effect("life_steal",
+                       on_deal_damage=on_deal_damage_lifesteal,
+                       resolve_message={
+                           "player": {
+                               "message": "You steal the life force of the",
+                               "message_color": "light green"
+                           },
+                           "monster": {
+                               "message": "steals your life force!",
+                               "message_color": "red"
+                           }
+                       })
+    return LifeSteal
+
+
 # NATURAL REGENERATION
 
 
 def resolve_natural_regeneration(self):
     results = []
     fighter = self.owner.fighter
-    fighter.turn_to_natural_regenerate += 1
+    fighter.turns_to_natural_regenerate += 1
     if fighter.turns_to_natural_regenerate == fighter.natural_hp_regeneration_speed:
-        results.append({"heal_amount": 1})
-        fighter.turn_to_natural_regenerate = 0
+        results.append({"heal": 1})
+        fighter.turns_to_natural_regenerate = 0
     return results
 
+
+def NaturalRegeneration():
+    NaturalRegeneration = Effect("natural_regeneration",
+                                 resolve=resolve_natural_regeneration)
+    return NaturalRegeneration
+
+
+static_effects = [NaturalRegeneration, LifeSteal]
 
 # SLOW #
 
@@ -97,7 +151,7 @@ def resolve_poison(self):
     if self.duration > 0:
         results.append({"duration": -1})
     if poison_seed > self.owner.fighter.resistances["poison"]:
-        results.append({"take_damage": randint(1, 6)})
+        results.append({"take_damage": {"poison": randint(1, 6)}})
     else:
         if self.owner.ai:
             results.append({
@@ -160,7 +214,7 @@ def resolve_bleed(self):
     results = []
     if self.duration > 0:
         results.append({"duration": -1})
-    results.append({"take_damage": 1})
+    results.append({"take_damage": {"physical": 1}})
     return results
 
 
@@ -201,7 +255,7 @@ def resolve_burn(self):
     if self.duration > 0:
         results.append({"duration": -1})
     if burn_seed > self.owner.fighter.resistances["fire"]:
-        results.append({"take_damage": self.duration + 1})
+        results.append({"take_damage": {"fire": self.duration + 1}})
     else:
         if self.owner.ai:
             results.append({
@@ -336,32 +390,33 @@ def resolve_effects(fighter):
     results = []
 
     for effect in fighter.status_effects:
-
-        if fighter.current_hp > 0 and effect.resolve and effect.duration and effect.duration > 0:
+        if fighter.current_hp > 0 and effect.resolve:
             effect_results = effect.resolve(effect)
             for result in effect_results:
-                heal_amount = result.get("heal_amount")
+                heal = result.get("heal")
                 duration = result.get("duration")
                 duration_reset = result.get("duration_reset")
                 take_damage = result.get("take_damage")
                 message = result.get("message")
 
-                if heal_amount:
-                    fighter.heal(heal_amount)
+                if heal:
+                    fighter.heal(heal)
 
                 if duration:
-                    effect.duration -= duration
+                    effect.duration += duration
 
                 if duration_reset:
                     effect.duration = 0
 
                 if take_damage:
-                    results.extend(fighter.take_damage(take_damage))
+                    results.extend(
+                        fighter.take_damage(take_damage, from_effect=True))
 
                 if message:
-                    results.append(message)
+                    results.append({"message": message})
 
-        if effect.duration and effect.duration == 0:
+        if effect.duration is not None and effect.duration == 0:
+
             fighter.status_effects.remove(effect)
 
             if effect.modifiers:

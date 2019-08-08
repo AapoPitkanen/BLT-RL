@@ -41,7 +41,7 @@ class Game:
 
     def tick(self) -> None:
 
-        # Get a list of dicts where the results are specified as dicts e.g. {"move": True}
+        # Get a list of dicts where the results are specified e.g. {"move": True}
         player_turn_results = player_turn(self.player, self.entities,
                                           self.camera, self.game_map,
                                           self.state, self.previous_state,

@@ -107,7 +107,6 @@ class BasicMonster:
                     entities, random_x, random_y):
                 self.owner.move_towards(random_x, random_y, game_map, entities)
             results.append({"move": True})
-
         return results
 
 

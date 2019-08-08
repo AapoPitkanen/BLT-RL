@@ -5,6 +5,7 @@ from components.item import Item
 import tcod
 from copy import deepcopy
 from render_order import RenderOrder, RenderLayer
+from components.status_effects import static_effects
 
 if TYPE_CHECKING:
     from map_objects.game_map import GameMap
@@ -47,6 +48,8 @@ class Entity:
 
         if self.fighter:
             self.fighter.owner = self
+            for effect in static_effects:
+                self.fighter.apply_effect(effect)
 
         if self.ai:
             self.ai.owner = self

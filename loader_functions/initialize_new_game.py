@@ -72,16 +72,18 @@ def get_constants():
 
 def get_game_variables(constants):
     fighter_component = Fighter(roll_character_attributes(),
-                                current_hp=30,
+                                current_hp=300,
                                 base_armor_class=10,
                                 base_armor=2,
                                 base_cth_modifier=3,
                                 base_speed=100,
                                 base_attack_energy_bonus=0,
                                 base_movement_energy_bonus=0,
+                                base_damage_reflection=0.25,
+                                base_life_steal=0.5,
                                 base_natural_hp_regeneration_speed=50,
                                 base_damage_dice={
-                                    "physical": [[1, 6]],
+                                    "physical": [[3, 8]],
                                     "fire": [],
                                     "ice": [],
                                     "lightning": [],
