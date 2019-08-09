@@ -45,6 +45,8 @@ class Entity:
         self.equipment = equipment
         self.equippable = equippable
         self.path = path
+        self.distance_to_player = None
+        self.previous_distance_to_player = None
 
         if self.fighter:
             self.fighter.owner = self
@@ -123,6 +125,11 @@ class Entity:
         '''
         Calculate the A* path toward a target Entity and save it to the Entity
         '''
+
+        # Reset the path if the player comes closer to the monster
+        if self.distance_to_player and self.previous_distance_to_player and self.distance_to_player < self.previous_distance_to_player:
+            self.path = None
+
         if not self.path:
             # Create a numpy array of the map for tcod astar path calculation (the recommended way)
             map_array = game_map.game_map_to_numpy_array()

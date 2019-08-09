@@ -396,6 +396,7 @@ class Fighter:
 
     def apply_effect(self, new_effect):
         results = []
+
         effect = new_effect()
         effect.owner = self.owner
         if not self.status_effects:
@@ -470,7 +471,6 @@ class Fighter:
 
                 if damage_type == "physical":
                     rolled_damage[damage_type] -= self.armor
-
         # Damage reflection applies only on directly dealt damage, not on reflected damage or damage
         # coming from effects
         if self.damage_reflection and not reflected and not from_effect:
@@ -565,7 +565,7 @@ class Fighter:
                 1 - target_resistances[damage_type])
 
             if damage_type == "physical":
-                rolled_damage_dealt[damage_type] -= self.armor
+                rolled_damage_dealt[damage_type] -= target_armor
 
             rolled_damage_dealt[damage_type] = int(
                 round(rolled_damage_dealt[damage_type]))
@@ -574,8 +574,6 @@ class Fighter:
 
         for damage in rolled_damage_dealt.values():
             total_damage_dealt += damage
-
-        print("total_damage dealt is", total_damage_dealt)
 
         messages = {
             "monster_critical_hit_no_damage":
@@ -631,6 +629,11 @@ class Fighter:
                 messages["monster_critical_miss"]
                 if self.owner.ai else messages["player_critical_miss"]
             })
+
+            for effect in self.status_effects:
+                if effect.on_critical_miss:
+                    results.extend(effect.on_critical_miss(effect))
+
             self.energy -= 50
 
         elif critical_seed <= self.critical_hit_chance and total_damage_dealt > 0:
@@ -648,6 +651,9 @@ class Fighter:
                                               target=target,
                                               damage_dealt=total_damage_dealt))
 
+                if effect.on_critical_hit:
+                    results.extend(effect.on_critical_hit(effect))
+
             results.extend(
                 target.fighter.take_damage(rolled_damage_by_type,
                                            attacker=self))
@@ -662,6 +668,10 @@ class Fighter:
                 messages["monster_critical_hit_no_damage"]
                 if self.owner.ai else messages["player_critical_hit_no_damage"]
             })
+
+            for effect in self.status_effects:
+                if effect.on_critical_hit:
+                    results.extend(effect.on_critical_hit(effect))
 
             if not self.owner.ai:
                 self.energy += 25
@@ -699,5 +709,5 @@ class Fighter:
                 messages["monster_miss"]
                 if self.owner.ai else messages["player_miss"]
             })
-        print("rolled damage by type is", rolled_damage_by_type)
+
         return results

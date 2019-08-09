@@ -21,7 +21,9 @@ class Effect():
                  on_deal_damage=None,
                  on_take_damage=None,
                  on_critical_hit=None,
-                 on_critical_miss=None):
+                 on_critical_miss=None,
+                 effects_to_apply=None,
+                 magnitudes=None):
         self.name = name
         self.duration = duration
         self.start_message = start_message
@@ -38,23 +40,81 @@ class Effect():
         self.on_take_damage = on_take_damage
         self.on_critical_hit = on_critical_hit
         self.on_critical_miss = on_critical_miss
+        # Dict of lists to apply on different triggers, such as on critical hits
+        # or on effect expirations. Example:
+        # {
+        #    "on_critical_hit": [Effect1, Effect2],
+        #    "on_take_damage": [Effect3]
+        # }
+
+        self.effects_to_apply = effects_to_apply
+        #
+
+        self.magnitudes = magnitudes
 
 
-def resolve_curse_of_frailty(self):
+# General on take damage handler to add effects when damage is taken
+def on_take_damage_apply_effects(self):
+    results = []
+    for effect in self.effects_to_apply.get("on_take_damage", []):
+        results.extend(self.owner.fighter.apply_effect(effect))
+    return results
+
+
+# General on deal damage handler to add effects when damage is dealt
+def on_deal_damage_apply_effects(self):
+    results = []
+    for effect in self.effects_to_apply.get("on_deal_damage", []):
+        results.extend(self.owner.fighter.apply_effect(effect))
+    return results
+
+
+# General on effect apply handler to add more effects when effect is applied
+def on_apply_apply_effects(self):
+    results = []
+    for effect in self.effects_to_apply.get("on_apply", []):
+        results.extend(self.owner.fighter.apply_effect(effect))
+    return results
+
+
+# General critical hit handler to add effects on critical hit
+def on_critical_hit_apply_effects(self):
+    results = []
+    for effect in self.effects_to_apply.get("on_critical_hit", []):
+        results.extend(self.owner.fighter.apply_effect(effect))
+    return results
+
+
+# General critical miss handler to add effects on critical miss
+def on_critical_hit_apply_effects(self):
+    results = []
+    for effect in self.effects_to_apply.get("on_critical_miss", []):
+        results.extend(self.owner.fighter.apply_effect(effect))
+    return results
+
+
+# General expire handler to add effects on effect expiration
+def on_expire_apply_effects(self):
+    results = []
+    for effect in self.effects_to_apply.get("on_expire", []):
+        results.extend(self.owner.fighter.apply_effect(effect))
+    return results
+
+
+# General heal resolver
+def resolve_heal_effect(self):
+    results = []
+    heal_amount = self.magnitudes.get("heal", 0)
+    results.append({"heal": heal_amount})
+    return results
+
+
+# General effect resolver that just decrements duration
+def general_duration_resolve(self):
     results = []
     if self.duration > 0:
         results.append({"duration": -1})
     return results
-
-
-def CurseOfFrailty():
-    CurseOfFrailty = Effect("curse_of_frailty",
-                            duration=10,
-                            resolve=resolve_curse_of_frailty,
-                            modifiers={"resistances": {
-                                "physical": -0.5
-                            }})
-    return CurseOfFrailty
 
 
 # LIFE STEAL
@@ -134,7 +194,8 @@ def resolve_slow(self):
 
 def Slow():
     Slow = Effect("slow",
-                  10, {
+                  10,
+                  start_message={
                       "player": {
                           "message": "Your movements slow down!",
                           "message_color": "purple"
@@ -143,7 +204,8 @@ def Slow():
                           "message": "'s movements seem to slow down!",
                           "message_color": "light purple"
                       }
-                  }, {
+                  },
+                  end_message={
                       "player": {
                           "message": "Your movements speed up again!",
                           "message_color": "light green"
@@ -221,6 +283,44 @@ def Poison():
                     },
                     resolve=resolve_poison)
     return Poison
+
+
+# INTERNAL TRAUMA
+
+
+def resolve_internal_trauma(self):
+    results = []
+    if self.duration > 0:
+        results.append({"duration": -1})
+    if self.duration % 2 == 0:
+        results.append({"take_damage": {"physical": randint(1, 2)}})
+
+
+def InternalTrauma():
+    InternalTrauma = Effect(
+        "internal_trauma",
+        randint(4, 8),
+        start_message={
+            "player": {
+                "message": "One of your internal organs is crushed!",
+                "message_color": "#A80800"
+            },
+            "monster": {
+                "message": " is visibly shaken by the force of your attack!",
+                "message_color": "#A80800"
+            }
+        },
+        end_message={
+            "player": {
+                "message": "You feel slightly better now.",
+                "message_color": "light green"
+            },
+            "monster": {
+                "message": " regains its composure!",
+                "message_color": "yellow"
+            }
+        },
+        modifiers={})
 
 
 # BLEED #
@@ -433,6 +533,9 @@ def resolve_effects(fighter):
                     results.append({"message": message})
 
         if effect.duration is not None and effect.duration == 0:
+
+            if effect.on_expire:
+                results.extend(effect.on_expire(effect))
 
             fighter.status_effects.remove(effect)
 

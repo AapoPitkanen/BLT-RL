@@ -30,13 +30,13 @@ def main() -> None:
     )
     terminal.set("font: clacon.ttf, size=8x16")
     terminal.set(
-        "0x1000: test_tiles3.png, size=32x32, resize-filter=nearest, align=top-left"
+        "0x1000: test_tiles.png, size=32x32, resize-filter=nearest, align=top-left"
     )
     terminal.set(
         "0x2000: inventory-ui.png, size=32x32, resize-filter=nearest, align=top-left"
     )
     terminal.set(
-        "0x3000: wall_tiles2.png, size=32x32, resize-filter=nearest, align=top-left"
+        "0x3000: wall_tiles.png, size=32x32, resize-filter=nearest, align=top-left"
     )
     terminal.set(
         "0x4000: voidstone_background_1536x864.png, size=1536x864, resize=1792x1008,resize-filter=nearest, align=top-left"

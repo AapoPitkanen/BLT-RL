@@ -14,12 +14,6 @@ class Game:
                  mouse_coordinates, targeting_item):
         self.player = player
         self.entities = entities
-        self.fighter_entities = [
-            entity.fighter for entity in self.entities if entity.fighter
-        ]
-        self.monster_fighter_entities = [
-            entity.fighter for entity in self.entities if entity.ai
-        ]
         self.game_map = game_map
         self.message_log = message_log
         self.state = state
@@ -31,13 +25,13 @@ class Game:
         self.exit = False
         self.targeting_item = targeting_item
 
-    def refresh_entities(self) -> None:
-        self.fighter_entities = [
-            entity.fighter for entity in self.entities if entity.fighter
-        ]
-        self.monster_fighter_entities = [
-            entity.fighter for entity in self.entities if entity.ai
-        ]
+    @property
+    def fighter_entities(self):
+        return [entity.fighter for entity in self.entities if entity.fighter]
+
+    @property
+    def monster_fighter_entities(self):
+        return [entity.fighter for entity in self.entities if entity.ai]
 
     def tick(self) -> None:
 

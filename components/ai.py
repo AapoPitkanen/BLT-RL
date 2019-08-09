@@ -65,7 +65,13 @@ class BasicMonster:
 
         if game_map.fov[monster.x][monster.y]:
 
+            if self.owner.distance_to_player:
+                self.owner.previous_distance_to_player = self.owner.distance_to_player
+
+            self.owner.distance_to_player = self.owner.distance_to(target)
+
             self.last_player_position = GenericTarget(target.x, target.y)
+
             if monster.distance_to(target) >= 2:
                 monster.move_astar(target, game_map, entities)
                 results.append({"move": True})
