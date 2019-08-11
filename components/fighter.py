@@ -17,8 +17,10 @@ class Fighter:
             attributes: "Attributes",
             current_hp: int,
             base_armor_class: int,
+            base_dodge: int,
             base_armor: int,
-            base_cth_modifier: int,
+            base_melee_cth_modifier: int,
+            base_ranged_cth_modifier: int,
             base_speed: int,
             base_attack_energy_bonus: int,
             base_movement_energy_bonus: int,
@@ -62,9 +64,11 @@ class Fighter:
         self.attributes = attributes
         self.current_hp = current_hp
         self.base_armor_class = base_armor_class
+        self.base_dodge = base_dodge
         self.base_max_hp: int = self.current_hp
         self.base_armor = base_armor
-        self.base_cth_modifier = base_cth_modifier
+        self.base_melee_cth_modifier = base_melee_cth_modifier
+        self.base_ranged_cth_modifier = base_ranged_cth_modifier
         self.base_speed = base_speed
         self.base_attack_energy_bonus = base_attack_energy_bonus
         self.base_movement_energy_bonus = base_movement_energy_bonus
@@ -80,7 +84,7 @@ class Fighter:
         self.status_effects: List = []
         self.xp_reward = xp_reward
         self.energy: int = 0
-        self.base_fov_radius: int = 10
+        self.base_fov_radius: int = 5
         self.owner = None
         self.actions = 0
 
@@ -123,7 +127,9 @@ class Fighter:
 
     @property
     def fov_radius(self) -> int:
-        return self.base_fov_radius + self.perception["attribute_modifier"]
+        return min(
+            20, self.base_fov_radius +
+            int(round(self.perception["attribute_modifier"] / 2)))
 
     @property
     def natural_hp_regeneration_speed(self) -> int:
@@ -138,20 +144,20 @@ class Fighter:
                        "natural_hp_regeneration_speed_modifier")
 
     @property
-    def chance_to_hit_modifier(self) -> int:
+    def melee_chance_to_hit_modifier(self) -> int:
         if self.owner and self.owner.equipment:
             modifier = int(
                 round((self.strength["attribute_modifier"] +
                        self.dexterity["attribute_modifier"] +
                        self.perception["attribute_modifier"]) /
-                      2)) + self.owner.equipment.chance_to_hit_modifier
+                      2)) + self.owner.equipment.melee_chance_to_hit_modifier
         else:
             modifier = int(
                 round((self.strength["attribute_modifier"] +
                        self.dexterity["attribute_modifier"] +
                        self.perception["attribute_modifier"]) / 2))
-        return modifier + self.calculate_effect_modifiers(
-            "chance_to_hit_modifier")
+        return self.base_melee_cth_modifier + modifier + self.calculate_effect_modifiers(
+            "melee_chance_to_hit_modifier")
 
     @property
     def chance_to_hit_lower_bound_modifier(self) -> int:
@@ -186,12 +192,25 @@ class Fighter:
     @property
     def armor_class(self) -> int:
         if self.owner and self.owner.equipment:
-            modifier = self.dexterity[
-                "attribute_modifier"] + self.owner.equipment.armor_class_modifier
+            modifier = self.owner.equipment.armor_class_modifier
         else:
-            modifier = self.dexterity["attribute_modifier"]
+            modifier = 0
         return self.base_armor_class + modifier + self.calculate_effect_modifiers(
             "armor_class_modifier")
+
+    @property
+    def shield_armor_class(self) -> int:
+        return self.owner.equipment.shield_armor_class
+
+    @property
+    def dodge(self) -> int:
+        if self.owner and self.owner.equipment:
+            modifier = self.owner.equipment.dodge_modifier
+        else:
+            modifier = 0
+        return self.dexterity[
+            "attribute_modifier"] + self.base_dodge + modifier + self.calculate_effect_modifiers(
+                "dodge_modifier")
 
     @property
     def speed(self) -> int:
@@ -272,8 +291,9 @@ class Fighter:
         else:
             modifier = 0
 
-        return self.base_armor + modifier + self.calculate_effect_modifiers(
-            "armor_modifier")
+        return max(
+            0, self.base_armor + modifier +
+            self.calculate_effect_modifiers("armor_modifier"))
 
     @property
     def strength(self) -> Dict[str, int]:
@@ -396,13 +416,13 @@ class Fighter:
 
     def apply_effect(self, new_effect):
         results = []
-
+        apply_effect_results = []
         effect = new_effect()
         effect.owner = self.owner
         if not self.status_effects:
             self.status_effects.append(effect)
             if effect.on_apply:
-                effect.on_apply(effect)
+                apply_effect_results.extend(effect.on_apply(effect))
             if effect.start_message:
                 if self.owner.ai:
                     results.append({
@@ -420,13 +440,15 @@ class Fighter:
                     })
         else:
             for old_effect in self.status_effects:
-                if effect.name == old_effect.name and effect.stacking:
+                if effect.name == old_effect.name and effect.stacking_duration:
                     old_effect.duration += effect.duration
+                    break
+                elif effect.name == old_effect.name and effect.only_one_allowed:
                     break
             else:
                 self.status_effects.append(effect)
                 if effect.on_apply:
-                    effect.on_apply(effect)
+                    apply_effect_results.extend(effect.on_apply(effect))
                 if effect.start_message:
                     if self.owner.ai:
                         results.append({
@@ -444,6 +466,20 @@ class Fighter:
                                 effect.start_message['player']
                                 ['message_color'])
                         })
+
+        for result in apply_effect_results:
+            heal = result.get("heal")
+            take_damage = result.get("take_damage")
+            message = result.get("message")
+
+            if take_damage:
+                results.extend(self.take_damage(take_damage, from_effect=True))
+
+            if heal:
+                self.heal(heal)
+
+            if message:
+                results.append({"message": message})
         return results
 
     def take_damage(self,
@@ -452,6 +488,13 @@ class Fighter:
                     reflected=False,
                     from_effect=False):
         results = []
+        # There are cases where the entity might take damage from multiple different sources at the same time (such as effects that
+        # are applied immediately), so it's easier to just return nothing if the entity is already dead before
+        # trying to process the results of the next damage source (there's no point processing anything if the
+        # entity is already dead.)
+        if self.current_hp <= 0:
+            return results
+
         # Don't modify the original rolled damage, the original damage is needed for damage reflection
         rolled_damage = dict.copy(damage_by_type)
         resistances = self.resistances
@@ -491,8 +534,10 @@ class Fighter:
 
         for damage_value in rolled_damage.values():
             damage_amount += damage_value
-
         self.current_hp -= damage_amount
+        for effect in self.status_effects:
+            if effect.on_take_damage:
+                results.extend(effect.on_take_damage(effect))
 
         if self.current_hp <= 0:
 
@@ -506,7 +551,6 @@ class Fighter:
                     "entity": self.owner
                 }
                 results.append({"drop_loot": drop_loot})
-
         return results
 
     def heal(self, amount: int) -> None:
@@ -515,25 +559,46 @@ class Fighter:
         if self.current_hp > self.max_hp:
             self.current_hp = self.max_hp
 
-    def attack(self, target):
+    def attack(self, target, ranged=False):
 
-        damage_dealt: bool = False
-        target_hit: bool = False
         results = []
 
-        target_roll: int = target.fighter.armor_class
+        for effect in self.status_effects:
+            if effect.on_attack:
+                results.extend(effect.on_attack(effect, target))
+
+        target_status_effects = [
+            effect.name for effect in target.fighter.status_effects
+        ]
+
+        automatic_hit_seed: float = random()
+        dodge_seed: int = randint(1, 20)
+
+        dodge: int = target.fighter.dodge
+        shield_ac: int = target.fighter.shield_armor_class
+        ac: int = target.fighter.armor_class
+
+        target_roll: int = ac + dodge + shield_ac
+
         critical_seed: float = random()
-        cth_modifier: int = self.chance_to_hit_modifier
+        if ranged:
+            cth_modifier: int = self.ranged_chance_to_hit_modifier
+        else:
+            cth_modifier: int = self.melee_chance_to_hit_modifier
         lower_bound_cth_modifier: int = self.chance_to_hit_lower_bound_modifier
         dice_roll: int = randint(1,
                                  20 + cth_modifier) + lower_bound_cth_modifier
+
+        if dice_roll >= target_roll and dodge <= dodge_seed:
+            dice_roll = randint(1,
+                                20 + cth_modifier) + lower_bound_cth_modifier
+
         damage_dice = self.damage_dice
         damage_modifiers = self.damage
         rolled_damage: int = 0
 
         target_resistances = target.fighter.resistances
         target_armor = target.fighter.armor
-
         rolled_damage_by_type = {}
 
         for damage_type in damage_dice:
@@ -574,8 +639,23 @@ class Fighter:
 
         for damage in rolled_damage_dealt.values():
             total_damage_dealt += damage
-
         messages = {
+            "monster_blocked_1":
+            Message(f"The {target.name} blocks your attack!", "red"),
+            "player_blocked_1":
+            Message(f"You block the {self.owner.name}'s attack!", "green"),
+            "monster_blocked_2":
+            Message(f"The {target.name} deflects your attack!", "red"),
+            "player_blocked_2":
+            Message(f"You deflect the {self.owner.name}'s attack!", "green"),
+            "monster_dodged_1":
+            Message(f"The {target.name} dodges your attack!", "red"),
+            "player_dodged_1":
+            Message(f"You dodge the {self.owner.name}'s attack!", "green"),
+            "monster_dodged_2":
+            Message(f"The {target.name} evades your attack!", "red"),
+            "player_dodged_2":
+            Message(f"You evade the {self.owner.name}'s attack!", "green"),
             "monster_critical_hit_no_damage":
             Message(
                 f"The {self.owner.name.capitalize()} critically hits you but does not manage to pierce your armor!",
@@ -623,62 +703,52 @@ class Fighter:
                 "dark red")
         }
 
-        if critical_seed >= 0.95:
-            results.append({
-                "message":
-                messages["monster_critical_miss"]
-                if self.owner.ai else messages["player_critical_miss"]
-            })
+        if automatic_hit_seed >= 0.95:
 
-            for effect in self.status_effects:
-                if effect.on_critical_miss:
-                    results.extend(effect.on_critical_miss(effect))
+            if critical_seed <= self.critical_hit_chance and total_damage_dealt > 0:
+                results.append({
+                    "message":
+                    messages["monster_critical_hit"]
+                    if self.owner.ai else messages["player_critical_hit"]
+                })
 
-            self.energy -= 50
+                for effect in self.status_effects:
+                    if effect.on_deal_damage:
+                        results.extend(
+                            effect.on_deal_damage(
+                                effect,
+                                target=target,
+                                damage_dealt=total_damage_dealt))
 
-        elif critical_seed <= self.critical_hit_chance and total_damage_dealt > 0:
+                    if effect.on_critical_hit:
+                        results.extend(effect.on_critical_hit(effect))
 
-            results.append({
-                "message":
-                messages["monster_critical_hit"]
-                if self.owner.ai else messages["player_critical_hit"]
-            })
+                    if effect.on_attack_hit:
+                        results.extend(effect.on_attack_hit(effect))
 
-            for effect in self.status_effects:
-                if effect.on_deal_damage:
-                    results.extend(
-                        effect.on_deal_damage(effect,
-                                              target=target,
-                                              damage_dealt=total_damage_dealt))
+                results.extend(
+                    target.fighter.take_damage(rolled_damage_by_type,
+                                               attacker=self))
 
-                if effect.on_critical_hit:
-                    results.extend(effect.on_critical_hit(effect))
+                if not self.owner.ai:
+                    self.energy += 25
 
-            results.extend(
-                target.fighter.take_damage(rolled_damage_by_type,
-                                           attacker=self))
+            elif critical_seed <= self.critical_hit_chance and total_damage_dealt < 0:
 
-            if not self.owner.ai:
-                self.energy += 25
+                results.append({
+                    "message":
+                    messages["monster_critical_hit_no_damage"] if self.owner.ai
+                    else messages["player_critical_hit_no_damage"]
+                })
 
-        elif critical_seed <= self.critical_hit_chance and total_damage_dealt <= 0:
+                for effect in self.status_effects:
+                    if effect.on_critical_hit:
+                        results.extend(effect.on_critical_hit(effect))
 
-            results.append({
-                "message":
-                messages["monster_critical_hit_no_damage"]
-                if self.owner.ai else messages["player_critical_hit_no_damage"]
-            })
+                if not self.owner.ai:
+                    self.energy += 25
 
-            for effect in self.status_effects:
-                if effect.on_critical_hit:
-                    results.extend(effect.on_critical_hit(effect))
-
-            if not self.owner.ai:
-                self.energy += 25
-
-        elif dice_roll >= target_roll:
-            if total_damage_dealt > 0:
-
+            elif total_damage_dealt > 0:
                 results.append({
                     "message":
                     messages["monster_hit"]
@@ -693,21 +763,153 @@ class Fighter:
                                 target=target,
                                 damage_dealt=total_damage_dealt))
 
+                    if effect.on_attack_hit:
+                        results.extend(effect.on_attack_hit(effect))
+
                 results.extend(
                     target.fighter.take_damage(rolled_damage_by_type,
                                                attacker=self))
             else:
-
                 results.append({
                     "message":
                     messages["monster_no_damage"]
                     if self.owner.ai else messages["player_no_damage"]
                 })
+
+                for effect in self.status_effects:
+                    if effect.on_attack_hit:
+                        results.extend(effect.on_attack_hit(effect))
+
+        elif critical_seed >= 0.95:
+            results.append({
+                "message":
+                messages["monster_critical_miss"]
+                if self.owner.ai else messages["player_critical_miss"]
+            })
+
+            for effect in self.status_effects:
+                if effect.on_critical_miss:
+                    results.extend(effect.on_critical_miss(effect))
+
+                if effect.on_attack_miss:
+                    results.extend(effect.on_attack_miss(effect))
+
+            self.energy -= 50
+
+        elif dice_roll > ac and dice_roll < (ac + dodge):
+            if randint(0, 1) == 1:
+                results.append({
+                    "message":
+                    messages["monster_dodged_1"]
+                    if target.ai else messages["player_dodged_1"]
+                })
+            else:
+                results.append({
+                    "message":
+                    messages["monster_dodged_2"]
+                    if target.ai else messages["player_dodged_2"]
+                })
+
+            for effect in self.status_effects:
+                if effect.on_attack_miss:
+                    results.extend(effect.on_attack_miss(effect))
+
+        elif dice_roll > (ac + dodge) and dice_roll < (ac + dodge + shield_ac):
+            if randint(0, 1) == 1:
+                results.append({
+                    "message":
+                    messages["monster_blocked_1"]
+                    if target.ai else messages["player_blocked_1"]
+                })
+            else:
+                results.append({
+                    "message":
+                    messages["monster_blocked_2"]
+                    if target.ai else messages["player_blocked_2"]
+                })
+            for effect in self.status_effects:
+                if effect.on_attack_miss:
+                    results.extend(effect.on_attack_miss(effect))
+
+        elif dice_roll >= target_roll:
+            if critical_seed <= self.critical_hit_chance and total_damage_dealt > 0:
+                results.append({
+                    "message":
+                    messages["monster_critical_hit"]
+                    if self.owner.ai else messages["player_critical_hit"]
+                })
+
+                for effect in self.status_effects:
+                    if effect.on_deal_damage:
+                        results.extend(
+                            effect.on_deal_damage(
+                                effect,
+                                target=target,
+                                damage_dealt=total_damage_dealt))
+
+                    if effect.on_critical_hit:
+                        results.extend(effect.on_critical_hit(effect))
+
+                results.extend(
+                    target.fighter.take_damage(rolled_damage_by_type,
+                                               attacker=self))
+
+                if not self.owner.ai:
+                    self.energy += 25
+
+            elif critical_seed <= self.critical_hit_chance and total_damage_dealt < 0:
+                results.append({
+                    "message":
+                    messages["monster_critical_hit_no_damage"] if self.owner.ai
+                    else messages["player_critical_hit_no_damage"]
+                })
+
+                for effect in self.status_effects:
+                    if effect.on_critical_hit:
+                        results.extend(effect.on_critical_hit(effect))
+
+                if not self.owner.ai:
+                    self.energy += 25
+
+            elif total_damage_dealt > 0:
+                results.append({
+                    "message":
+                    messages["monster_hit"]
+                    if self.owner.ai else messages["player_hit"]
+                })
+
+                for effect in self.status_effects:
+                    if effect.on_deal_damage:
+                        results.extend(
+                            effect.on_deal_damage(
+                                effect,
+                                target=target,
+                                damage_dealt=total_damage_dealt))
+
+                    if effect.on_attack_hit:
+                        results.extend(effect.on_attack_hit(effect))
+
+                results.extend(
+                    target.fighter.take_damage(rolled_damage_by_type,
+                                               attacker=self))
+            else:
+                results.append({
+                    "message":
+                    messages["monster_no_damage"]
+                    if self.owner.ai else messages["player_no_damage"]
+                })
+
+                for effect in self.status_effects:
+
+                    if effect.on_attack_hit:
+                        results.extend(effect.on_attack_hit(effect))
         else:
             results.append({
                 "message":
                 messages["monster_miss"]
                 if self.owner.ai else messages["player_miss"]
             })
-
+            for effect in self.status_effects:
+                if effect.on_attack_miss:
+                    results.extend(effect.on_attack_miss(effect))
         return results

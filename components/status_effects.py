@@ -12,7 +12,8 @@ class Effect():
                  end_message=None,
                  resist_message=None,
                  resolve_message=None,
-                 stacking=True,
+                 stacking_duration=True,
+                 only_one_allowed=False,
                  modifiers=None,
                  owner=None,
                  resolve=None,
@@ -20,6 +21,9 @@ class Effect():
                  on_expire=None,
                  on_deal_damage=None,
                  on_take_damage=None,
+                 on_attack=None,
+                 on_attack_hit=None,
+                 on_attack_miss=None,
                  on_critical_hit=None,
                  on_critical_miss=None,
                  effects_to_apply=None,
@@ -30,7 +34,8 @@ class Effect():
         self.end_message = end_message
         self.resist_message = resist_message
         self.resolve_message = resolve_message
-        self.stacking = stacking
+        self.stacking_duration = stacking_duration
+        self.only_one_allowed = only_one_allowed
         self.modifiers = modifiers
         self.owner = owner
         self.resolve = resolve
@@ -38,6 +43,9 @@ class Effect():
         self.on_expire = on_expire
         self.on_deal_damage = on_deal_damage
         self.on_take_damage = on_take_damage
+        self.on_attack = on_attack
+        self.on_attack_hit = on_attack_hit
+        self.on_attack_miss = on_attack_miss
         self.on_critical_hit = on_critical_hit
         self.on_critical_miss = on_critical_miss
         # Dict of lists to apply on different triggers, such as on critical hits
@@ -46,11 +54,69 @@ class Effect():
         #    "on_critical_hit": [Effect1, Effect2],
         #    "on_take_damage": [Effect3]
         # }
-
         self.effects_to_apply = effects_to_apply
-        #
-
         self.magnitudes = magnitudes
+
+
+# DEBUG KILL ON APPLY
+
+
+def on_apply_kill_target(self):
+    results = []
+    results.append({"take_damage": {"physical": 10000}})
+    return results
+
+
+def KillTarget():
+    KillTarget = Effect(name="kill_target",
+                        duration=0,
+                        on_apply=on_apply_kill_target)
+    return KillTarget
+
+
+def TouchOfDeath():
+    TouchOfDeath = Effect(
+        name="touch_of_death",
+        on_deal_damage=on_deal_damage_apply_effects_to_target,
+        effects_to_apply={"on_deal_damage": [KillTarget]})
+    return TouchOfDeath
+
+
+def DealDurationDamage():
+    DealDurationDamage = Effect(name="deal_duration_damage",
+                                duration=20,
+                                start_message={
+                                    "player": {
+                                        "message":
+                                        "You feel your innards bursting!",
+                                        "message_color": "purple"
+                                    },
+                                    "monster": {
+                                        "message":
+                                        " starts to bleed all over!",
+                                        "message_color": "purple"
+                                    }
+                                },
+                                resolve=resolve_poison,
+                                only_one_allowed=True,
+                                stacking_duration=False)
+    return DealDurationDamage
+
+
+def OnHitApplyDurationDamage():
+    OnHitApplyDurationDamage = Effect(
+        name="on_hit_apply_duration_damage",
+        on_deal_damage=on_deal_damage_apply_effects_to_target,
+        effects_to_apply={"on_deal_damage": [DealDurationDamage]})
+    return OnHitApplyDurationDamage
+
+
+# General on attack handler to add effects to target before attack results are resolved
+def on_attack_apply_effects_to_target(self, target):
+    results = []
+    for effect in self.effects_to_apply.get("on_attack", []):
+        results.extend(target.fighter.apply_effect(effect))
+    return results
 
 
 # General on take damage handler to add effects when damage is taken
@@ -61,8 +127,17 @@ def on_take_damage_apply_effects(self):
     return results
 
 
-# General on deal damage handler to add effects when damage is dealt
-def on_deal_damage_apply_effects(self):
+# General on deal damage handler to add effects to self when damage is dealt
+def on_deal_damage_apply_effects_to_target(self, **kwargs):
+    results = []
+    target = kwargs.get("target")
+
+    for effect in self.effects_to_apply.get("on_deal_damage", []):
+        results.extend(target.fighter.apply_effect(effect))
+    return results
+
+
+def on_deal_damage_apply_effects_to_self(self, **kwargs):
     results = []
     for effect in self.effects_to_apply.get("on_deal_damage", []):
         results.extend(self.owner.fighter.apply_effect(effect))
@@ -248,8 +323,8 @@ def resolve_poison(self):
 
 
 def Poison():
-    Poison = Effect("poison",
-                    randint(3, 6),
+    Poison = Effect(name="poison",
+                    duration=randint(3, 6),
                     start_message={
                         "player": {
                             "message": "You are poisoned!",
@@ -357,7 +432,7 @@ def Bleed():
                            "message_color": "yellow"
                        }
                    },
-                   stacking=False,
+                   stacking_duration=False,
                    resolve=resolve_bleed)
     return Bleed
 
@@ -498,6 +573,23 @@ def Chilled():
         },
         resolve=resolve_chilled)
     return Chilled
+
+
+# ARMOR NEGATION
+
+
+def ArmorNegated():
+    ArmorNegated = Effect(name="armor_negated",
+                          duration=0,
+                          modifiers={"armor_modifier": -999})
+    return ArmorNegated
+
+
+def IgnoreArmor():
+    IgnoreArmor = Effect(name="ignore_armor",
+                         on_attack=on_attack_apply_effects_to_target,
+                         effects_to_apply={"on_attack": [ArmorNegated]})
+    return IgnoreArmor
 
 
 # GENERAL EFFECT RESOLVER #

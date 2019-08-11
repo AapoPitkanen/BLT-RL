@@ -6,6 +6,7 @@ from components.equipment import Equipment
 from components.level import Level
 from components.attributes import roll_character_attributes
 from components.armors import generate_random_armor
+from components.status_effects import TouchOfDeath
 from entity import Entity
 from render_order import RenderOrder
 from game_messages import MessageLog, Message
@@ -19,7 +20,7 @@ def get_constants():
     fps = 30
 
     screen_width: int = 224
-    screen_height: int = 63
+    screen_height: int = 74
 
     map_width: int = 80
     map_height: int = 60
@@ -73,15 +74,17 @@ def get_constants():
 def get_game_variables(constants):
     fighter_component = Fighter(roll_character_attributes(),
                                 current_hp=30,
-                                base_armor_class=10,
-                                base_armor=2,
-                                base_cth_modifier=0,
+                                base_armor_class=5,
+                                base_dodge=5,
+                                base_armor=0,
+                                base_melee_cth_modifier=100,
+                                base_ranged_cth_modifier=0,
                                 base_speed=100,
                                 base_attack_energy_bonus=0,
                                 base_movement_energy_bonus=0,
                                 base_natural_hp_regeneration_speed=50,
                                 base_damage_dice={
-                                    "physical": [[1, 3]],
+                                    "physical": [[1, 6]],
                                     "fire": [],
                                     "ice": [],
                                     "lightning": [],
@@ -105,7 +108,7 @@ def get_game_variables(constants):
                     level=level_component)
     entities = [player]
 
-    for _i in range(25):
+    for _i in range(2):
         armor = generate_random_armor()
         player.inventory.add_item(armor)
 

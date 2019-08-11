@@ -139,6 +139,8 @@ def render_all(entities, player, game_map, message_log, bar_width, panel_y,
                                          y=cell_term_y,
                                          c=0x3014)
 
+    terminal.color(terminal.color_from_name("white"))
+    
     terminal.layer(RenderLayer.HUD_BACKGROUND.value)
 
     hud_background_menu(9)
@@ -162,6 +164,8 @@ def render_all(entities, player, game_map, message_log, bar_width, panel_y,
         terminal.color(terminal.color_from_name(message.color))
         print_shadowed_text(message_log.x, line_y, message.text)
         line_y += 1
+
+    terminal.color(terminal.color_from_name("white"))
 
     if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY):
         if game_state == GameStates.SHOW_INVENTORY:

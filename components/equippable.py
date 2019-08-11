@@ -6,9 +6,12 @@ class Equippable:
             self,
             equippable_type=None,
             slot=None,
-            chance_to_hit_modifier: int = 0,
+            melee_chance_to_hit_modifier: int = 0,
+            ranged_chance_to_hit_modifier: int = 0,
             armor_modifier: int = 0,
             armor_class_modifier: int = 0,
+            dodge_modifier: int = 0,
+            shield_armor_class: int = 0,
             max_hp_modifier: int = 0,
             speed_modifier: int = 0,
             movement_energy_bonus_modifier: int = 0,
@@ -65,9 +68,12 @@ class Equippable:
         # material: material of the equipment, giving specific bonuses
         # quality: quality of the equipment, giving specific bonuses
         self.equippable_type = equippable_type
-        self.chance_to_hit_modifier = chance_to_hit_modifier
+        self.melee_chance_to_hit_modifier = melee_chance_to_hit_modifier
+        self.ranged_chance_to_hit_modifier = ranged_chance_to_hit_modifier
         self.armor_modifier = armor_modifier
         self.armor_class_modifier = armor_class_modifier
+        self.dodge_modifier = dodge_modifier
+        self.shield_armor_class = shield_armor_class
         self.max_hp_modifier = max_hp_modifier
         self.speed_modifier = speed_modifier
         self.movement_energy_bonus_modifier = movement_energy_bonus_modifier

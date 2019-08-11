@@ -127,8 +127,9 @@ class Entity:
         '''
 
         # Reset the path if the player comes closer to the monster
-        if self.distance_to_player and self.previous_distance_to_player and self.distance_to_player < self.previous_distance_to_player:
-            self.path = None
+        if game_map.fov[self.x, self.y]:
+            if self.distance_to_player and self.previous_distance_to_player and self.distance_to_player < self.previous_distance_to_player:
+                self.path = None
 
         if not self.path:
             # Create a numpy array of the map for tcod astar path calculation (the recommended way)

@@ -8,6 +8,7 @@ class Equipment:
     def __init__(self,
                  head=None,
                  shoulders=None,
+                 cloak=None,
                  necklace=None,
                  torso=None,
                  legs=None,
@@ -20,6 +21,7 @@ class Equipment:
                  off_hand=None):
         self.HEAD = head
         self.SHOULDERS = shoulders
+        self.CLOAK = cloak
         self.NECKLACE = necklace
         self.TORSO = torso
         self.LEGS = legs
@@ -34,7 +36,7 @@ class Equipment:
 
     def calculate_equipment_modifier(self, modifier_to_search):
         modifier = 0
-        for slot, entity in self.__dict__.items():
+        for entity in self.__dict__.values():
             if entity and entity.equippable:
                 for modifier_name, modifier_value in entity.equippable.__dict__.items(
                 ):
@@ -54,7 +56,7 @@ class Equipment:
             "arcane": [],
             "poison": [],
         }
-        for slot, entity in self.__dict__.items():
+        for entity in self.__dict__.values():
             if entity and entity.equippable:
                 for damage_type, dice_list in entity.equippable.damage_dice.items(
                 ):
@@ -167,12 +169,21 @@ class Equipment:
             "natural_hp_regeneration_speed_modifier")
 
     @property
-    def chance_to_hit_modifier(self):
-        return self.calculate_equipment_modifier("chance_to_hit_modifier")
+    def melee_chance_to_hit_modifier(self):
+        return self.calculate_equipment_modifier(
+            "melee_chance_to_hit_modifier")
 
     @property
     def armor_class_modifier(self):
         return self.calculate_equipment_modifier("armor_class_modifier")
+
+    @property
+    def shield_armor_class(self):
+        return self.calculate_equipment_modifier("shield_armor_class")
+
+    @property
+    def dodge_modifier(self):
+        return self.calculate_equipment_modifier("dodge_modifier")
 
     @property
     def critical_hit_chance_modifier(self):

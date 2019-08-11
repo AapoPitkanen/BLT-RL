@@ -240,22 +240,20 @@ class GameMap(Map):
                     inventory_seed = randint(1, 20)
                     fighter_component = Fighter(
                         generate_attributes(16, 13, 12, 16, 7, 11, 10, 10),
-                        current_hp=25,
-                        base_armor_class=12,
+                        current_hp=40,
+                        base_armor_class=10,
                         base_armor=0,
-                        base_cth_modifier=0,
+                        base_dodge=1,
+                        base_melee_cth_modifier=0,
+                        base_ranged_cth_modifier=0,
                         base_speed=98,
                         base_attack_energy_bonus=0,
                         base_movement_energy_bonus=0,
-                        base_natural_hp_regeneration_speed=25,
+                        base_natural_hp_regeneration_speed=45,
                         xp_reward=35,
-                        base_damage_modifiers={
-                            "physical": 2,
-                            "fire": 1
-                        },
                         base_damage_dice={
-                            "physical": [[1, 6]],
-                            "fire": [[1, 1]],
+                            "physical": [[1, 8]],
+                            "fire": [],
                             "ice": [],
                             "lightning": [],
                             "holy": [],
@@ -292,14 +290,15 @@ class GameMap(Map):
                         current_hp=30,
                         base_armor_class=9,
                         base_armor=2,
-                        base_cth_modifier=5,
+                        base_dodge=0,
+                        base_melee_cth_modifier=4,
+                        base_ranged_cth_modifier=0,
                         base_speed=95,
                         base_attack_energy_bonus=0,
                         base_movement_energy_bonus=0,
-                        base_natural_hp_regeneration_speed=33,
+                        base_natural_hp_regeneration_speed=25,
                         base_damage_modifiers={
-                            "physical": 10,
-                            "fire": 2
+                            "physical": 2,
                         },
                         base_damage_dice={
                             "physical": [[1, 10]],
@@ -461,37 +460,25 @@ class GameMap(Map):
                                 self.width - 1, map_x - 1
                         ), map_y] and self.transparent[
                                 map_x, min(self.height - 1, map_y -
-                                           1)] and self.transparent[
-                                               min(self.width - 1, map_x - 1),
-                                               min(self.height - 1, map_y -
-                                                   1)]:
+                                           1)]:
                             terminal.put(x=x * 4, y=y * 2, c=OUT_CORNER_TOP_LEFT)
                         elif self.transparent[min(
                                 self.width - 1, map_x + 1
                         ), map_y] and self.transparent[
                                 map_x, min(self.height - 1, map_y -
-                                           1)] and self.transparent[
-                                               min(self.width - 1, map_x + 1),
-                                               min(self.height - 1, map_y -
-                                                   1)]:
+                                           1)]:
                             terminal.put(x=x * 4, y=y * 2, c=OUT_CORNER_TOP_RIGHT)
                         elif self.transparent[min(
                                 self.width - 1, map_x - 1
                         ), map_y] and self.transparent[
                                 map_x, min(self.height - 1, map_y +
-                                           1)] and self.transparent[
-                                               min(self.width - 1, map_x - 1),
-                                               min(self.height - 1, map_y -
-                                                   1)]:
+                                           1)]:
                             terminal.put(x=x * 4, y=y * 2, c=OUT_CORNER_BOTTOM_LEFT)
                         elif self.transparent[min(
                                 self.width - 1, map_x + 1
                         ), map_y] and self.transparent[
                                 map_x, min(self.height - 1, map_y +
-                                           1)] and self.transparent[
-                                               min(self.width - 1, map_x + 1),
-                                               min(self.height - 1, map_y -
-                                                   1)]:
+                                           1)]:
                             terminal.put(x=x * 4, y=y * 2, c=OUT_CORNER_BOTTOM_RIGHT)
                         # Check for edges
                         elif self.transparent[map_x,

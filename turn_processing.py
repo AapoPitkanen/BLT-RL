@@ -76,9 +76,9 @@ def player_turn(player, entities, camera, game_map, game_state,
                 if entity.item and entity.x == player.x and entity.y == player.y:
                     pickup_results = player.inventory.add_item(entity)
                     player_turn_results.extend(pickup_results)
+                    player_turn_results.append({"action_consumed": True})
                     player_turn_results.append(
                         {"game_state": GameStates.ENEMY_TURN})
-                    player_turn_results.append({"action_consumed": True})
                     break
             else:
                 player_turn_results.append({
@@ -128,6 +128,8 @@ def player_turn(player, entities, camera, game_map, game_state,
                 elif game_state == GameStates.DROP_INVENTORY:
                     player_turn_results.extend(
                         player.inventory.drop_item(item))
+                    player_turn_results.append(
+                        {"game_state": GameStates.ENEMY_TURN})
 
                 player_turn_results.append({"action_consumed": True})
 
@@ -147,7 +149,8 @@ def player_turn(player, entities, camera, game_map, game_state,
                 elif game_state == GameStates.DROP_EQUIPMENT:
                     player_turn_results.extend(
                         player.inventory.drop_item(equipment))
-
+                    player_turn_results.append(
+                        {"game_state": GameStates.ENEMY_TURN})
                 player_turn_results.append({"action_consumed": True})
 
         if take_stairs:
@@ -194,7 +197,6 @@ def player_turn(player, entities, camera, game_map, game_state,
 def process_player_turn_results(results, game):
     player = game.player
     fighter = game.player.fighter
-
     for player_turn_result in results:
         message = player_turn_result.get("message")
         dead_entity = player_turn_result.get("dead")
@@ -247,6 +249,7 @@ def process_player_turn_results(results, game):
             game.entities.remove(item_added)
 
         if item_consumed:
+            # TODO - Figure out a better way for item usage and state change
             game.state = GameStates.ENEMY_TURN
 
         if item_dropped:
@@ -259,6 +262,7 @@ def process_player_turn_results(results, game):
 
         if equip:
             equip_results = player.equipment.toggle_equip(equip)
+            equip_success = False
 
             for equip_result in equip_results:
                 equipped = equip_result.get("equipped")
@@ -269,11 +273,13 @@ def process_player_turn_results(results, game):
                 if equipped:
                     game.message_log.add_message(
                         Message(f"You equip the {equipped.name}.", "white"))
+                    equip_success = True
 
                 if unequipped:
                     game.message_log.add_message(
                         Message(f"You unequip the {unequipped.name}.",
                                 "white"))
+                    equip_success = True
 
                 if cannot_equip_message:
                     game.message_log.add_message(cannot_equip_message)
@@ -288,9 +294,13 @@ def process_player_turn_results(results, game):
                         Message(
                             f"You dual wield the {dual_wield.name} and {player.equipment.MAIN_HAND.name}"
                         ))
+                    equip_success = True
 
             if fighter.current_hp > fighter.max_hp:
                 fighter.recalculate_hp()
+
+            if equip_success:
+                game.state = GameStates.ENEMY_TURN
 
         if targeting:
             game.previous_state = GameStates.PLAYERS_TURN

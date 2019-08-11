@@ -44,7 +44,7 @@ class Inventory:
             "message":
             Message(
                 f"You pick up the {item_entity.name}{' (stack of ' + str(item_entity.item.quantity) + ')' if item_entity.item.quantity > 1 else ''}.",
-                "#43ABC8")
+                "#3838FF")
         })
         return results
 

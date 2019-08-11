@@ -4,6 +4,7 @@ from enum import Enum, auto
 class EquipmentSlots(Enum):
     HEAD = auto()
     SHOULDERS = auto()
+    CLOAK = auto()
     NECKLACE = auto()
     TORSO = auto()
     LEGS = auto()
@@ -23,6 +24,6 @@ equipment_slot_armor_list = [
 ]
 
 equipment_slot_trinket_list = [
-    EquipmentSlots.NECKLACE, EquipmentSlots.RIGHT_RING,
+    EquipmentSlots.CLOAK, EquipmentSlots.NECKLACE, EquipmentSlots.RIGHT_RING,
     EquipmentSlots.LEFT_RING
 ]

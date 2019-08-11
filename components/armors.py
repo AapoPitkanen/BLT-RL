@@ -12,7 +12,6 @@ material_names = [
     "brimstone", "cold iron", "thunderstone", "pearlstone", "electrum",
     "adamantine", "meteoric iron"
 ]
-
 material_weights = [
     0.1, 0.11, 0.09, 0.08, 0.06, 0.05, 0.12, 0.11, 0.1, 0.08, 0.01, 0.02, 0.02,
     0.02, 0.0045, 0.0045, 0.0045, 0.0045, 0.0045, 0.0045, 0.0005, 0.0025
@@ -32,16 +31,16 @@ quality_weights = [
 def generate_quality_modifiers():
     quality_modifiers = {
         "abysmal": {
-            "armor_modifier": randint(-5, 0),
-            "armor_class_modifier": randint(-5, 0)
-        },
-        "awful": {
             "armor_modifier": randint(-4, 0),
             "armor_class_modifier": randint(-4, 0)
         },
-        "bad": {
+        "awful": {
             "armor_modifier": randint(-3, 0),
             "armor_class_modifier": randint(-3, 0)
+        },
+        "bad": {
+            "armor_modifier": randint(-2, 0),
+            "armor_class_modifier": randint(-2, 0)
         },
         "poor": {
             "armor_modifier": randint(-2, 1),
@@ -116,6 +115,14 @@ armor_rarities = {
         "rare": "#FFD700",
         "epic": "#E600E6",
         "mythical": "red"
+    },
+    "rarity_modifier_counts": {
+        "normal": 0,
+        "common": 1,
+        "uncommon": 2,
+        "rare": 3,
+        "epic": 4,
+        "mythical": 5
     }
 }
 
@@ -137,22 +144,22 @@ armor_prefix_weights = [
 def generate_armor_prefix_modifiers():
     armor_prefix_modifiers = {
         "Tempered": {
-            "armor_modifier": randint(1, 2)
+            "armor_modifier": 1
         },
         "Hardened": {
-            "armor_modifier": randint(2, 3)
+            "armor_modifier": randint(1, 2)
         },
         "Unbreakable": {
-            "armor_modifier": randint(2, 4)
+            "armor_modifier": randint(1, 3)
         },
         "Indestructible": {
-            "armor_modifier": randint(3, 5)
+            "armor_modifier": randint(2, 4)
         },
         "Healing": {
             "natural_hp_regeneration_speed_modifier": -5
         },
         "Vampiric": {
-            "life_steal_modifier": randint(2, 5)
+            "life_steal_modifier": randint(5, 10) / 100
         },
         "Swift": {
             "speed_modifier": randint(1, 3)
@@ -161,23 +168,24 @@ def generate_armor_prefix_modifiers():
             "speed_modifier": randint(2, 5)
         },
         "Targeting": {
-            "chance_to_hit_modifier": randint(2, 4)
+            "melee_chance_to_hit_modifier": randint(2, 4),
+            "ranged_chance_to_hit_modifier": randint(2, 4)
         },
         "Lucky": {
             "luck_modifier": 1
         },
         "Light": {
-            "movement_cost_modifier": randint(-10, -5)
+            "movement_energy_bonus_modifier": randint(5, 10)
         },
         "Impervious": {
-            "armor_class_modifier": randint(2, 4),
-            "armor_modifier": randint(1, 3)
+            "armor_class_modifier": randint(1, 3),
+            "armor_modifier": randint(1, 2)
         },
         "Deadly": {
-            "critical_hit_chance_modifier": randint(1, 3)
+            "critical_hit_chance_modifier": randint(2, 4) / 100
         },
         "Vigilant": {
-            "armor_class_modifier": randint(1, 3),
+            "armor_class_modifier": randint(1, 2),
             "perception_modifier": 1
         },
         "Blazing": {
@@ -272,6 +280,7 @@ armor_suffixes = [
     "of the Arcane",
     "of Toxins",
     "of Alacrity",
+    "of Evasion"
 ]
 
 armor_suffix_weights = [
@@ -309,19 +318,20 @@ armor_suffix_weights = [
     0.025,
     0.025,
     0.025,
+    0.03
 ]
 
 
 def generate_armor_suffix_modifiers():
     armor_suffix_modifiers = {
         "of Spikes": {
-            "damage_reflection_modifier": randint(5, 10)
+            "damage_reflection_modifier": randint(5, 10) / 100
         },
         "of Thorns": {
-            "damage_reflection_modifier": randint(10, 15)
+            "damage_reflection_modifier": randint(10, 15) / 100
         },
         "of Retaliation": {
-            "damage_reflection_modifier": randint(15, 20)
+            "damage_reflection_modifier": randint(15, 20) / 100
         },
         "of Strength": {
             "strength_modifier": randint(1, 2)
@@ -372,16 +382,16 @@ def generate_armor_suffix_modifiers():
             "luck_modifier": randint(2, 4)
         },
         "of Defense": {
-            "armor_class_modifier": randint(2, 4)
+            "armor_class_modifier": randint(1, 2)
         },
         "of the Rampart": {
-            "armor_class_modifier": randint(3, 6)
+            "armor_class_modifier": randint(2, 3)
         },
         "of Protection": {
             "armor_modifier": randint(1, 2)
         },
         "of the Fortress": {
-            "armor_modifier": randint(2, 4)
+            "armor_modifier": randint(2, 3)
         },
         "of Longevity": {
             "max_hp_modifier": randint(5, 15)
@@ -449,8 +459,11 @@ def generate_armor_suffix_modifiers():
             }
         },
         "of Alacrity": {
-            "speed_modifier": randint(3, 6)
+            "speed_modifier": randint(4, 8)
         },
+        "of Evasion": {
+            "dodge_modifier": randint(2, 4)
+        }
     }
     return armor_suffix_modifiers
 
@@ -458,76 +471,207 @@ def generate_armor_suffix_modifiers():
 def generate_armor_rarity_modifiers():
     armor_rarity_modifiers = {
         "common": [{
-            "armor_modifier": randint(0, 1)
+            "armor_modifier": randint(1, 1)
+        }, {
+            "armor_class_modifier": randint(1, 1)
+        }, {
+            "max_hp_modifier": randint(1, 3)
+        }, {
+            "melee_chance_to_hit_modifier": randint(1, 2)
+        }, {
+            "ranged_chance_to_hit_modifier": randint(1, 2)
+        }, {
+            "speed_modifier": randint(1, 3)
+        }, {
+            "movement_energy_bonus_modifier": randint(1, 2)
+        }, {
+            "attack_energy_bonus_modifier": randint(1, 2)
+        }],
+        "uncommon": [{
+            "armor_modifier": randint(1, 1)
         }, {
             "armor_class_modifier": randint(1, 2)
         }, {
-            "max_hp_modifier": randint(1, 5)
+            "max_hp_modifier": randint(1, 4)
         }, {
-            "chance_to_hit_modifier": randint(1, 2)
+            "melee_chance_to_hit_modifier": randint(1, 3)
         }, {
-            "speed_modifier": randint(1, 3)
-        }],
-        "uncommon": [{
-            "armor_modifier": randint(0, 2)
-        }, {
-            "armor_class_modifier": randint(1, 3)
-        }, {
-            "max_hp_modifier": randint(1, 6)
-        }, {
-            "chance_to_hit_modifier": randint(1, 3)
+            "ranged_chance_to_hit_modifier": randint(1, 3)
         }, {
             "speed_modifier": randint(1, 4)
         }, {
-            "damage_modifiers": {
-                "physical": randint(1, 2)
+            "movement_energy_bonus_modifier": randint(1, 3)
+        }, {
+            "attack_energy_bonus_modifier": randint(1, 3)
+        }, {
+            "resistances": {
+                "physical": randint(1, 3) / 100
             }
         }],
         "rare": [{
-            "armor_modifier": randint(0, 3)
+            "armor_modifier": randint(1, 1)
         }, {
-            "armor_class_modifier": randint(1, 4)
+            "armor_class_modifier": randint(1, 3)
         }, {
-            "max_hp_modifier": randint(2, 8)
+            "max_hp_modifier": randint(1, 5)
         }, {
-            "chance_to_hit_modifier": randint(2, 4)
+            "melee_chance_to_hit_modifier": randint(1, 4)
         }, {
-            "speed_modifier": randint(2, 5)
+            "ranged_chance_to_hit_modifier": randint(1, 4)
         }, {
-            "damage_modifiers": {
-                "physical": randint(1, 3)
+            "critical_hit_chance_modifier": randint(1, 2) / 100
+        }, {
+            "critical_hit_multiplier_modifier": 5 / 100
+        }, {
+            "speed_modifier": randint(1, 5)
+        }, {
+            "movement_energy_bonus_modifier": randint(1, 4)
+        }, {
+            "attack_energy_bonus_modifier": randint(1, 4)
+        }, {
+            "resistances": {
+                "physical": randint(1, 4) / 100
+            }
+        }, {
+            "resistances": {
+                "fire": randint(1, 4) / 100
+            }
+        }, {
+            "resistances": {
+                "ice": randint(1, 4) / 100
+            }
+        }, {
+            "resistances": {
+                "lightning": randint(1, 4) / 100
             }
         }],
         "epic": [{
-            "armor_modifier": randint(1, 5)
+            "armor_modifier": randint(1, 3)
         }, {
-            "armor_class_modifier": randint(2, 6)
+            "armor_class_modifier": randint(2, 4)
         }, {
-            "max_hp_modifier": randint(4, 10)
+            "max_hp_modifier": randint(2, 6)
         }, {
-            "chance_to_hit_modifier": randint(3, 6)
+            "melee_chance_to_hit_modifier": randint(2, 5)
         }, {
-            "speed_modifier": randint(3, 6)
+            "ranged_chance_to_hit_modifier": randint(2, 5)
         }, {
-            "damage_modifiers": {
-                "physical": randint(2, 5)
+            "critical_hit_chance_modifier": randint(1, 3) / 100
+        }, {
+            "critical_hit_multiplier_modifier": 5 / 100
+        }, {
+            "speed_modifier": randint(1, 5)
+        }, {
+            "movement_energy_bonus_modifier": randint(2, 5)
+        }, {
+            "attack_energy_bonus_modifier": randint(2, 5)
+        }, {
+            "resistances": {
+                "physical": randint(1, 5) / 100
+            }
+        }, {
+            "resistances": {
+                "fire": randint(1, 5) / 100
+            }
+        }, {
+            "resistances": {
+                "ice": randint(1, 5) / 100
+            }
+        }, {
+            "resistances": {
+                "lightning": randint(1, 5) / 100
+            }
+        }, {
+            "resistances": {
+                "holy": randint(1, 5) / 100
+            }
+        }, {
+            "resistances": {
+                "chaos": randint(1, 5) / 100
+            }
+        }, {
+            "resistances": {
+                "arcane": randint(1, 5) / 100
+            }
+        }, {
+            "resistances": {
+                "poison": randint(1, 5) / 100
             }
         }],
         "mythical": [{
-            "armor_modifier": randint(2, 6)
+            "armor_modifier": randint(2, 4)
         }, {
-            "armor_class_modifier": randint(3, 8)
+            "armor_class_modifier": randint(3, 6)
         }, {
-            "max_hp_modifier": randint(6, 12)
+            "max_hp_modifier": randint(3, 8)
         }, {
-            "chance_to_hit_modifier": randint(4, 8)
+            "melee_chance_to_hit_modifier": randint(3, 6)
         }, {
-            "speed_modifier": randint(4, 8)
+            "ranged_chance_to_hit_modifier": randint(3, 6)
         }, {
-            "damage_modifiers": {
-                "physical": randint(3, 6)
+            "critical_hit_chance_modifier": randint(2, 4) / 100
+        }, {
+            "critical_hit_multiplier_modifier": 10 / 100
+        }, {
+            "speed_modifier": randint(2, 6)
+        }, {
+            "movement_energy_bonus_modifier": randint(2, 6)
+        }, {
+            "attack_energy_bonus_modifier": randint(2, 6)
+        }, {
+            "life_steal_modifier": randint(3, 8) / 100
+        }, {
+            "damage_reflection_modifier": randint(3, 8) / 100
+        }, {
+            "strength_modifier": 1
+        }, {
+            "perception_modifier": 1
+        }, {
+            "dexterity_modifier": 1
+        }, {
+            "constitution_modifier": 1
+        }, {
+            "intelligence_modifier": 1
+        }, {
+            "wisdom_modifier": 1
+        }, {
+            "charisma_modifier": 1
+        }, {
+            "luck_modifier": 1
+        }, {
+            "resistances": {
+                "physical": randint(1, 6) / 100
             }
-        }]
+        }, {
+            "resistances": {
+                "fire": randint(1, 6) / 100
+            }
+        }, {
+            "resistances": {
+                "ice": randint(1, 6) / 100
+            }
+        }, {
+            "resistances": {
+                "lightning": randint(1, 6) / 100
+            }
+        }, {
+            "resistances": {
+                "holy": randint(1, 6) / 100
+            }
+        }, {
+            "resistances": {
+                "chaos": randint(1, 6) / 100
+            }
+        }, {
+            "resistances": {
+                "arcane": randint(1, 6) / 100
+            }
+        }, {
+            "resistances": {
+                "poison": randint(1, 6) / 100
+            }
+        },
+        {"dodge_modifier": randint(1, 2)}]
     }
     return armor_rarity_modifiers
 
@@ -536,30 +680,30 @@ def generate_armor_material_modifiers():
     armor_material_modifiers = {
         "hide": {
             "armor_class_modifier": randint(0, 1),
-            "movement_cost_modifier": randint(-5, -1)
+            "movement_energy_bonus_modifier": randint(1, 5)
         },
         "leather": {
             "armor_class_modifier": randint(0, 2),
-            "movement_cost_modifier": randint(-4, -1)
+            "movement_energy_bonus_modifier": randint(1, 5)
         },
         "boiled leather": {
             "armor_class_modifier": randint(1, 2),
-            "movement_cost_modifier": randint(-3, -1)
+            "movement_energy_bonus_modifier": randint(1, 3)
         },
         "studded leather": {
             "armor_class_modifier": randint(1, 3),
             "armor_modifier": randint(0, 2),
-            "movement_cost_modifier": randint(-2, -1)
+            "movement_energy_bonus_modifier": randint(1, 2)
         },
         "reinforced leather": {
             "armor_class_modifier": randint(1, 4),
             "armor_modifier": randint(1, 2),
-            "movement_cost_modifier": randint(-1, 0)
+            "movement_energy_bonus_modifier": randint(0, 1)
         },
         "shadowed leather": {
             "armor_class_modifier": randint(2, 4),
             "armor_modifier": randint(1, 3),
-            "movement_cost_modifier": randint(-3, 0),
+            "movement_energy_bonus_modifier": randint(0, 3),
             "resistances": {
                 "physical": randint(1, 3) / 100
             }
@@ -567,7 +711,7 @@ def generate_armor_material_modifiers():
         "copper": {
             "armor_class_modifier": randint(0, 1),
             "armor_modifier": randint(0, 1),
-            "movement_cost_modifier": randint(0, 2),
+            "movement_energy_bonus_modifier": randint(-2, 0),
             "resistances": {
                 "physical": randint(1, 2) / 100
             },
@@ -576,7 +720,7 @@ def generate_armor_material_modifiers():
         "bronze": {
             "armor_class_modifier": randint(-1, 1),
             "armor_modifier": randint(0, 2),
-            "movement_cost_modifier": randint(0, 3),
+            "movement_energy_bonus_modifier": randint(-3, 0),
             "resistances": {
                 "physical": randint(1, 3) / 100
             },
@@ -585,7 +729,7 @@ def generate_armor_material_modifiers():
         "iron": {
             "armor_class_modifier": randint(-2, -1),
             "armor_modifier": randint(0, 3),
-            "movement_cost_modifier": randint(1, 4),
+            "movement_energy_bonus_modifier": randint(-4, -1),
             "resistances": {
                 "physical": randint(1, 4) / 100
             },
@@ -594,7 +738,7 @@ def generate_armor_material_modifiers():
         "steel": {
             "armor_class_modifier": randint(-4, -1),
             "armor_modifier": randint(1, 4),
-            "movement_cost_modifier": randint(2, 5),
+            "movement_energy_bonus_modifier": randint(-5, -2),
             "resistances": {
                 "physical": randint(1, 6) / 100
             },
@@ -603,18 +747,18 @@ def generate_armor_material_modifiers():
         "truesteel": {
             "armor_class_modifier": randint(-2, -1),
             "armor_modifier": randint(2, 5),
-            "movement_cost_modifier": randint(0, 3),
-            "critical_hit_chance_modifier": randint(1, 5),
-            "critical_hit_multiplier_modifier": randint(1, 5),
+            "movement_energy_bonus_modifier": randint(-3, 0),
+            "critical_hit_chance_modifier": randint(1, 5) / 100,
+            "critical_hit_multiplier_modifier": randint(1, 5) / 100,
             "resistances": {
                 "holy": randint(3, 8) / 100
             },
             "speed_modifier": randint(-4, -2)
         },
         "darksteel": {
-            "armor_class_modifier": randint(-6, -2),
+            "armor_class_modifier": randint(-8, -3),
             "armor_modifier": randint(4, 9),
-            "movement_cost_modifier": randint(6, 12),
+            "movement_energy_bonus_modifier": randint(-12, -6),
             "resistances": {
                 "physical": randint(5, 10) / 100
             },
@@ -623,7 +767,7 @@ def generate_armor_material_modifiers():
         "orichalcum": {
             "armor_class_modifier": randint(-4, -1),
             "armor_modifier": randint(2, 5),
-            "movement_cost_modifier": randint(1, 4),
+            "movement_energy_bonus_modifier": randint(-4, -1),
             "resistances": {
                 "physical": randint(4, 8) / 100
             },
@@ -632,7 +776,7 @@ def generate_armor_material_modifiers():
         "mithril": {
             "armor_class_modifier": randint(0, 3),
             "armor_modifier": randint(2, 4),
-            "movement_cost_modifier": randint(-2, 2),
+            "movement_energy_bonus_modifier": randint(-3, 2),
             "resistances": {
                 "physical": randint(3, 6) / 100,
                 "holy": randint(2, 4) / 100
@@ -642,7 +786,7 @@ def generate_armor_material_modifiers():
         "voidstone": {
             "armor_class_modifier": randint(-4, -1),
             "armor_modifier": randint(3, 6),
-            "movement_cost_modifier": randint(4, 8),
+            "movement_energy_bonus_modifier": randint(-8, -4),
             "resistances": {
                 "arcane": randint(5, 10) / 100,
                 "chaos": randint(10, 20) / 100
@@ -653,7 +797,7 @@ def generate_armor_material_modifiers():
         "brimstone": {
             "armor_class_modifier": randint(-4, -1),
             "armor_modifier": randint(3, 6),
-            "movement_cost_modifier": randint(4, 8),
+            "movement_energy_bonus_modifier": randint(-8, -4),
             "resistances": {
                 "arcane": randint(5, 10) / 100,
                 "fire": randint(10, 20) / 100
@@ -664,7 +808,7 @@ def generate_armor_material_modifiers():
         "cold iron": {
             "armor_class_modifier": randint(-4, -1),
             "armor_modifier": randint(2, 8),
-            "movement_cost_modifier": randint(4, 8),
+            "movement_energy_bonus_modifier": randint(-8, -4),
             "resistances": {
                 "arcane": randint(5, 10) / 100,
                 "ice": randint(10, 20) / 100
@@ -675,7 +819,7 @@ def generate_armor_material_modifiers():
         "thunderstone": {
             "armor_class_modifier": randint(-5, -3),
             "armor_modifier": randint(3, 6),
-            "movement_cost_modifier": randint(4, 8),
+            "movement_energy_bonus_modifier": randint(-8, -4),
             "resistances": {
                 "arcane": randint(5, 10) / 100,
                 "lightning": randint(10, 20) / 100
@@ -686,7 +830,7 @@ def generate_armor_material_modifiers():
         "pearlstone": {
             "armor_class_modifier": randint(-2, -1),
             "armor_modifier": randint(1, 3),
-            "movement_cost_modifier": randint(1, 4),
+            "movement_energy_bonus_modifier": randint(-4, -1),
             "resistances": {
                 "arcane": randint(5, 10) / 100,
                 "holy": randint(10, 20) / 100
@@ -697,7 +841,7 @@ def generate_armor_material_modifiers():
         "electrum": {
             "armor_class_modifier": randint(-3, -1),
             "armor_modifier": randint(2, 5),
-            "movement_cost_modifier": randint(3, 6),
+            "movement_energy_bonus_modifier": randint(-6, -3),
             "resistances": {
                 "arcane": randint(10, 20) / 100,
             },
@@ -707,7 +851,7 @@ def generate_armor_material_modifiers():
         "adamantine": {
             "armor_class_modifier": randint(0, 2),
             "armor_modifier": randint(5, 9),
-            "movement_cost_modifier": randint(3, 9),
+            "movement_energy_bonus_modifier": randint(-9, -3),
             "resistances": {
                 "physical": randint(1, 5) / 100,
                 "fire": randint(1, 5) / 100,
@@ -723,7 +867,7 @@ def generate_armor_material_modifiers():
         "meteoric iron": {
             "armor_class_modifier": randint(-4, 0),
             "armor_modifier": randint(3, 5),
-            "movement_cost_modifier": randint(-4, -1),
+            "movement_energy_bonus_modifier": randint(1, 4),
             "resistances": {
                 "physical": randint(5, 10) / 100,
                 "fire": randint(5, 10) / 100,
@@ -837,7 +981,7 @@ def generate_armor_name_modifiers():
         },
         # Shoulder armor
         "couters": {
-            "armor_class_modifier": randint(1, 2),
+            "armor_class_modifier": 1,
             "armor_modifier": randint(0, 1)
         },
         "spaulders": {
@@ -846,31 +990,31 @@ def generate_armor_name_modifiers():
         },
         "pauldrons": {
             "armor_class_modifier": randint(1, 2),
-            "armor_modifier": randint(0, 1)
+            "armor_modifier": 1
         },
         "gardbraces": {
-            "armor_class_modifier": randint(1, 2),
-            "armor_modifier": randint(0, 1)
+            "armor_class_modifier": randint(1, 3),
+            "armor_modifier": 1
         },
         "shoulderguards": {
-            "armor_class_modifier": randint(1, 2),
-            "armor_modifier": randint(0, 1)
+            "armor_class_modifier": randint(2, 3),
+            "armor_modifier": 1
         },
         "mantle": {
-            "armor_class_modifier": randint(1, 2),
-            "armor_modifier": randint(0, 1)
+            "armor_class_modifier": randint(2, 3),
+            "armor_modifier": randint(1, 2)
         },
         "epaulets": {
-            "armor_class_modifier": randint(1, 2),
-            "armor_modifier": randint(0, 1)
+            "armor_class_modifier": randint(2, 4),
+            "armor_modifier": randint(1, 2)
         },
         "shoulderpads": {
-            "armor_class_modifier": randint(1, 2),
-            "armor_modifier": randint(0, 1)
+            "armor_class_modifier": randint(1, 5),
+            "armor_modifier": randint(1, 2)
         },
         "shoulderplates": {
-            "armor_class_modifier": randint(1, 2),
-            "armor_modifier": randint(0, 1)
+            "armor_class_modifier": randint(1, 5),
+            "armor_modifier": randint(1, 3)
         },
         # Body armor
         "armor": {
@@ -879,271 +1023,266 @@ def generate_armor_name_modifiers():
         },
         "brigandine": {
             "armor_class_modifier": randint(1, 3),
-            "armor_modifier": randint(0, 2)
+            "armor_modifier": 1
         },
         "cuirass": {
             "armor_class_modifier": randint(0, 3),
-            "armor_modifier": randint(0, 3),
+            "armor_modifier": randint(1, 2),
             "speed_modifier": randint(-3, -1),
         },
         "ring mail": {
             "armor_class_modifier": randint(-1, 1),
-            "armor_modifier": randint(1, 3),
+            "armor_modifier": 2,
             "speed_modifier": randint(-2, 0),
-            "movement_cost_modifier": randint(2, 3)
+            "movement_energy_bonus_modifier": randint(-3, -2)
         },
         "hauberk": {
             "armor_class_modifier": randint(-2, 0),
-            "armor_modifier": randint(1, 4),
+            "armor_modifier": randint(2, 3),
             "speed_modifier": randint(-2, 0),
-            "movement_cost_modifier": randint(2, 5)
+            "movement_energy_bonus_modifier": randint(-5, -2)
         },
         "light plate": {
-            "armor_class_modifier": randint(-2, 0),
-            "armor_modifier": randint(2, 5),
+            "armor_class_modifier": randint(-2, 1),
+            "armor_modifier": randint(2, 3),
             "speed_modifier": randint(-3, 0),
-            "movement_cost_modifier": randint(2, 6)
+            "movement_energy_bonus_modifier": randint(-6, -2)
         },
         "mail": {
-            "armor_class_modifier": randint(1, 2),
-            "armor_modifier": randint(2, 6),
+            "armor_class_modifier": randint(0, 2),
+            "armor_modifier": randint(2, 4),
             "speed_modifier": randint(-3, 0),
-            "movement_cost_modifier": randint(3, 6)
+            "movement_energy_bonus_modifier": randint(-6, -3)
         },
         "plate": {
             "armor_class_modifier": randint(1, 2),
-            "armor_modifier": randint(2, 6),
+            "armor_modifier": 3,
             "speed_modifier": randint(-4, -1),
-            "movement_cost_modifier": randint(3, 7)
+            "movement_energy_bonus_modifier": randint(-7, -3)
         },
         "splint mail": {
             "armor_class_modifier": randint(1, 2),
-            "armor_modifier": randint(3, 6),
+            "armor_modifier": randint(3, 4),
             "speed_modifier": randint(-5, -1),
-            "movement_cost_modifier": randint(4, 7)
+            "movement_energy_bonus_modifier": randint(-7, -4)
         },
         "plate mail": {
             "armor_class_modifier": randint(1, 2),
-            "armor_modifier": randint(3, 7),
+            "armor_modifier": randint(3, 5),
             "speed_modifier": randint(-5, -2),
-            "movement_cost_modifier": randint(4, 8)
+            "movement_energy_bonus_modifier": randint(-8, -4)
         },
         "breastplate": {
-            "armor_class_modifier": randint(1, 2),
-            "armor_modifier": randint(3, 8),
+            "armor_class_modifier": randint(1,3),
+            "armor_modifier": 4,
             "speed_modifier": randint(-6, -2),
-            "movement_cost_modifier": randint(4, 9)
+            "movement_energy_bonus_modifier": randint(-9, -4)
         },
         "faulds": {
-            "armor_class_modifier": randint(1, 2),
-            "armor_modifier": randint(4, 9),
+            "armor_class_modifier": randint(-1, 2),
+            "armor_modifier": randint(4, 5),
             "speed_modifier": randint(-6, -3),
-            "movement_cost_modifier": randint(5, 9)
+            "movement_energy_bonus_modifier": randint(-9, -5)
         },
         "culet": {
-            "armor_class_modifier": randint(-7, -3),
-            "armor_modifier": randint(4, 10),
+            "armor_class_modifier": randint(-5, -2),
+            "armor_modifier": randint(4, 6),
             "speed_modifier": randint(-6, -3),
-            "movement_cost_modifier": randint(5, 10)
+            "movement_energy_bonus_modifier": randint(-10, -5)
         },
         "plackart": {
             "armor_class_modifier": randint(-7, -4),
-            "armor_modifier": randint(4, 11),
+            "armor_modifier": randint(4, 7),
             "speed_modifier": randint(-7, -3),
-            "movement_cost_modifier": randint(5, 11)
+            "movement_energy_bonus_modifier": randint(-11, -5)
         },
         "full plate mail": {
             "armor_class_modifier": randint(-8, -4),
-            "armor_modifier": randint(5, 12),
+            "armor_modifier": randint(5, 8),
             "speed_modifier": randint(-8, -4),
-            "movement_cost_modifier": randint(6, 12)
+            "movement_energy_bonus_modifier": randint(-12, -6)
         },
         # Leg armor
         "greaves": {
-            "armor_class_modifier": randint(1, 2),
+            "armor_class_modifier": randint(0, 1),
             "armor_modifier": randint(0, 1),
             "speed_modifier": randint(-1, 1),
-            "movement_cost_modifier": randint(-3, 0)
+            "movement_energy_bonus_modifier": randint(0, 3)
         },
         "tassets": {
-            "armor_class_modifier": randint(1, 3),
+            "armor_class_modifier": randint(1, 2),
             "armor_modifier": randint(0, 1),
             "speed_modifier": randint(-2, 2),
-            "movement_cost_modifier": randint(-4, 0)
+            "movement_energy_bonus_modifier": 2
         },
         "leg guards": {
-            "armor_class_modifier": randint(1, 4),
-            "armor_modifier": randint(0, 2),
+            "armor_class_modifier": randint(1, 3),
+            "armor_modifier": 1,
             "speed_modifier": randint(-3, 3),
-            "movement_cost_modifier": randint(-5, 2)
+            "movement_energy_bonus_modifier": randint(2, 5)
         },
         "chausses": {
             "armor_class_modifier": randint(1, 4),
             "armor_modifier": randint(1, 2),
             "speed_modifier": randint(-4, 3),
-            "movement_cost_modifier": randint(-3, 3)
+            "movement_energy_bonus_modifier": randint(-3, 3)
         },
         "cuisses": {
-            "armor_class_modifier": randint(1, 5),
-            "armor_modifier": randint(1, 3),
+            "armor_class_modifier": randint(1, 4),
+            "armor_modifier": 2,
             "speed_modifier": randint(-5, 2),
-            "movement_cost_modifier": randint(-2, 4)
+            "movement_energy_bonus_modifier": randint(-4, 2)
         },
         "poleyns": {
-            "armor_class_modifier": randint(2, 5),
-            "armor_modifier": randint(2, 4),
+            "armor_class_modifier": randint(2, 4),
+            "armor_modifier": randint(2, 3),
             "speed_modifier": randint(-6, 1),
-            "movement_cost_modifier": randint(-1, 5)
+            "movement_energy_bonus_modifier": randint(-5, 1)
         },
         # Wrist armor
         "bracers": {
             "armor_class_modifier": randint(0, 1),
             "armor_modifier": randint(0, 1),
-            "attack_cost_modifier": randint(-5, 0)
+            "attack_energy_bonus_modifier": randint(-5, 0)
         },
         "rerebraces": {
             "armor_class_modifier": randint(0, 2),
             "armor_modifier": randint(0, 1),
-            "attack_cost_modifier": randint(-6, 0)
+            "attack_energy_bonus_modifier": randint(-6, 0)
         },
         "bracers": {
             "armor_class_modifier": randint(1, 3),
-            "armor_modifier": randint(1, 2),
-            "attack_cost_modifier": randint(-7, 0)
+            "armor_modifier": 1,
+            "attack_energy_bonus_modifier": randint(-7, 0)
         },
         "vambraces": {
-            "armor_class_modifier": randint(1, 4),
-            "armor_modifier": randint(1, 3),
-            "attack_cost_modifier": randint(-8, 0)
+            "armor_class_modifier": randint(2, 3),
+            "armor_modifier": randint(1, 2),
+            "attack_energy_bonus_modifier": randint(-8, 0)
         },
         # Hand armor
         "gloves": {
-            "armor_class_modifier": randint(0, 2),
-            "armor_modifier": randint(0, 1),
-            "attack_cost_modifier": randint(-2, 0)
+            "armor_class_modifier": randint(0, 1),
+            "attack_energy_bonus_modifier": randint(1, 2)
         },
         "grips": {
             "armor_class_modifier": randint(0, 1),
             "armor_modifier": randint(0, 1),
-            "attack_cost_modifier": randint(-3, 0)
+            "attack_energy_bonus_modifier": randint(0, 3)
         },
         "handguards": {
-            "armor_class_modifier": randint(1, 3),
-            "armor_modifier": randint(0, 2),
-            "attack_cost_modifier": randint(-4, 0)
+            "armor_class_modifier": randint(1, 2),
+            "armor_modifier": 1,
+            "attack_energy_bonus_modifier": randint(1, 4)
         },
         "gauntlets": {
-            "armor_class_modifier": randint(1, 4),
-            "armor_modifier": randint(1, 3),
-            "attack_cost_modifier": randint(-5, 0)
+            "armor_class_modifier": randint(1, 3),
+            "armor_modifier": randint(1, 2),
+            "attack_energy_bonus_modifier": randint(1, 5)
         },
         # Boots
         "footwear": {
-            "armor_class_modifier": randint(1, 4),
+            "armor_class_modifier": randint(0, 1),
             "armor_modifier": randint(0, 1),
-            "movement_cost_modifier": randint(-2, 0)
+            "movement_energy_bonus_modifier": randint(1, 2)
         },
         "boots": {
-            "armor_class_modifier": randint(1, 3),
+            "armor_class_modifier": randint(0, 2),
             "armor_modifier": randint(0, 1),
-            "movement_cost_modifier": randint(-3, 0)
+            "movement_energy_bonus_modifier": randint(1, 3)
         },
         "footpads": {
-            "armor_class_modifier": randint(1, 3),
+            "armor_class_modifier": randint(0, 2),
             "armor_modifier": randint(0, 1),
-            "movement_cost_modifier": randint(-4, 0)
+            "movement_energy_bonus_modifier": randint(2, 4)
         },
         "sandals": {
-            "armor_class_modifier": randint(1, 2),
-            "armor_modifier": randint(0, 1),
-            "movement_cost_modifier": randint(-5, 0)
+            "movement_energy_bonus_modifier": randint(1, 5)
         },
         "sabatons": {
-            "armor_class_modifier": randint(2, 3),
-            "armor_modifier": randint(1, 3),
-            "movement_cost_modifier": randint(-4, 0)
+            "armor_class_modifier": randint(1, 3),
+            "armor_modifier": 1,
+            "movement_energy_bonus_modifier": randint(0, 4)
         },
         "treads": {
             "armor_class_modifier": randint(1, 3),
-            "armor_modifier": randint(2, 4),
-            "movement_cost_modifier": randint(-3, 0)
+            "armor_modifier": randint(1, 2),
+            "movement_energy_bonus_modifier": randint(0, 3)
         },
         "warboots": {
-            "armor_class_modifier": randint(1, 2),
-            "armor_modifier": randint(2, 5),
-            "movement_cost_modifier": randint(-2, 0)
+            "armor_class_modifier": randint(2, 3),
+            "armor_modifier": randint(1, 3),
+            "movement_energy_bonus_modifier": randint(0, 2)
         },
         # Shields
         "guige": {
-            "armor_class_modifier": randint(1, 2),
-            "armor_modifier": randint(0, 1)
+            "shield_armor_class": 1,
         },
         "buckler": {
-            "armor_class_modifier": randint(1, 3),
-            "armor_modifier": randint(0, 1)
+            "shield_armor_class": randint(1, 2),
         },
         "small shield": {
-            "armor_class_modifier": randint(1, 3),
-            "armor_modifier": randint(0, 2)
+            "shield_armor_class": randint(1, 2),
+            "armor_modifier": randint(0, 1)
         },
         "shield": {
-            "armor_class_modifier": randint(1, 3),
-            "armor_modifier": randint(1, 2)
+            "shield_armor_class": randint(1, 3),
+            "armor_modifier": 1
         },
         "round shield": {
-            "armor_class_modifier": randint(1, 4),
-            "armor_modifier": randint(1, 2)
+            "shield_armor_class": randint(2, 3),
+            "armor_modifier": 1
         },
         "large shield": {
-            "armor_class_modifier": randint(1, 5),
-            "armor_modifier": randint(1, 3)
+            "shield_armor_class": randint(2, 4),
+            "armor_modifier": randint(1, 2)
         },
         "war shield": {
-            "armor_class_modifier": randint(1, 6),
-            "armor_modifier": randint(2, 3)
+            "shield_armor_class": randint(2, 5),
+            "armor_modifier": randint(1, 2)
         },
         "bulwark": {
-            "armor_class_modifier": randint(1, 7),
-            "armor_modifier": randint(1, 4)
+            "shield_armor_class": randint(2, 5),
+            "armor_modifier": randint(1, 3)
         },
         "enarmes": {
-            "armor_class_modifier": randint(1, 8),
-            "armor_modifier": randint(2, 4),
+            "shield_armor_class": randint(3, 5),
+            "armor_modifier": 2,
             "resistances": {
                 "physical": randint(1, 3) / 100
             }
         },
         "heater shield": {
-            "armor_class_modifier": randint(1, 9),
-            "armor_modifier": randint(1, 5),
+            "shield_armor_class": randint(2, 6),
+            "armor_modifier": randint(1, 2),
             "resistances": {
                 "physical": randint(1, 4) / 100
             }
         },
         "kite shield": {
-            "armor_class_modifier": randint(1, 10),
-            "armor_modifier": randint(2, 5),
+            "shield_armor_class": randint(2, 6),
+            "armor_modifier": 2,
             "resistances": {
                 "physical": randint(1, 5) / 100
             }
         },
         "rondache": {
-            "armor_class_modifier": randint(1, 11),
-            "armor_modifier": randint(2, 6),
+            "shield_armor_class": randint(1, 7),
+            "armor_modifier": randint(2, 3),
             "resistances": {
                 "physical": randint(1, 6) / 100
             }
         },
         "targe": {
-            "armor_class_modifier": randint(1, 12),
-            "armor_modifier": randint(3, 6),
+            "shield_armor_class": randint(1, 8),
+            "armor_modifier": randint(2, 4),
             "resistances": {
                 "physical": randint(1, 7) / 100
             }
         },
         "tower shield": {
-            "armor_class_modifier": randint(1, 13),
-            "armor_modifier": randint(3, 7),
+            "shield_armor_class": randint(3, 8),
+            "armor_modifier": randint(2, 5),
             "resistances": {
                 "physical": randint(1, 8) / 100
             }
@@ -1245,14 +1384,14 @@ armor_names = {
 }
 
 armor_characters = {
-    "HEAD": "^",
-    "SHOULDERS": "´",
-    "TORSO": "[",
-    "LEGS": "}",
-    "WRISTS": "~",
-    "GLOVES": "{",
-    "BOOTS": "-",
-    "OFF_HAND": "]"
+    "HEAD": 0x100A,
+    "SHOULDERS": 0x1011,
+    "TORSO": 0x100B,
+    "LEGS": 0x100F,
+    "WRISTS": 0x1010,
+    "GLOVES": 0x100E,
+    "BOOTS": 0x100D,
+    "OFF_HAND": 0x100C
 }
 
 
@@ -1344,8 +1483,12 @@ def generate_random_armor():
     if rarity_level != "normal":
         possible_rarity_modifiers = generate_armor_rarity_modifiers(
         )[rarity_level]
-        rarity_seed = randint(1, len(possible_rarity_modifiers) - 1)
-        rarity_modifiers = possible_rarity_modifiers[rarity_seed]
+        modifier_count = armor_rarities["rarity_modifier_counts"][rarity_level]
+        rarity_modifier_sample = sample(possible_rarity_modifiers, modifier_count)
+        rarity_modifiers = {}
+        for modifier in rarity_modifier_sample:
+            for modifier_name in modifier.keys():
+                rarity_modifiers.update({modifier_name: modifier[modifier_name]})
         total_modifiers.append(rarity_modifiers)
 
     unidentified_name = f"{armor_material.title()} {armor_name.title()}"
@@ -1362,13 +1505,16 @@ def generate_random_armor():
                          quality=quality)
 
     combined_modifiers = {
-        "chance_to_hit_modifier": 0,
+        "melee_chance_to_hit_modifier": 0,
+        "ranged_chance_to_hit_modifier": 0,
         "armor_modifier": 0,
         "armor_class_modifier": 0,
+        "dodge_modifier": 0,
+        "shield_armor_class": 0,
         "max_hp_modifier": 0,
         "speed_modifier": 0,
-        "movement_cost_modifier": 0,
-        "attack_cost_modifier": 0,
+        "movement_energy_bonus_modifier": 0,
+        "attack_energy_bonus_modifier": 0,
         "critical_hit_chance_modifier": 0,
         "critical_hit_multiplier_modifier": 0,
         "strength_modifier": 0,
@@ -1425,13 +1571,18 @@ def generate_random_armor():
                                 damage_type].extend(new_value)
                     elif modifier_name == "damage_dice_modifiers":
                         for damage_type in modifiers[modifier_name]:
-                            for dice_count, dice_sides in modifiers[modifier_name][damage_type]:
-                                if combined_modifiers["damage_dice"][damage_type]:
-                                    combined_modifiers["damage_dice"][damage_type][0][0] += dice_count
-                                    combined_modifiers["damage_dice"][damage_type][
-                                        0][1] += dice_sides
+                            for dice_count, dice_sides in modifiers[
+                                    modifier_name][damage_type]:
+                                if combined_modifiers["damage_dice"][
+                                        damage_type]:
+                                    combined_modifiers["damage_dice"][
+                                        damage_type][0][0] += dice_count
+                                    combined_modifiers["damage_dice"][
+                                        damage_type][0][1] += dice_sides
                                 else:
-                                    combined_modifiers["damage_dice"][damage_type].append([dice_count, dice_sides])
+                                    combined_modifiers["damage_dice"][
+                                        damage_type].append(
+                                            [dice_count, dice_sides])
 
                     else:
                         modifier_dict = modifiers[modifier_name]
@@ -1448,49 +1599,15 @@ def generate_random_armor():
                         modifier_name]
                     combined_modifiers[modifier_name] = new_value
 
-    chance_to_hit_modifier = combined_modifiers["chance_to_hit_modifier"]
-    armor_modifier = combined_modifiers["armor_modifier"]
-    armor_class_modifier = combined_modifiers["armor_class_modifier"]
-    max_hp_modifier = combined_modifiers["max_hp_modifier"]
-    speed_modifier = combined_modifiers["speed_modifier"]
-    movement_cost_modifier = combined_modifiers["movement_cost_modifier"]
-    attack_cost_modifier = combined_modifiers["attack_cost_modifier"]
-    critical_hit_chance_modifier = combined_modifiers[
-        "critical_hit_chance_modifier"]
-    critical_hit_multiplier_modifier = combined_modifiers[
-        "critical_hit_multiplier_modifier"]
-    strength_modifier = combined_modifiers["strength_modifier"]
-    perception_modifier = combined_modifiers["perception_modifier"]
-    dexterity_modifier = combined_modifiers["dexterity_modifier"]
-    constitution_modifier = combined_modifiers["constitution_modifier"]
-    intelligence_modifier = combined_modifiers["intelligence_modifier"]
-    wisdom_modifier = combined_modifiers["wisdom_modifier"]
-    charisma_modifier = combined_modifiers["charisma_modifier"]
-    luck_modifier = combined_modifiers["luck_modifier"]
-    life_steal_modifier = combined_modifiers["life_steal_modifier"]
-    damage_reflection_modifier = combined_modifiers[
-        "damage_reflection_modifier"]
-    natural_hp_regeneration_speed_modifier = combined_modifiers[
-        "natural_hp_regeneration_speed_modifier"]
-    damage_modifiers = combined_modifiers["damage_modifiers"]
-    damage_dice = combined_modifiers["damage_dice"]
-    resistances = combined_modifiers["resistances"]
+    equippable_component = Equippable(random_armor, slot)
 
-    equippable_component = Equippable(
-        random_armor, slot, chance_to_hit_modifier, armor_modifier,
-        armor_class_modifier, max_hp_modifier, speed_modifier,
-        movement_cost_modifier, attack_cost_modifier,
-        critical_hit_chance_modifier, critical_hit_multiplier_modifier,
-        strength_modifier, perception_modifier, dexterity_modifier,
-        constitution_modifier, intelligence_modifier, wisdom_modifier,
-        charisma_modifier, luck_modifier, life_steal_modifier,
-        damage_reflection_modifier, natural_hp_regeneration_speed_modifier,
-        damage_modifiers, damage_dice, resistances)
+    for modifier_name, modifier_value in combined_modifiers.items():
+        setattr(equippable_component, modifier_name, modifier_value)
 
     new_armor = Entity(0,
-                        0,
-                        armor_characters[slot._name_],
-                        random_armor.identified_name,
-                        equippable=equippable_component)
+                       0,
+                       armor_characters[slot._name_],
+                       random_armor.unidentified_name,
+                       equippable=equippable_component)
 
     return new_armor
