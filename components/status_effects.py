@@ -58,57 +58,29 @@ class Effect():
         self.magnitudes = magnitudes
 
 
-# DEBUG KILL ON APPLY
-
-
-def on_apply_kill_target(self):
+def on_apply_deal_fire_damage(self, **kwargs):
+    effect_caster = kwargs.get("effect_caster")
     results = []
-    results.append({"take_damage": {"physical": 10000}})
+    dice_count = 4
+    intelligence_modifier = effect_caster.fighter.intelligence[
+        "attribute_modifier"]
+    dice_count += intelligence_modifier
+    dice_count = max(2, dice_count)
+    dice_sides = 6
+    total_damage = 0
+
+    for _i in range(dice_count):
+        total_damage += randint(1, dice_sides)
+
+    results.append({"take_damage": {"fire": total_damage}})
     return results
 
 
-def KillTarget():
-    KillTarget = Effect(name="kill_target",
-                        duration=0,
-                        on_apply=on_apply_kill_target)
-    return KillTarget
-
-
-def TouchOfDeath():
-    TouchOfDeath = Effect(
-        name="touch_of_death",
-        on_deal_damage=on_deal_damage_apply_effects_to_target,
-        effects_to_apply={"on_deal_damage": [KillTarget]})
-    return TouchOfDeath
-
-
-def DealDurationDamage():
-    DealDurationDamage = Effect(name="deal_duration_damage",
-                                duration=20,
-                                start_message={
-                                    "player": {
-                                        "message":
-                                        "You feel your innards bursting!",
-                                        "message_color": "purple"
-                                    },
-                                    "monster": {
-                                        "message":
-                                        " starts to bleed all over!",
-                                        "message_color": "purple"
-                                    }
-                                },
-                                resolve=resolve_poison,
-                                only_one_allowed=True,
-                                stacking_duration=False)
-    return DealDurationDamage
-
-
-def OnHitApplyDurationDamage():
-    OnHitApplyDurationDamage = Effect(
-        name="on_hit_apply_duration_damage",
-        on_deal_damage=on_deal_damage_apply_effects_to_target,
-        effects_to_apply={"on_deal_damage": [DealDurationDamage]})
-    return OnHitApplyDurationDamage
+def Fireball():
+    Fireball = Effect("fireball",
+                      duration=0,
+                      on_apply=on_apply_deal_fire_damage)
+    return Fireball
 
 
 # General on attack handler to add effects to target before attack results are resolved

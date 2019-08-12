@@ -6,7 +6,6 @@ from components.equipment import Equipment
 from components.level import Level
 from components.attributes import roll_character_attributes
 from components.armors import generate_random_armor
-from components.status_effects import TouchOfDeath
 from entity import Entity
 from render_order import RenderOrder
 from game_messages import MessageLog, Message
@@ -113,6 +112,24 @@ def get_game_variables(constants):
         player.inventory.add_item(armor)
 
     player.fighter.actions = 1
+
+    item_component = Item(
+        use_function=cast_fireball,
+        targeting=True,
+        targeting_message=Message(
+            'Left-click a target tile for the fireball, or right-click to cancel.',
+            "light cyan"),
+        damage={"fire": 25},
+        radius=2)
+
+    item = Entity(0,
+                  0,
+                  0x1007,
+                  'Scroll of Fireball',
+                  render_order=RenderOrder.ITEM,
+                  item=item_component)
+
+    player.inventory.add_item(item)
 
     message_log = MessageLog(constants["message_x"],
                              constants["message_width"],

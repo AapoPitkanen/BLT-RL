@@ -414,7 +414,10 @@ class Fighter:
         else:
             return self.base_resistances
 
-    def apply_effect(self, new_effect):
+    def apply_effect(self, new_effect, **kwargs):
+
+        effect_caster = kwargs.get("effect_caster")
+
         results = []
         apply_effect_results = []
         effect = new_effect()
@@ -422,7 +425,8 @@ class Fighter:
         if not self.status_effects:
             self.status_effects.append(effect)
             if effect.on_apply:
-                apply_effect_results.extend(effect.on_apply(effect))
+                apply_effect_results.extend(
+                    effect.on_apply(effect, effect_caster=effect_caster))
             if effect.start_message:
                 if self.owner.ai:
                     results.append({
@@ -448,7 +452,8 @@ class Fighter:
             else:
                 self.status_effects.append(effect)
                 if effect.on_apply:
-                    apply_effect_results.extend(effect.on_apply(effect))
+                    apply_effect_results.extend(
+                        effect.on_apply(effect, effect_caster=effect_caster))
                 if effect.start_message:
                     if self.owner.ai:
                         results.append({

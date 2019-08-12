@@ -1,13 +1,8 @@
 import tcod as libtcod
 from components.equippable import Equippable
+from components.equipment_attributes import qualities, quality_weights, rarities, weapon_material_names, weapon_material_weights
 from equipment_slots import EquipmentSlots
 from entity import Entity
-
-material_names = [
-    "copper", "bronze", "iron", "steel", "truesteel", "orichalcum", "mithril",
-    "voidstone", "brimstone", "cold iron", "thunderstone", "pearlstone",
-    "electrum", "adamantine", "meteoric iron"
-]
 
 
 class Weapon:
@@ -36,6 +31,121 @@ class Weapon:
         self.quality = quality
         self.two_handed = two_handed
         self.bonus_attribute = bonus_attribute
+
+
+melee_weapon_names = {
+    "swords": {
+        "names": [
+            "short sword",
+            "broadsword",
+            "longsword",
+            "bastard sword",
+            "scimitar",
+            "falchion",
+            "gladius",
+            "arming sword",
+            "estoc",
+            "sabre",
+            "rapier",
+            "fencing sword",
+        ],
+        "weights": []
+    },
+    "axes": {
+        "names": [
+            "hand axe",
+            "axe",
+            "double axe",
+            "war axe",
+            "military pick",
+            "battleaxe",
+            "broadaxe",
+            "hatchet",
+            "cleaver",
+            "bearded axe",
+        ],
+        "weights": []
+    },
+    "daggers": {
+        "names": [
+            "knife",
+            "dagger",
+            "dirk",
+            "kris",
+            "rondel dagger",
+            "hunting dagger",
+            "blade",
+            "stiletto",
+        ],
+        "weights": []
+    },
+    "maces": {
+        "names": [],
+        "weights": []
+    },
+    "hammers": {
+        "names": ["light hammer", "hammer", "warhammer"],
+        "weights": []
+    },
+    "polearms": {
+        "names": [
+            "halberd",
+            "bardiche",
+            "voulge",
+            "poleaxe",
+            "fauchard",
+            "guisarme",
+            "glaive",
+            "partisan",
+            "lochaber axe",
+            "war scythe",
+        ],
+        "weights": []
+    },
+    "spears": {
+        "names": [
+            "shortspear",
+            "spear",
+            "longspear",
+            "pike",
+            "lance",
+            "war spear",
+            "spetum",
+            "brandistock",
+        ],
+        "weights": []
+    },
+    "twohanded": {
+        "names": [
+            "greatsword",
+            "greataxe",
+            "claymore",
+            "zweihänder",
+            "flamberge",
+            "warsword",
+        ],
+        "weights": []
+    }
+}
+
+ranged_weapon_names = {
+    "pistols": {
+        "names": [],
+        "weights": []
+    },
+    "rifles": {
+        "names": [],
+        "weights": []
+    },
+    "bows": {
+        "names": [],
+        "weights": []
+    },
+    "crossbows": {
+        "names": [],
+        "weights": []
+    },
+}
 
 
 def generate_starter_weapon():

@@ -2,30 +2,9 @@ from random import random, randint, choices, sample
 from components.equippable import Equippable
 from entity import Entity
 from equipment_slots import equipment_slot_armor_list
+from components.equipment_attributes import rarities, armor_material_names, armor_material_weights, qualities, quality_weights, armor_prefixes, armor_prefix_weights, armor_suffixes, armor_suffix_weights
 import collections
 import tcod as libtcod
-
-material_names = [
-    "hide", "leather", "boiled leather", "studded leather",
-    "reinforced leather", "shadowed leather", "copper", "bronze", "iron",
-    "steel", "truesteel", "darksteel", "orichalcum", "mithril", "voidstone",
-    "brimstone", "cold iron", "thunderstone", "pearlstone", "electrum",
-    "adamantine", "meteoric iron"
-]
-material_weights = [
-    0.1, 0.11, 0.09, 0.08, 0.06, 0.05, 0.12, 0.11, 0.1, 0.08, 0.01, 0.02, 0.02,
-    0.02, 0.0045, 0.0045, 0.0045, 0.0045, 0.0045, 0.0045, 0.0005, 0.0025
-]
-
-qualities = [
-    "abysmal", "awful", "bad", "poor", "fair", "normal", "fine", "good",
-    "superior", "excellent", "exceptional", "exquisite", "flawless"
-]
-
-quality_weights = [
-    0.0075, 0.0125, 0.025, 0.05, 0.1, 0.5, 0.15, 0.0825, 0.04, 0.0225, 0.01,
-    0.00375, 0.001875
-]
 
 
 def generate_quality_modifiers():
@@ -89,8 +68,8 @@ def generate_quality_modifiers():
 
 
 def generate_material_weights_from_dungeon_floor(dungeon_floor):
-    common_material_weights = material_weights[:10]
-    rare_material_weights = material_weights[10:]
+    common_material_weights = armor_material_weights[:10]
+    rare_material_weights = armor_material_weights[10:]
     new_common_material_weights = [
         weight - ((weight / 100) * (dungeon_floor - 1))
         for weight in common_material_weights
@@ -102,43 +81,6 @@ def generate_material_weights_from_dungeon_floor(dungeon_floor):
         weight + weight_fraction for weight in rare_material_weights
     ]
     return new_common_material_weights + new_rare_material_weights
-
-
-armor_rarities = {
-    "rarity_levels":
-    ["normal", "common", "uncommon", "rare", "epic", "mythical"],
-    "rarity_weights": [0.535, 0.255, 0.125, 0.055, 0.029, 0.001],
-    "rarity_colors": {
-        "normal": "white",
-        "common": "green",
-        "uncommon": "#308CE8",
-        "rare": "#FFD700",
-        "epic": "#E600E6",
-        "mythical": "red"
-    },
-    "rarity_modifier_counts": {
-        "normal": 0,
-        "common": 1,
-        "uncommon": 2,
-        "rare": 3,
-        "epic": 4,
-        "mythical": 5
-    }
-}
-
-armor_prefixes = [
-    "Tempered", "Hardened", "Unbreakable", "Indestructible", "Healing",
-    "Vampiric", "Swift", "Quick", "Targeting", "Lucky", "Light", "Impervious",
-    "Deadly", "Vigilant", "Blazing", "Freezing", "Shocking", "Sanctified",
-    "Abyssal", "Esoteric", "Venomous", "Agile", "Stalwart", "Robust", "Astute",
-    "Enlightened", "Appealing"
-]
-
-armor_prefix_weights = [
-    0.12, 0.06, 0.03, 0.015, 0.08, 0.05, 0.08, 0.04, 0.08, 0.06, 0.06, 0.03,
-    0.025, 0.05, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.025, 0.025, 0.025,
-    0.025, 0.025, 0.025
-]
 
 
 def generate_armor_prefix_modifiers():
@@ -243,83 +185,6 @@ def generate_armor_prefix_modifiers():
         },
     }
     return armor_prefix_modifiers
-
-
-armor_suffixes = [
-    "of Spikes",
-    "of Thorns",
-    "of Retaliation",
-    "of Strength",
-    "of the Juggernaut",
-    "of the Hawk",
-    "of the Eagle",
-    "of the Cat",
-    "of the Fox",
-    "of Endurance",
-    "of Toughness",
-    "of the Magi",
-    "of the Wizard",
-    "of Wisdom",
-    "of Piety",
-    "of Charisma",
-    "of the Silver Tongue",
-    "of Fate",
-    "of Fortune",
-    "of Defense",
-    "of the Rampart",
-    "of Protection",
-    "of the Fortress",
-    "of Longevity",
-    "of Health",
-    "of Life",
-    "of Flames",
-    "of the Glacier",
-    "of Thunder",
-    "of the Heavens",
-    "of the Void",
-    "of the Arcane",
-    "of Toxins",
-    "of Alacrity",
-    "of Evasion"
-]
-
-armor_suffix_weights = [
-    0.05,
-    0.025,
-    0.0125,
-    0.025,
-    0.0125,
-    0.025,
-    0.0125,
-    0.025,
-    0.0125,
-    0.025,
-    0.0125,
-    0.025,
-    0.0125,
-    0.025,
-    0.0125,
-    0.025,
-    0.0125,
-    0.025,
-    0.0125,
-    0.09,
-    0.04,
-    0.09,
-    0.04,
-    0.075,
-    0.0525,
-    0.025,
-    0.025,
-    0.025,
-    0.025,
-    0.025,
-    0.025,
-    0.025,
-    0.025,
-    0.025,
-    0.03
-]
 
 
 def generate_armor_suffix_modifiers():
@@ -670,8 +535,9 @@ def generate_armor_rarity_modifiers():
             "resistances": {
                 "poison": randint(1, 6) / 100
             }
-        },
-        {"dodge_modifier": randint(1, 2)}]
+        }, {
+            "dodge_modifier": randint(1, 2)
+        }]
     }
     return armor_rarity_modifiers
 
@@ -1073,7 +939,7 @@ def generate_armor_name_modifiers():
             "movement_energy_bonus_modifier": randint(-8, -4)
         },
         "breastplate": {
-            "armor_class_modifier": randint(1,3),
+            "armor_class_modifier": randint(1, 3),
             "armor_modifier": 4,
             "speed_modifier": randint(-6, -2),
             "movement_energy_bonus_modifier": randint(-9, -4)
@@ -1425,11 +1291,10 @@ class Armor:
 
 
 def generate_random_armor():
-    material = ''.join(choices(material_names, material_weights, k=1))
+    material = ''.join(
+        choices(armor_material_names, armor_material_weights, k=1))
     rarity_level = ''.join(
-        choices(armor_rarities["rarity_levels"],
-                armor_rarities["rarity_weights"],
-                k=1))
+        choices(rarities["rarity_levels"], rarities["rarity_weights"], k=1))
     quality = ''.join(choices(qualities, quality_weights, k=1))
 
     prefix = None
@@ -1445,7 +1310,7 @@ def generate_random_armor():
 
     rarity = {
         "rarity_level": rarity_level,
-        "rarity_color": armor_rarities["rarity_colors"][rarity_level]
+        "rarity_color": rarities["rarity_colors"][rarity_level]
     }
 
     armor_material = material
@@ -1483,12 +1348,14 @@ def generate_random_armor():
     if rarity_level != "normal":
         possible_rarity_modifiers = generate_armor_rarity_modifiers(
         )[rarity_level]
-        modifier_count = armor_rarities["rarity_modifier_counts"][rarity_level]
-        rarity_modifier_sample = sample(possible_rarity_modifiers, modifier_count)
+        modifier_count = rarities["rarity_modifier_counts"][rarity_level]
+        rarity_modifier_sample = sample(possible_rarity_modifiers,
+                                        modifier_count)
         rarity_modifiers = {}
         for modifier in rarity_modifier_sample:
             for modifier_name in modifier.keys():
-                rarity_modifiers.update({modifier_name: modifier[modifier_name]})
+                rarity_modifiers.update(
+                    {modifier_name: modifier[modifier_name]})
         total_modifiers.append(rarity_modifiers)
 
     unidentified_name = f"{armor_material.title()} {armor_name.title()}"

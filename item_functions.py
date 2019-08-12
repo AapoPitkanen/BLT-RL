@@ -2,6 +2,7 @@ import tcod
 
 from game_messages import Message
 from components.ai import ConfusedMonster
+from components.status_effects import Fireball
 from utils import disk
 from effect import GFX_Effect
 
@@ -81,6 +82,7 @@ def cast_chaos_bolt(*args, **kwargs):
 
 def cast_fireball(*args, **kwargs):
 
+    caster = args[0]
     entities = kwargs.get("entities")
     game_map = kwargs.get("game_map")
     damage = kwargs.get("damage")
@@ -104,9 +106,7 @@ def cast_fireball(*args, **kwargs):
         "consumed":
         True,
         "message":
-        Message(
-            f"The fireball explodes in roaring flames, burning everything within {radius} tiles!"
-        )
+        Message(f"Your ears ring as the fireball explodes in roaring flames!")
     })
 
     target_area = disk(target_x, target_y, radius)
@@ -115,11 +115,10 @@ def cast_fireball(*args, **kwargs):
         if entity.fighter and (entity.x, entity.y) in target_area:
             results.append({
                 "message":
-                Message(
-                    f"The {entity.name} is engulfed in flames and is burned for {damage} hit points!",
-                    "orange")
+                Message(f"The {entity.name} is engulfed in flames!", "orange")
             })
-            results.extend(entity.fighter.take_damage(damage))
+            results.extend(
+                entity.fighter.apply_effect(Fireball, effect_caster=caster))
 
     for map_coordinates in target_area:
         game_map.gfx_effects.append(
