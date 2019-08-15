@@ -131,37 +131,37 @@ def generate_armor_prefix_modifiers():
             "perception_modifier": 1
         },
         "Blazing": {
-            "damage_dice": {
+            "melee_damage_dice": {
                 "fire": [[1, 4]]
             }
         },
         "Freezing": {
-            "damage_dice": {
+            "melee_damage_dice": {
                 "ice": [[1, 4]],
             }
         },
         "Shocking": {
-            "damage_dice": {
+            "melee_damage_dice": {
                 "lightning": [[1, 4]]
             },
         },
         "Sanctified": {
-            "damage_dice": {
+            "melee_damage_dice": {
                 "holy": [[1, 4]]
             },
         },
         "Abyssal": {
-            "damage_dice": {
+            "melee_damage_dice": {
                 "chaos": [[1, 4]]
             },
         },
         "Esoteric": {
-            "damage_dice": {
+            "melee_damage_dice": {
                 "arcane": [[1, 4]]
             },
         },
         "Venomous": {
-            "damage_dice": {
+            "melee_damage_dice": {
                 "poison": [[1, 4]]
             },
         },
@@ -271,7 +271,10 @@ def generate_armor_suffix_modifiers():
             "resistances": {
                 "fire": randint(15, 25) / 100
             },
-            "damage_modifiers": {
+            "melee_damage_modifiers": {
+                "fire": randint(2, 5)
+            },
+            "ranged_damage_modifiers": {
                 "fire": randint(2, 5)
             }
         },
@@ -279,7 +282,10 @@ def generate_armor_suffix_modifiers():
             "resistances": {
                 "ice": randint(15, 25) / 100
             },
-            "damage_modifiers": {
+            "melee_damage_modifiers": {
+                "ice": randint(2, 5)
+            },
+            "ranged_damage_modifiers": {
                 "ice": randint(2, 5)
             },
         },
@@ -287,39 +293,54 @@ def generate_armor_suffix_modifiers():
             "resistances": {
                 "lightning": randint(15, 25) / 100
             },
-            "damage_modifiers": {
+            "melee_damage_modifiers": {
                 "lightning": randint(2, 5)
-            }
+            },
+            "ranged_damage_modifiers": {
+                "ice": randint(2, 5)
+            },
         },
         "of the Heavens": {
             "resistances": {
                 "holy": randint(15, 25) / 100
             },
-            "damage_modifiers": {
+            "melee_damage_modifiers": {
                 "holy": randint(2, 5)
-            }
+            },
+            "ranged_damage_modifiers": {
+                "ice": randint(2, 5)
+            },
         },
         "of the Void": {
             "resistances": {
                 "chaos": randint(15, 25) / 100
             },
-            "damage_modifiers": {
+            "melee_damage_modifiers": {
                 "chaos": randint(2, 5)
-            }
+            },
+            "ranged_damage_modifiers": {
+                "ice": randint(2, 5)
+            },
         },
         "of the Arcane": {
             "resistances": {
                 "arcane": randint(15, 25) / 100
             },
-            "damage_modifiers": {
+            "melee_damage_modifiers": {
                 "arcane": randint(2, 5)
-            }
+            },
+            "ranged_damage_modifiers": {
+                "ice": randint(2, 5)
+            },
         },
         "of Toxins": {
             "resistances": {
                 "poison": randint(15, 25) / 100
             },
-            "damage_modifiers": {
+            "melee_damage_modifiers": {
+                "poison": randint(2, 5)
+            },
+            "ranged_damage_modifiers": {
                 "poison": randint(2, 5)
             }
         },
@@ -1395,7 +1416,7 @@ def generate_random_armor():
         "life_steal_modifier": 0,
         "damage_reflection_modifier": 0,
         "natural_hp_regeneration_speed_modifier": 0,
-        "damage_modifiers": {
+        "melee_damage_modifiers": {
             "physical": 0,
             "fire": 0,
             "ice": 0,
@@ -1405,7 +1426,27 @@ def generate_random_armor():
             "arcane": 0,
             "poison": 0,
         },
-        "damage_dice": {
+        "ranged_damage_modifiers": {
+            "physical": 0,
+            "fire": 0,
+            "ice": 0,
+            "lightning": 0,
+            "holy": 0,
+            "chaos": 0,
+            "arcane": 0,
+            "poison": 0,
+        },
+        "melee_damage_dice": {
+            "physical": [],
+            "fire": [],
+            "ice": [],
+            "lightning": [],
+            "holy": [],
+            "chaos": [],
+            "arcane": [],
+            "poison": [],
+        },
+        "ranged_damage_dice": {
             "physical": [],
             "fire": [],
             "ice": [],
@@ -1431,26 +1472,39 @@ def generate_random_armor():
         for modifier_name, modifier_value in modifiers.items():
             if modifier_name in modifiers:
                 if type(modifier_value) is dict:
-                    if modifier_name == "damage_dice":
+                    if "damage_dice" in modifier_name:
                         for damage_type in modifiers[modifier_name]:
                             new_value = modifiers[modifier_name][damage_type]
                             combined_modifiers[modifier_name][
                                 damage_type].extend(new_value)
-                    elif modifier_name == "damage_dice_modifiers":
+                    elif modifier_name == "melee_damage_dice_modifiers":
                         for damage_type in modifiers[modifier_name]:
                             for dice_count, dice_sides in modifiers[
                                     modifier_name][damage_type]:
-                                if combined_modifiers["damage_dice"][
+                                if combined_modifiers["melee_damage_dice"][
                                         damage_type]:
-                                    combined_modifiers["damage_dice"][
+                                    combined_modifiers["melee_damage_dice"][
                                         damage_type][0][0] += dice_count
-                                    combined_modifiers["damage_dice"][
+                                    combined_modifiers["melee_damage_dice"][
                                         damage_type][0][1] += dice_sides
                                 else:
-                                    combined_modifiers["damage_dice"][
+                                    combined_modifiers["melee_damage_dice"][
                                         damage_type].append(
                                             [dice_count, dice_sides])
-
+                    elif modifier_name == "ranged_damage_dice_modifiers":
+                        for damage_type in modifiers[modifier_name]:
+                            for dice_count, dice_sides in modifiers[
+                                    modifier_name][damage_type]:
+                                if combined_modifiers["ranged_damage_dice"][
+                                        damage_type]:
+                                    combined_modifiers["ranged_damage_dice"][
+                                        damage_type][0][0] += dice_count
+                                    combined_modifiers["ranged_damage_dice"][
+                                        damage_type][0][1] += dice_sides
+                                else:
+                                    combined_modifiers["ranged_damage_dice"][
+                                        damage_type].append(
+                                            [dice_count, dice_sides])
                     else:
                         modifier_dict = modifiers[modifier_name]
                         combined_dict = combined_modifiers[modifier_name]

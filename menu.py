@@ -206,6 +206,15 @@ def equipment_menu(header: str, inventory: "Inventory",
                 options.append(
                     (f"{equipment.name} (equipped on off hand)", equipment.
                      equippable.equippable_type.rarity["rarity_color"]))
+            elif player_equipment.RANGED_WEAPON == equipment:
+                options.append(
+                    (f"{equipment.name} (equipped as ranged weapon)",
+                     equipment.equippable.equippable_type.
+                     rarity["rarity_color"]))
+            elif player_equipment.RANGED_WEAPON_AMMUNITION == equipment:
+                options.append(
+                    (f"{equipment.name} (equipped as ammunition)", equipment.
+                     equippable.equippable_type.rarity["rarity_color"]))
             else:
                 options.append((f"{equipment.name}", equipment.equippable.
                                 equippable_type.rarity["rarity_color"]))
@@ -259,56 +268,7 @@ def draw_menu_background(width: int,
         else:
             terminal.put(topleft_x + term_x * 4, topleft_y + term_y * 2,
                          0x2008)
-    """
-    for x in range(int(width / 4) + 1):
-        for y in range(int(height / 2) + 1):
-            if (x, y) == (0, 0):
-                terminal.put(topleft_x + x * 4, topleft_y + y * 2, 0x2000)
-            elif (x, y) == (int(width / 4), 0):
-                terminal.put(topleft_x + x * 4, topleft_y + y * 2, 0x2001)
-            elif (x, y) == (int(width / 4), int(height / 2)):
-                terminal.put(topleft_x + x * 4, topleft_y + y * 2, 0x2002)
-            elif (x, y) == (0, int(height / 2)):
-                terminal.put(topleft_x + x * 4, topleft_y + y * 2, 0x2003)
-    """
-    """
-    # Draw the menu background.
-    terminal.color(background_color)
 
-    left = -margin
-    #right = width + margin - 1
-    right = width
-    top = -margin
-    #bot = height + margin - 1
-    bot = height
-
-    for term_x, term_y in itertools.product(range(left,
-                                                  int(right / 4) + 1),
-                                            range(top,
-                                                  int(bot / 2) + 1)):
-        # Draw corners
-        if (term_x, term_y) == (left, top):
-            terminal.put(topleft_x + term_x, topleft_y + term_y, 0x2000)
-        elif (term_x, term_y) == (right, top):
-            terminal.put(topleft_x + term_x, topleft_y + term_y, 0x2001)
-        elif (term_x, term_y) == (right, bot):
-            terminal.put(topleft_x + term_x, topleft_y + term_y, 0x2002)
-        elif (term_x, term_y) == (left, bot):
-            terminal.put(topleft_x + term_x, topleft_y + term_y, 0x2003)
-
-        # Draw edges
-        elif term_y == top:
-            terminal.put(topleft_x + term_x, topleft_y + term_y, 0x2005)
-        elif term_y == bot:
-            terminal.put(topleft_x + term_x, topleft_y + term_y, 0x2004)
-        elif term_x == left:
-            terminal.put(topleft_x + term_x, topleft_y + term_y, 0x2006)
-        elif term_x == right:
-            terminal.put(topleft_x + term_x, topleft_y + term_y, 0x2007)
-        # Draw remaining tiles
-        else:
-            terminal.put(topleft_x + term_x, topleft_y + term_y, 0x2008)
-    """
 
 
 def main_menu(screen_width: int, screen_height: int) -> None:

@@ -173,3 +173,43 @@ def cast_confuse(*args, **kwargs):
         })
 
     return results
+
+
+def arrow_attack(*args, **kwargs):
+    caster = args[0]
+    entities = kwargs.get("entities")
+    game_map = kwargs.get("game_map")
+    target_x = kwargs.get("target_x")
+    target_y = kwargs.get("target_y")
+
+    results = []
+
+    if not game_map.fov[target_x, target_y]:
+        results.append({
+            "consumed":
+            False,
+            "message":
+            Message("You cannot target a tile outside your line of sight.",
+                    "yellow")
+        })
+        return results
+
+    for entity in entities:
+        if entity.x == target_x and entity.y == target_y and entity.ai:
+            results.append({
+                "consumed":
+                True,
+                "message":
+                Message(f"You fire your bow at the {entity.name}!")
+            })
+            results.extend(caster.fighter.attack(entity, ranged=True))
+            break
+    else:
+        results.append({
+            "consumed":
+            False,
+            "message":
+            Message("There is no targetable enemy at that location.", "yellow")
+        })
+
+    return results

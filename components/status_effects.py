@@ -133,7 +133,7 @@ def on_critical_hit_apply_effects(self):
 
 
 # General critical miss handler to add effects on critical miss
-def on_critical_hit_apply_effects(self):
+def on_critical_miss_apply_effects(self):
     results = []
     for effect in self.effects_to_apply.get("on_critical_miss", []):
         results.extend(self.owner.fighter.apply_effect(effect))

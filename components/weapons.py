@@ -3,7 +3,7 @@ from components.equippable import Equippable
 from components.equipment_attributes import qualities, quality_weights, rarities, weapon_material_names, weapon_material_weights
 from equipment_slots import EquipmentSlots
 from entity import Entity
-
+from random import randint
 
 class Weapon:
     def __init__(
@@ -20,6 +20,7 @@ class Weapon:
             suffix=None,
             quality=None,
             two_handed=False,
+            ammunition = None
     ):
         self.rarity = rarity
         self.material = material
@@ -33,6 +34,175 @@ class Weapon:
         self.suffix = suffix
         self.quality = quality
         self.two_handed = two_handed
+        self.ammunition = None
+
+def generate_melee_quality_modifiers():
+    melee_quality_modifiers = {
+        "abysmal": {
+            "melee_chance_to_hit_modifier": randint(-4, -1),
+            "melee_damage_modifiers": {
+                "physical": randint(-4, -1)
+            }
+        },
+        "awful": {
+            "melee_chance_to_hit_modifier": randint(-4, 0),
+            "melee_damage_modifiers": {
+                "physical": randint(-3, -1)
+            }
+        },
+        "bad": {
+            "melee_chance_to_hit_modifier": randint(-3, 0),
+            "melee_damage_modifiers": {
+                "physical": randint(-2, -1)
+            }
+        },
+        "poor": {
+            "melee_chance_to_hit_modifier": randint(-2, 0),
+            "melee_damage_modifiers": {
+                "physical": randint(-2, 0)
+            }
+        },
+        "fair": {
+            "melee_chance_to_hit_modifier": randint(-1, 1),
+            "melee_damage_modifiers": {
+                "physical": randint(-1, 0)
+            }
+        },
+        "normal": {
+            "melee_chance_to_hit_modifier": randint(0, 1),
+        },
+        "fine": {
+            "melee_chance_to_hit_modifier": randint(0, 1),
+            "melee_damage_modifiers": {
+                "physical": randint(0, 1)
+            }
+        },
+        "good": {
+            "melee_chance_to_hit_modifier": randint(0, 2),
+            "melee_damage_modifiers": {
+                "physical": 1
+            }
+        },
+        "superior": {
+            "melee_chance_to_hit_modifier": randint(1, 2),
+            "melee_damage_modifiers": {
+                "physical": randint(1, 2)
+            }
+        },
+        "excellent": {
+            "melee_chance_to_hit_modifier": 2,
+            "melee_damage_modifiers": {
+                "physical": randint(1, 2)
+            }
+        },
+        "exceptional": {
+            "melee_chance_to_hit_modifier": randint(2, 3),
+            "melee_damage_modifiers": {
+                "physical": randint(1, 2)
+            }
+        },
+        "exquisite": {
+            "melee_chance_to_hit_modifier": randint(2, 3),
+            "attack_energy_bonus_modifier": randint(1, 2),
+            "melee_damage_modifiers": {
+                "physical": randint(1, 2)
+            },
+
+        },
+        "flawless": {
+            "melee_chance_to_hit_modifier": randint(2, 4),
+            "attack_energy_bonus_modifier": randint(1, 3),
+            "critical_hit_chance_modifier": randint(1, 2) / 100,
+            "melee_damage_modifiers": {
+                "physical": randint(1, 3)
+            }
+        }
+    }
+    return melee_quality_modifiers
+
+
+def generate_ranged_quality_modifiers():
+    ranged_quality_modifiers = {
+        "abysmal": {
+            "ranged_chance_to_hit_modifier": randint(-4, -1),
+            "ranged_damage_modifiers": {
+                "physical": randint(-4, -1)
+            }
+        },
+        "awful": {
+            "ranged_chance_to_hit_modifier": randint(-4, 0),
+            "ranged_damage_modifiers": {
+                "physical": randint(-3, -1)
+            }
+        },
+        "bad": {
+            "ranged_chance_to_hit_modifier": randint(-3, 0),
+            "ranged_damage_modifiers": {
+                "physical": randint(-2, -1)
+            }
+        },
+        "poor": {
+            "ranged_chance_to_hit_modifier": randint(-2, 0),
+            "ranged_damage_modifiers": {
+                "physical": randint(-2, 0)
+            }
+        },
+        "fair": {
+            "ranged_chance_to_hit_modifier": randint(-1, 1),
+            "ranged_damage_modifiers": {
+                "physical": randint(-1, 0)
+            }
+        },
+        "normal": {
+            "ranged_chance_to_hit_modifier": randint(0, 1),
+        },
+        "fine": {
+            "ranged_chance_to_hit_modifier": randint(0, 1),
+            "ranged_damage_modifiers": {
+                "physical": randint(0, 1)
+            }
+        },
+        "good": {
+            "ranged_chance_to_hit_modifier": randint(0, 2),
+            "ranged_damage_modifiers": {
+                "physical": 1
+            }
+        },
+        "superior": {
+            "ranged_chance_to_hit_modifier": randint(1, 2),
+            "ranged_damage_modifiers": {
+                "physical": randint(1, 2)
+            }
+        },
+        "excellent": {
+            "ranged_chance_to_hit_modifier": 2,
+            "ranged_damage_modifiers": {
+                "physical": randint(1, 2)
+            }
+        },
+        "exceptional": {
+            "ranged_chance_to_hit_modifier": randint(2, 3),
+            "ranged_damage_modifiers": {
+                "physical": randint(1, 2)
+            }
+        },
+        "exquisite": {
+            "ranged_chance_to_hit_modifier": randint(2, 3),
+            "attack_energy_bonus_modifier": randint(1, 2),
+            "ranged_damage_modifiers": {
+                "physical": randint(1, 2)
+            },
+        },
+        "flawless": {
+            "ranged_chance_to_hit_modifier": randint(2, 4),
+            "attack_energy_bonus_modifier": randint(1, 3),
+            "critical_hit_chance_modifier": randint(1, 2) / 100,
+            "ranged_damage_modifiers": {
+                "physical": randint(1, 3)
+            }
+        }
+    }
+    return ranged_quality_modifiers
 
 
 weapon_types = {
@@ -654,7 +824,7 @@ def generate_starter_weapon():
 
     equippable_component = Equippable(starter_weapon,
                                       EquipmentSlots.MAIN_HAND,
-                                      damage_dice={
+                                      melee_damage_dice={
                                           "physical": [[1, 6]],
                                           "fire": [],
                                           "ice": [],

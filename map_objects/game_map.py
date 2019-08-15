@@ -241,7 +241,7 @@ class GameMap(Map):
                     fighter_component = Fighter(
                         generate_attributes(16, 13, 12, 16, 7, 11, 10, 10),
                         current_hp=20,
-                        base_armor_class=10,
+                        base_armor_class=8,
                         base_armor=0,
                         base_dodge=1,
                         base_melee_cth_modifier=0,
@@ -251,7 +251,7 @@ class GameMap(Map):
                         base_movement_energy_bonus=0,
                         base_natural_hp_regeneration_speed=45,
                         xp_reward=35,
-                        base_damage_dice={
+                        base_melee_damage_dice={
                             "physical": [[1, 8]],
                             "fire": [],
                             "ice": [],
@@ -297,10 +297,10 @@ class GameMap(Map):
                         base_attack_energy_bonus=0,
                         base_movement_energy_bonus=0,
                         base_natural_hp_regeneration_speed=25,
-                        base_damage_modifiers={
+                        base_melee_damage_modifiers={
                             "physical": 2,
                         },
-                        base_damage_dice={
+                        base_melee_damage_dice={
                             "physical": [[1, 10]],
                             "fire": [],
                             "ice": [],

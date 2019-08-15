@@ -29,7 +29,7 @@ class Equippable:
             life_steal_modifier: float = 0,
             damage_reflection_modifier: float = 0,
             natural_hp_regeneration_speed_modifier: int = 0,
-            damage_modifiers={
+            melee_damage_modifiers={
                 "physical": 0,
                 "fire": 0,
                 "ice": 0,
@@ -39,7 +39,27 @@ class Equippable:
                 "arcane": 0,
                 "poison": 0,
             },
-            damage_dice={
+            ranged_damage_modifiers={
+                "physical": 0,
+                "fire": 0,
+                "ice": 0,
+                "lightning": 0,
+                "holy": 0,
+                "chaos": 0,
+                "arcane": 0,
+                "poison": 0,
+            },
+            melee_damage_dice={
+                "physical": [],
+                "fire": [],
+                "ice": [],
+                "lightning": [],
+                "holy": [],
+                "chaos": [],
+                "arcane": [],
+                "poison": [],
+            },
+            ranged_damage_dice={
                 "physical": [],
                 "fire": [],
                 "ice": [],
@@ -91,6 +111,8 @@ class Equippable:
         self.life_steal_modifier = life_steal_modifier
         self.damage_reflection_modifier = damage_reflection_modifier
         self.natural_hp_regeneration_speed_modifier = natural_hp_regeneration_speed_modifier
-        self.damage_modifiers = damage_modifiers
-        self.damage_dice = damage_dice
+        self.melee_damage_modifiers = melee_damage_modifiers
+        self.ranged_damage_modifiers = ranged_damage_modifiers
+        self.melee_damage_dice = melee_damage_dice
+        self.ranged_damage_dice = ranged_damage_dice
         self.resistances = resistances

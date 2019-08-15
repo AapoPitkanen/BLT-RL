@@ -45,6 +45,8 @@ def handle_player_turn_keys(key):
         return {"drop_inventory": True}
     elif key == terminal.TK_O:
         return {"show_equipment": True}
+    elif key == terminal.TK_F:
+        return {"ranged_attack": True}
     elif key == terminal.TK_TAB:
         return {"drop_equipment": True}
     elif key == terminal.TK_K:

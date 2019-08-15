@@ -15,6 +15,8 @@ class EquipmentSlots(Enum):
     LEFT_RING = auto()
     MAIN_HAND = auto()
     OFF_HAND = auto()
+    RANGED_WEAPON = auto()
+    RANGED_WEAPON_AMMUNITION = auto()
 
 
 equipment_slot_armor_list = [

@@ -39,7 +39,7 @@ class Fighter:
             base_critical_hit_multiplier: float = 1.5,
             base_life_steal: float = 0,
             base_damage_reflection: float = 0,
-            base_damage_modifiers: Dict[str, int] = {
+            base_melee_damage_modifiers: Dict[str, int] = {
                 "physical": 0,
                 "fire": 0,
                 "ice": 0,
@@ -49,7 +49,27 @@ class Fighter:
                 "arcane": 0,
                 "poison": 0,
             },
-            base_damage_dice: Dict[str, List] = {
+            base_ranged_damage_modifiers: Dict[str, int] = {
+                "physical": 0,
+                "fire": 0,
+                "ice": 0,
+                "lightning": 0,
+                "holy": 0,
+                "chaos": 0,
+                "arcane": 0,
+                "poison": 0,
+            },
+            base_melee_damage_dice: Dict[str, List] = {
+                "physical": [],
+                "fire": [],
+                "ice": [],
+                "lightning": [],
+                "holy": [],
+                "chaos": [],
+                "arcane": [],
+                "poison": [],
+            },
+            base_ranged_damage_dice: Dict[str, List] = {
                 "physical": [],
                 "fire": [],
                 "ice": [],
@@ -79,10 +99,12 @@ class Fighter:
         self.base_critical_hit_multiplier = base_critical_hit_multiplier
         self.base_life_steal = base_life_steal
         self.base_damage_reflection = base_damage_reflection
-        self.base_damage_modifiers = base_damage_modifiers
-        self.base_damage_dice = base_damage_dice
+        self.base_melee_damage_modifiers = base_melee_damage_modifiers
+        self.base_ranged_damage_modifiers = base_ranged_damage_modifiers
+        self.base_melee_damage_dice = base_melee_damage_dice
+        self.base_ranged_damage_dice = base_ranged_damage_dice
         self.status_effects: List = []
-        self.xp_reward = xp_reward
+        self.xp_reward: int = xp_reward
         self.energy: int = 0
         self.base_fov_radius: int = 5
         self.owner = None
@@ -105,17 +127,31 @@ class Fighter:
         return [effect for effect in self.status_effects if effect.modifiers]
 
     @property
-    def effects_with_damage_modifiers(self):
+    def effects_with_melee_damage_modifiers(self):
         return [
-            effect for effect in self.status_effects
-            if effect.modifiers and effect.modifiers.get("damage_modifiers")
+            effect for effect in self.status_effects if effect.modifiers
+            and effect.modifiers.get("melee_damage_modifiers")
         ]
 
     @property
-    def effects_with_damage_dice(self):
+    def effects_with_ranged_damage_modifiers(self):
+        return [
+            effect for effect in self.status_effects if effect.modifiers
+            and effect.modifiers.get("ranged_damage_modifiers")
+        ]
+
+    @property
+    def effects_with_melee_damage_dice(self):
         return [
             effect for effect in self.status_effects
-            if effect.modifiers and effect.modifiers.get("damage_dice")
+            if effect.modifiers and effect.modifiers.get("melee_damage_dice")
+        ]
+
+    @property
+    def effects_with_ranged_damage_dice(self):
+        return [
+            effect for effect in self.status_effects
+            if effect.modifiers and effect.modifiers.get("ranged_damage_dice")
         ]
 
     @property
@@ -148,16 +184,28 @@ class Fighter:
         if self.owner and self.owner.equipment:
             modifier = int(
                 round((self.strength["attribute_modifier"] +
-                       self.dexterity["attribute_modifier"] +
-                       self.perception["attribute_modifier"]) /
+                       self.dexterity["attribute_modifier"]) /
                       2)) + self.owner.equipment.melee_chance_to_hit_modifier
         else:
             modifier = int(
                 round((self.strength["attribute_modifier"] +
-                       self.dexterity["attribute_modifier"] +
-                       self.perception["attribute_modifier"]) / 2))
+                       self.dexterity["attribute_modifier"]) / 2))
         return self.base_melee_cth_modifier + modifier + self.calculate_effect_modifiers(
             "melee_chance_to_hit_modifier")
+
+    @property
+    def ranged_chance_to_hit_modifier(self) -> int:
+        if self.owner and self.owner.equipment:
+            modifier = int(
+                round((self.dexterity["attribute_modifier"] +
+                       self.perception["attribute_modifier"]) /
+                      2)) + self.owner.equipment.melee_chance_to_hit_modifier
+        else:
+            modifier = int(
+                round((self.dexterity["attribute_modifier"] +
+                       self.perception["attribute_modifier"]) / 2))
+        return self.base_ranged_cth_modifier + modifier + self.calculate_effect_modifiers(
+            "ranged_chance_to_hit_modifier")
 
     @property
     def chance_to_hit_lower_bound_modifier(self) -> int:
@@ -200,7 +248,10 @@ class Fighter:
 
     @property
     def shield_armor_class(self) -> int:
-        return self.owner.equipment.shield_armor_class
+        if self.owner and self.owner.equipment:
+            return self.owner.equipment.shield_armor_class
+        else:
+            return 0
 
     @property
     def dodge(self) -> int:
@@ -251,18 +302,32 @@ class Fighter:
             "max_hp_modifier")
 
     @property
-    def damage(self) -> Dict[str, int]:
+    def melee_damage(self) -> Dict[str, int]:
         if self.owner and self.owner.equipment:
-            return self.owner.equipment.calculate_damage_modifiers
+            return self.owner.equipment.calculate_melee_damage_modifiers
         else:
-            return self.base_damage_modifiers
+            return self.base_melee_damage_modifiers
 
     @property
-    def damage_dice(self) -> Dict[str, List]:
+    def ranged_damage(self) -> Dict[str, int]:
         if self.owner and self.owner.equipment:
-            return self.owner.equipment.calculate_total_damage_dice
+            return self.owner.equipment.calculate_ranged_damage_modifiers
         else:
-            return self.base_damage_dice
+            return self.base_ranged_damage_modifiers
+
+    @property
+    def melee_damage_dice(self) -> Dict[str, List]:
+        if self.owner and self.owner.equipment:
+            return self.owner.equipment.calculate_total_melee_damage_dice
+        else:
+            return self.base_melee_damage_dice
+
+    @property
+    def ranged_damage_dice(self) -> Dict[str, List]:
+        if self.owner and self.owner.equipment:
+            return self.owner.equipment.calculate_total_ranged_damage_dice
+        else:
+            return self.base_ranged_damage_dice
 
     @property
     def damage_reflection(self) -> float:
@@ -491,7 +556,8 @@ class Fighter:
                     damage_by_type,
                     attacker=None,
                     reflected=False,
-                    from_effect=False):
+                    from_effect=False,
+                    from_ranged=False):
         results = []
         # There are cases where the entity might take damage from multiple different sources at the same time (such as effects that
         # are applied immediately), so it's easier to just return nothing if the entity is already dead before
@@ -521,7 +587,7 @@ class Fighter:
                     rolled_damage[damage_type] -= self.armor
         # Damage reflection applies only on directly dealt damage, not on reflected damage or damage
         # coming from effects
-        if self.damage_reflection and not reflected and not from_effect:
+        if self.damage_reflection and not reflected and not from_effect and not from_ranged:
 
             damage_reflection_damage = {}
 
@@ -586,10 +652,16 @@ class Fighter:
         target_roll: int = ac + dodge + shield_ac
 
         critical_seed: float = random()
+
         if ranged:
             cth_modifier: int = self.ranged_chance_to_hit_modifier
+            damage_dice = self.ranged_damage_dice
+            damage_modifiers = self.ranged_damage
         else:
             cth_modifier: int = self.melee_chance_to_hit_modifier
+            damage_dice = self.melee_damage_dice
+            damage_modifiers = self.melee_damage
+
         lower_bound_cth_modifier: int = self.chance_to_hit_lower_bound_modifier
         dice_roll: int = randint(1,
                                  20 + cth_modifier) + lower_bound_cth_modifier
@@ -598,8 +670,6 @@ class Fighter:
             dice_roll = randint(1,
                                 20 + cth_modifier) + lower_bound_cth_modifier
 
-        damage_dice = self.damage_dice
-        damage_modifiers = self.damage
         rolled_damage: int = 0
 
         target_resistances = target.fighter.resistances
@@ -733,7 +803,8 @@ class Fighter:
 
                 results.extend(
                     target.fighter.take_damage(rolled_damage_by_type,
-                                               attacker=self))
+                                               attacker=self,
+                                               from_ranged=ranged))
 
                 if not self.owner.ai:
                     self.energy += 25
@@ -773,7 +844,8 @@ class Fighter:
 
                 results.extend(
                     target.fighter.take_damage(rolled_damage_by_type,
-                                               attacker=self))
+                                               attacker=self,
+                                               from_ranged=ranged))
             else:
                 results.append({
                     "message":
@@ -857,7 +929,8 @@ class Fighter:
 
                 results.extend(
                     target.fighter.take_damage(rolled_damage_by_type,
-                                               attacker=self))
+                                               attacker=self,
+                                               from_ranged=ranged))
 
                 if not self.owner.ai:
                     self.energy += 25
@@ -896,7 +969,8 @@ class Fighter:
 
                 results.extend(
                     target.fighter.take_damage(rolled_damage_by_type,
-                                               attacker=self))
+                                               attacker=self,
+                                               from_ranged=ranged))
             else:
                 results.append({
                     "message":

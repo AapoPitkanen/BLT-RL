@@ -3,6 +3,7 @@ from components.status_effects import resolve_effects
 from bearlibterminal import terminal
 from death_functions import kill_monster, kill_player
 from components.status_effects import resolve_effects
+from components.ammunition import Ammunition
 from entity import Entity, get_blocking_entities_at_location
 from loader_functions.data_loaders import save_game
 from game_messages import Message
@@ -41,6 +42,7 @@ def player_turn(player, entities, camera, game_map, game_state,
         take_stairs = action.get("take_stairs")
         pass_turn = action.get("pass_turn")
         show_character_screen = action.get("show_character_screen")
+        ranged_attack = action.get("ranged_attack")
 
         left_click = mouse_action.get("left_click")
         right_click = mouse_action.get('right_click')
@@ -66,6 +68,24 @@ def player_turn(player, entities, camera, game_map, game_state,
                     player_turn_results.append(
                         {"game_state": GameStates.ENEMY_TURN})
                     player_turn_results.append({"action_consumed": True})
+
+        if ranged_attack:
+            if not player.equipment.RANGED_WEAPON:
+                player_turn_results.append({
+                    "message":
+                    Message("You'll need to equip a ranged weapon first.")
+                })
+            elif player.equipment.RANGED_WEAPON.equippable_type.ammunition in player.equipment.RANGED_WEAPON_AMMUNITION.name:
+                ammunition = player.equipment.RANGED_WEAPON_AMMUNITION
+                player_turn_results.extend(
+                    player.inventory.use_ammunition(ammunition,
+                                                    entities=entities,
+                                                    game_map=game_map))
+            else:
+                player_turn_results.append({
+                    "message":
+                    Message("You don't have any proper ammunition equipped.")
+                })
 
         if pass_turn:
             player_turn_results.append({"game_state": GameStates.ENEMY_TURN})
@@ -169,11 +189,20 @@ def player_turn(player, entities, camera, game_map, game_state,
             if left_click:
                 target_x, target_y = left_click
 
-                item_use_results = player.inventory.use(targeting_item,
-                                                        entities=entities,
-                                                        game_map=game_map,
-                                                        target_x=target_x,
-                                                        target_y=target_y)
+                if isinstance(targeting_item.equippable.equippable_type,
+                              Ammunition):
+                    item_use_results = player.inventory.use_ammunition(
+                        targeting_item,
+                        entities=entities,
+                        game_map=game_map,
+                        target_x=target_x,
+                        target_y=target_y)
+                else:
+                    item_use_results = player.inventory.use(targeting_item,
+                                                            entities=entities,
+                                                            game_map=game_map,
+                                                            target_x=target_x,
+                                                            target_y=target_y)
                 player_turn_results.extend(item_use_results)
                 player_turn_results.append({"action_consumed": True})
             elif right_click:

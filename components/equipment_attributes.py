@@ -1,9 +1,22 @@
 # GENERAL EQUIPMENT ATTRIBUTES
 
 rarities = {
-    "rarity_levels":
-    ["normal", "common", "uncommon", "rare", "epic", "mythical"],
-    "rarity_weights": [0.535, 0.255, 0.125, 0.055, 0.029, 0.001],
+    "rarity_levels": [
+        "normal",
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "mythical",
+    ],
+    "rarity_weights": [
+        0.535,
+        0.255,
+        0.125,
+        0.055,
+        0.029,
+        0.001,
+    ],
     "rarity_colors": {
         "normal": "white",
         "common": "green",
@@ -244,7 +257,7 @@ armor_suffix_weights = [
 
 # WEAPON ATTRIBUTES
 
-weapon_material_names = [
+weapon_metal_material_names = [
     "copper",
     "bronze",
     "iron",
@@ -262,7 +275,7 @@ weapon_material_names = [
     "meteoric iron",
 ]
 
-weapon_material_weights = [
+weapon_metal_material_weights = [
     0.2,
     0.2,
     0.23,
@@ -279,4 +292,30 @@ weapon_material_weights = [
     0.01,
     0.005,
     0.0075,
+]
+
+weapon_wood_material_names = [
+    "maple",
+    "ash",
+    "elm",
+    "oak",
+    "hickory",
+    "walnut",
+    "ironwood",
+    "rosewood",
+    "juniper",
+    "yew",
+]
+
+weapon_wood_material_weights = [
+    0.2,
+    0.18,
+    0.16,
+    0.14,
+    0.12,
+    0.075,
+    0.05,
+    0.025,
+    0.025,
+    0.025,
 ]

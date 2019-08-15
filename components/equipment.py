@@ -18,7 +18,9 @@ class Equipment:
                  right_ring=None,
                  left_ring=None,
                  main_hand=None,
-                 off_hand=None):
+                 off_hand=None,
+                 ranged_weapon=None,
+                 ranged_weapon_ammunition=None):
         self.HEAD = head
         self.SHOULDERS = shoulders
         self.CLOAK = cloak
@@ -32,6 +34,8 @@ class Equipment:
         self.LEFT_RING = left_ring
         self.MAIN_HAND = main_hand
         self.OFF_HAND = off_hand
+        self.RANGED_WEAPON = ranged_weapon
+        self.RANGED_WEAPON_AMMUNITION = ranged_weapon_ammunition
         self.owner = None
 
     def calculate_equipment_modifier(self, modifier_to_search):
@@ -45,7 +49,7 @@ class Equipment:
         return modifier
 
     @property
-    def calculate_total_damage_dice(self):
+    def calculate_total_melee_damage_dice(self):
         total_damage_dice = {
             "physical": [],
             "fire": [],
@@ -58,25 +62,56 @@ class Equipment:
         }
         for entity in self.__dict__.values():
             if entity and entity.equippable:
-                for damage_type, dice_list in entity.equippable.damage_dice.items(
+                for damage_type, dice_list in entity.equippable.melee_damage_dice.items(
                 ):
                     for dice in dice_list:
                         total_damage_dice[damage_type].append(dice)
-        for damage_type, dice_list in self.owner.fighter.base_damage_dice.items(
+        for damage_type, dice_list in self.owner.fighter.base_melee_damage_dice.items(
         ):
             for dice in dice_list:
                 total_damage_dice[damage_type].append(dice)
 
-        for effect in self.owner.fighter.effects_with_damage_dice:
+        for effect in self.owner.fighter.effects_with_melee_damage_dice:
             for damage_type, dice_list in effect.modifiers.get(
-                    "damage_dice", {}).items():
+                    "melee_damage_dice", {}).items():
                 for dice in dice_list:
                     total_damage_dice[damage_type].append(dice)
 
         return total_damage_dice
 
     @property
-    def calculate_damage_modifiers(self):
+    def calculate_total_ranged_damage_dice(self):
+        total_damage_dice = {
+            "physical": [],
+            "fire": [],
+            "ice": [],
+            "lightning": [],
+            "holy": [],
+            "chaos": [],
+            "arcane": [],
+            "poison": [],
+        }
+        for entity in self.__dict__.values():
+            if entity and entity.equippable:
+                for damage_type, dice_list in entity.equippable.ranged_damage_dice.items(
+                ):
+                    for dice in dice_list:
+                        total_damage_dice[damage_type].append(dice)
+        for damage_type, dice_list in self.owner.fighter.base_ranged_damage_dice.items(
+        ):
+            for dice in dice_list:
+                total_damage_dice[damage_type].append(dice)
+
+        for effect in self.owner.fighter.effects_with_ranged_damage_dice:
+            for damage_type, dice_list in effect.modifiers.get(
+                    "ranged_damage_dice", {}).items():
+                for dice in dice_list:
+                    total_damage_dice[damage_type].append(dice)
+
+        return total_damage_dice
+
+    @property
+    def calculate_melee_damage_modifiers(self):
         damage_modifiers = {
             "physical": 0,
             "fire": 0,
@@ -89,19 +124,49 @@ class Equipment:
         }
         for slot, entity in self.__dict__.items():
             if entity and entity.equippable:
-                for damage_type, damage_modifier in entity.equippable.damage_modifiers.items(
+                for damage_type, damage_modifier in entity.equippable.melee_damage_modifiers.items(
                 ):
                     damage_modifiers[damage_type] += damage_modifier
-        for damage_type, damage_modifier in self.owner.fighter.base_damage_modifiers.items(
+        for damage_type, damage_modifier in self.owner.fighter.base_melee_damage_modifiers.items(
         ):
             damage_modifiers[damage_type] += damage_modifier
 
-        for effect in self.owner.fighter.effects_with_damage_modifiers:
+        for effect in self.owner.fighter.effects_with_melee_damage_modifiers:
             for damage_type, damage_modifier in effect.modifiers.get(
-                    "damage_modifiers", {}).items():
+                    "melee_damage_modifiers", {}).items():
                 damage_modifiers[damage_type] += damage_modifier
 
         damage_modifiers["physical"] += self.owner.fighter.strength[
+            "attribute_modifier"]
+        return damage_modifiers
+
+    @property
+    def calculate_ranged_damage_modifiers(self):
+        damage_modifiers = {
+            "physical": 0,
+            "fire": 0,
+            "ice": 0,
+            "lightning": 0,
+            "holy": 0,
+            "chaos": 0,
+            "arcane": 0,
+            "poison": 0,
+        }
+        for slot, entity in self.__dict__.items():
+            if entity and entity.equippable:
+                for damage_type, damage_modifier in entity.equippable.ranged_damage_modifiers.items(
+                ):
+                    damage_modifiers[damage_type] += damage_modifier
+        for damage_type, damage_modifier in self.owner.fighter.base_ranged_damage_modifiers.items(
+        ):
+            damage_modifiers[damage_type] += damage_modifier
+
+        for effect in self.owner.fighter.effects_with_ranged_damage_modifiers:
+            for damage_type, damage_modifier in effect.modifiers.get(
+                    "ranged_damage_modifiers", {}).items():
+                damage_modifiers[damage_type] += damage_modifier
+
+        damage_modifiers["physical"] += self.owner.fighter.dexterity[
             "attribute_modifier"]
         return damage_modifiers
 

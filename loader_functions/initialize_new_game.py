@@ -1,8 +1,11 @@
 from components.inventory import Inventory
 from components.item import Item
-from item_functions import cast_fireball, cast_chaos_bolt, cast_confuse
+from item_functions import cast_fireball, cast_chaos_bolt, cast_confuse, arrow_attack
 from components.fighter import Fighter
 from components.equipment import Equipment
+from components.ammunition import Ammunition
+from equipment_slots import EquipmentSlots
+from components.equippable import Equippable
 from components.level import Level
 from components.attributes import roll_character_attributes
 from components.armors import generate_random_armor
@@ -19,7 +22,7 @@ def get_constants():
     fps = 30
 
     screen_width: int = 224
-    screen_height: int = 74
+    screen_height: int = 59
 
     map_width: int = 80
     map_height: int = 60
@@ -82,7 +85,7 @@ def get_game_variables(constants):
                                 base_attack_energy_bonus=0,
                                 base_movement_energy_bonus=0,
                                 base_natural_hp_regeneration_speed=50,
-                                base_damage_dice={
+                                base_melee_damage_dice={
                                     "physical": [[1, 6]],
                                     "fire": [],
                                     "ice": [],
@@ -128,6 +131,37 @@ def get_game_variables(constants):
                   'Scroll of Fireball',
                   render_order=RenderOrder.ITEM,
                   item=item_component)
+
+    player.inventory.add_item(item)
+
+    item_component = Item(
+        use_function=arrow_attack,
+        targeting=True,
+        quantity=10,
+        targeting_message=Message(
+            'Left-click to shoot your ranged weapon, or right-click to cancel.',
+            "light cyan"),
+    )
+
+    ammo_component = Ammunition(rarity={
+        "rarity": "normal",
+        "rarity_color": "white"
+    },
+                                ammunition_name="arrow",
+                                material="iron",
+                                quality="normal")
+
+    equippable_component = Equippable(
+        equippable_type=ammo_component,
+        slot=EquipmentSlots.RANGED_WEAPON_AMMUNITION)
+
+    item = Entity(0,
+                  0,
+                  0x1000,
+                  ammo_component.identified_name.title(),
+                  render_order=RenderOrder.ITEM,
+                  item=item_component,
+                  equippable=equippable_component)
 
     player.inventory.add_item(item)
 

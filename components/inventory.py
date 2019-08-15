@@ -11,7 +11,9 @@ class Inventory:
     def add_item(self, item_entity):
         results = []
 
-        if len(self.items) >= self.capacity:
+        if len(
+                self.items
+        ) >= self.capacity and item_entity.item and not item_entity.equippable:
             results.append({
                 "item_added":
                 None,
@@ -20,7 +22,7 @@ class Inventory:
                     "You cannot carry any more items, your backpack is full.",
                     "yellow")
             })
-        elif len(self.equipment) >= self.capacity:
+        elif len(self.equipment) >= self.capacity and item_entity.equippable:
             results.append({
                 "item_added":
                 None,
@@ -52,7 +54,7 @@ class Inventory:
         results = []
         item_component = item_entity.item
 
-        if item_component.use_function is None:
+        if item_entity.equippable:
             equippable_component = item_entity.equippable
 
             if equippable_component:
@@ -62,7 +64,8 @@ class Inventory:
                     "message":
                     Message(f"You can't use the {item_entity.name}.", "yellow")
                 })
-        else:
+        elif not item_entity.equippable:
+
             if item_component.targeting and not (kwargs.get("target_x")
                                                  or kwargs.get("target_y")):
                 results.append({"targeting": item_entity})
@@ -79,6 +82,28 @@ class Inventory:
                             self.remove_item(item_entity)
 
                 results.extend(item_use_results)
+        return results
+
+    def use_ammunition(self, ammunition, **kwargs):
+        results = []
+        item_component = ammunition.item
+
+        if item_component.targeting and not (kwargs.get("target_x")
+                                             or kwargs.get("target_y")):
+            results.append({"targeting": ammunition})
+        else:
+            kwargs = {**item_component.function_kwargs, **kwargs}
+            item_use_results = item_component.use_function(
+                self.owner, **kwargs)
+
+            for item_use_result in item_use_results:
+                if item_use_result.get("consumed"):
+                    if ammunition.item.quantity >= 2:
+                        ammunition.item.quantity -= 1
+                    else:
+                        self.remove_item(ammunition)
+
+            results.extend(item_use_results)
         return results
 
     def remove_item(self, item_entity):
