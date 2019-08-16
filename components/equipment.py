@@ -171,6 +171,40 @@ class Equipment:
         return damage_modifiers
 
     @property
+    def calculate_resistance_multipliers(self):
+        resistance_multipliers = {
+            "physical": 0,
+            "fire": 0,
+            "ice": 0,
+            "lightning": 0,
+            "holy": 0,
+            "chaos": 0,
+            "arcane": 0,
+            "poison": 0,
+        }
+        for entity in self.__dict__.values():
+            if entity and entity.equippable:
+                for resistance_type, multiplier_value in entity.equippable.resistances.items(
+                ):
+                    resistance_multipliers[resistance_type] += multiplier_value
+
+        for resistance_type, multiplier_value in self.owner.fighter.base_resistance_multipliers.items(
+        ):
+            resistance_multipliers[resistance_type] += multiplier_value
+
+        for effect in self.owner.fighter.effects_with_resistance_multiplier_modifiers:
+            for resistance_type, multiplier_value in effect.modifiers.get(
+                    "resistance_multiplier_modifiers", {}).items():
+                resistance_multipliers[resistance_type] += multiplier_value
+
+        # Prevent multiplier from going below zero
+        for resistance_type in resistance_multipliers.keys():
+            resistance_multipliers[resistance_type] = max(
+                0, resistance_multipliers[resistance_type])
+
+        return resistance_multipliers
+
+    @property
     def calculate_resistances(self):
         total_resistances = {
             "physical": 0,
@@ -182,7 +216,10 @@ class Equipment:
             "arcane": 0,
             "poison": 0,
         }
-        for slot, entity in self.__dict__.items():
+
+        resistance_multipliers = self.calculate_resistance_multipliers
+
+        for entity in self.__dict__.values():
             if entity and entity.equippable:
                 for resistance_type, resistance_value in entity.equippable.resistances.items(
                 ):
@@ -216,8 +253,14 @@ class Equipment:
                 elif resistance_type in ("holy", "chaos", "arcane"):
                     total_resistances[
                         resistance_type] += special_resistance_modifier
-        for resistance_value in total_resistances.values():
-            resistance_value = round(resistance_value, 2)
+
+        for resistance_type in total_resistances.keys():
+            if total_resistances[resistance_type] > 0:
+                total_resistances[resistance_type] *= resistance_multipliers[
+                    resistance_type]
+            total_resistances[resistance_type] = round(
+                total_resistances[resistance_type], 2)
+
         return total_resistances
 
     @property
@@ -239,8 +282,28 @@ class Equipment:
             "melee_chance_to_hit_modifier")
 
     @property
+    def melee_chance_to_hit_multiplier_modifier(self):
+        return self.calculate_equipment_modifier(
+            "melee_chance_to_hit_multiplier_modifier")
+
+    @property
+    def ranged_chance_to_hit_modifier(self):
+        return self.calculate_equipment_modifier(
+            "ranged_chance_to_hit_modifier")
+
+    @property
+    def ranged_chance_to_hit_multiplier_modifier(self):
+        return self.calculate_equipment_modifier(
+            "ranged_chance_to_hit_multiplier_modifier")
+
+    @property
     def armor_class_modifier(self):
         return self.calculate_equipment_modifier("armor_class_modifier")
+
+    @property
+    def armor_class_multiplier_modifier(self):
+        return self.calculate_equipment_modifier(
+            "armor_class_multiplier_modifier")
 
     @property
     def shield_armor_class(self):
@@ -256,13 +319,17 @@ class Equipment:
             "critical_hit_chance_modifier")
 
     @property
-    def critical_hit_multiplier_modifier(self):
+    def critical_hit_damage_multiplier_modifier(self):
         return self.calculate_equipment_modifier(
-            "critical_hit_multiplier_modifier")
+            "critical_hit_damage_multiplier_modifier")
 
     @property
     def max_hp_modifier(self):
         return self.calculate_equipment_modifier("max_hp_modifier")
+
+    @property
+    def max_hp_multiplier_modifier(self):
+        return self.calculate_equipment_modifier("max_hp_multiplier_modifier")
 
     @property
     def speed_modifier(self):
@@ -281,6 +348,10 @@ class Equipment:
     @property
     def armor_modifier(self):
         return self.calculate_equipment_modifier("armor_modifier")
+
+    @property
+    def armor_multiplier_modifier(self):
+        return self.calculate_equipment_modifier("armor_multiplier_modifier")
 
     @property
     def strength_modifier(self):

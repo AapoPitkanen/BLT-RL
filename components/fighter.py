@@ -12,6 +12,9 @@ if TYPE_CHECKING:
 
 
 class Fighter:
+
+
+
     def __init__(
             self,
             attributes: "Attributes",
@@ -36,7 +39,7 @@ class Fighter:
                 "poison": 0,
             },
             base_critical_hit_chance: float = 0.05,
-            base_critical_hit_multiplier: float = 1.5,
+            base_critical_hit_damage_multiplier: float = 1.5,
             base_life_steal: float = 0,
             base_damage_reflection: float = 0,
             base_melee_damage_modifiers: Dict[str, int] = {
@@ -84,23 +87,58 @@ class Fighter:
         self.attributes = attributes
         self.current_hp = current_hp
         self.base_armor_class = base_armor_class
+        self.base_armor_class_multiplier = 1
         self.base_dodge = base_dodge
         self.base_max_hp: int = self.current_hp
+        self.base_max_hp_multiplier = 1
         self.base_armor = base_armor
+        self.base_armor_multiplier = 1
         self.base_melee_cth_modifier = base_melee_cth_modifier
+        self.base_melee_cth_multiplier = 1
         self.base_ranged_cth_modifier = base_ranged_cth_modifier
+        self.base_ranged_cth_multiplier = 1
         self.base_speed = base_speed
         self.base_attack_energy_bonus = base_attack_energy_bonus
         self.base_movement_energy_bonus = base_movement_energy_bonus
         self.base_natural_hp_regeneration_speed = base_natural_hp_regeneration_speed
         self.turns_to_natural_regenerate: int = 0
         self.base_resistances = base_resistances
+        self.base_resistance_multipliers = {
+            "physical": 1,
+            "fire": 1,
+            "ice": 1,
+            "lightning": 1,
+            "holy": 1,
+            "chaos": 1,
+            "arcane": 1,
+            "poison": 1,
+        }
         self.base_critical_hit_chance = base_critical_hit_chance
-        self.base_critical_hit_multiplier = base_critical_hit_multiplier
+        self.base_critical_hit_damage_multiplier = base_critical_hit_damage_multiplier
         self.base_life_steal = base_life_steal
         self.base_damage_reflection = base_damage_reflection
         self.base_melee_damage_modifiers = base_melee_damage_modifiers
+        self.base_melee_damage_multipliers = {
+            "physical": 1,
+            "fire": 1,
+            "ice": 1,
+            "lightning": 1,
+            "holy": 1,
+            "chaos": 1,
+            "arcane": 1,
+            "poison": 1,
+        },
         self.base_ranged_damage_modifiers = base_ranged_damage_modifiers
+        self.base_ranged_damage_multipliers = {
+            "physical": 1,
+            "fire": 1,
+            "ice": 1,
+            "lightning": 1,
+            "holy": 1,
+            "chaos": 1,
+            "arcane": 1,
+            "poison": 1,
+        },
         self.base_melee_damage_dice = base_melee_damage_dice
         self.base_ranged_damage_dice = base_ranged_damage_dice
         self.status_effects: List = []
@@ -130,35 +168,56 @@ class Fighter:
     def effects_with_melee_damage_modifiers(self):
         return [
             effect for effect in self.status_effects if effect.modifiers
-            and effect.modifiers.get("melee_damage_modifiers")
+            and effect.modifiers.get("melee_damage_modifiers", {})
+        ]
+
+    @property
+    def effects_with_melee_damage_multiplier_modifiers(self):
+        return [
+            effect for effect in self.status_effects if effect.modifiers
+            and effect.modifiers.get("melee_damage_multiplier_modifiers", {})
         ]
 
     @property
     def effects_with_ranged_damage_modifiers(self):
         return [
             effect for effect in self.status_effects if effect.modifiers
-            and effect.modifiers.get("ranged_damage_modifiers")
+            and effect.modifiers.get("ranged_damage_modifiers", {})
+        ]
+
+    @property
+    def effects_with_ranged_damage_multiplier_modifiers(self):
+        return [
+            effect for effect in self.status_effects if effect.modifiers
+            and effect.modifiers.get("ranged_damage_multiplier_modifiers", {})
         ]
 
     @property
     def effects_with_melee_damage_dice(self):
         return [
-            effect for effect in self.status_effects
-            if effect.modifiers and effect.modifiers.get("melee_damage_dice")
+            effect for effect in self.status_effects if effect.modifiers
+            and effect.modifiers.get("melee_damage_dice", {})
         ]
 
     @property
     def effects_with_ranged_damage_dice(self):
         return [
-            effect for effect in self.status_effects
-            if effect.modifiers and effect.modifiers.get("ranged_damage_dice")
+            effect for effect in self.status_effects if effect.modifiers
+            and effect.modifiers.get("ranged_damage_dice", {})
         ]
 
     @property
     def effects_with_resistances(self):
         return [
             effect for effect in self.status_effects
-            if effect.modifiers and effect.modifiers.get("resistances")
+            if effect.modifiers and effect.modifiers.get("resistances", {})
+        ]
+
+    @property
+    def effects_with_resistance_multiplier_modifiers(self):
+        return [
+            effect for effect in self.status_effects
+            if effect.modifiers and effect.modifiers.get("resistance_multiplier_modifiers", {})
         ]
 
     @property
@@ -190,8 +249,21 @@ class Fighter:
             modifier = int(
                 round((self.strength["attribute_modifier"] +
                        self.dexterity["attribute_modifier"]) / 2))
-        return self.base_melee_cth_modifier + modifier + self.calculate_effect_modifiers(
+        cth = self.base_melee_cth_modifier + modifier + self.calculate_effect_modifiers(
             "melee_chance_to_hit_modifier")
+        if cth > 0:
+            cth = int(round(cth * self.melee_chance_to_hit_multiplier))
+        return cth
+
+    @property
+    def melee_chance_to_hit_multiplier(self) -> float:
+        if self.owner and self.owner.equipment:
+            modifier = self.owner.equipment.melee_chance_to_hit_multiplier_modifier
+        else:
+            modifier = 0
+        return self.base_melee_cth_multiplier + modifier + self.calculate_effect_modifiers(
+            "melee_chance_to_hit_multiplier_modifier")
+
 
     @property
     def ranged_chance_to_hit_modifier(self) -> int:
@@ -199,13 +271,25 @@ class Fighter:
             modifier = int(
                 round((self.dexterity["attribute_modifier"] +
                        self.perception["attribute_modifier"]) /
-                      2)) + self.owner.equipment.melee_chance_to_hit_modifier
+                      2)) + self.owner.equipment.ranged_chance_to_hit_modifier
         else:
             modifier = int(
                 round((self.dexterity["attribute_modifier"] +
                        self.perception["attribute_modifier"]) / 2))
-        return self.base_ranged_cth_modifier + modifier + self.calculate_effect_modifiers(
+        cth = self.base_ranged_cth_modifier + modifier + self.calculate_effect_modifiers(
             "ranged_chance_to_hit_modifier")
+        if cth > 0:
+            cth = int(round(cth * self.ranged_chance_to_hit_multiplier))
+        return cth
+
+    @property
+    def ranged_chance_to_hit_multiplier(self) -> float:
+        if self.owner and self.owner.equipment:
+            modifier = self.owner.equipment.ranged_chance_to_hit_multiplier_modifier
+        else:
+            modifier = 0
+        return self.base_ranged_cth_multiplier + modifier + self.calculate_effect_modifiers(
+            "ranged_chance_to_hit_multiplier_modifier")
 
     @property
     def chance_to_hit_lower_bound_modifier(self) -> int:
@@ -216,15 +300,15 @@ class Fighter:
                    self.perception["attribute_modifier"]) / 4))
 
     @property
-    def critical_hit_multiplier(self) -> float:
+    def critical_hit_damage_multiplier(self) -> float:
         if self.owner and self.owner.equipment:
             modifier = (
                 self.luck["attribute_modifier"] *
-                0.05) + self.owner.equipment.critical_hit_multiplier_modifier
+                0.05) + self.owner.equipment.critical_hit_damage_multiplier_modifier
         else:
             modifier = (self.luck["attribute_modifier"] * 0.05)
-        return self.base_critical_hit_multiplier + modifier + self.calculate_effect_modifiers(
-            "critical_hit_multiplier")
+        return self.base_critical_hit_damage_multiplier + modifier + self.calculate_effect_modifiers(
+            "critical_hit_damage_multiplier")
 
     @property
     def critical_hit_chance(self) -> float:
@@ -243,8 +327,20 @@ class Fighter:
             modifier = self.owner.equipment.armor_class_modifier
         else:
             modifier = 0
-        return self.base_armor_class + modifier + self.calculate_effect_modifiers(
+        ac = self.base_armor_class + modifier + self.calculate_effect_modifiers(
             "armor_class_modifier")
+        if ac > 0:
+            ac = int(round(ac * self.armor_class_multiplier))
+        return ac
+
+    @property
+    def armor_class_multiplier(self) -> float:
+        if self.owner and self.owner.equipment:
+            modifier = self.owner.equipment.armor_class_multiplier_modifier
+        else:
+            modifier = 0
+        return self.base_armor_class_multiplier + modifier + self.calculate_effect_modifiers(
+            "armor_class_multiplier_modifier")
 
     @property
     def shield_armor_class(self) -> int:
@@ -297,9 +393,23 @@ class Fighter:
                 "attribute_modifier"] + self.owner.equipment.max_hp_modifier
         else:
             modifier = self.constitution["attribute_modifier"]
+        max_hp = (self.base_max_hp + modifier +
+                  self.calculate_effect_modifiers("max_hp_modifier"))
 
-        return self.base_max_hp + modifier + self.calculate_effect_modifiers(
-            "max_hp_modifier")
+        if max_hp > 0:
+            max_hp = int(round(max_hp * self.max_hp_multiplier))
+        if self.current_hp > max_hp:
+            self.current_hp = max_hp
+        return max_hp
+
+    @property
+    def max_hp_multiplier(self) -> float:
+        if self.owner and self.owner.equipment:
+            modifier = self.owner.equipment.max_hp_multiplier_modifier
+        else:
+            modifier = 0
+        return self.base_max_hp_multiplier + modifier + self.calculate_effect_modifiers(
+            "max_hp_multiplier_modifier")
 
     @property
     def melee_damage(self) -> Dict[str, int]:
@@ -689,7 +799,7 @@ class Fighter:
                 damage_type_damage += damage_modifiers[damage_type]
 
             if critical_seed <= self.critical_hit_chance:
-                damage_type_damage *= self.critical_hit_multiplier
+                damage_type_damage *= self.critical_hit_damage_multiplier
 
             damage_type_damage = int(round(damage_type_damage))
 

@@ -74,27 +74,29 @@ def get_constants():
 
 
 def get_game_variables(constants):
-    fighter_component = Fighter(roll_character_attributes(),
-                                current_hp=30,
-                                base_armor_class=5,
-                                base_dodge=5,
-                                base_armor=0,
-                                base_melee_cth_modifier=100,
-                                base_ranged_cth_modifier=0,
-                                base_speed=100,
-                                base_attack_energy_bonus=0,
-                                base_movement_energy_bonus=0,
-                                base_natural_hp_regeneration_speed=50,
-                                base_melee_damage_dice={
-                                    "physical": [[1, 6]],
-                                    "fire": [],
-                                    "ice": [],
-                                    "lightning": [],
-                                    "holy": [],
-                                    "chaos": [],
-                                    "arcane": [],
-                                    "poison": [],
-                                })
+    fighter_component = Fighter(
+        roll_character_attributes(),
+        current_hp=30,
+        base_armor_class=5,
+        base_dodge=5,
+        base_armor=0,
+        base_melee_cth_modifier=100,
+        base_ranged_cth_modifier=0,
+        base_speed=100,
+        base_attack_energy_bonus=0,
+        base_movement_energy_bonus=0,
+        base_natural_hp_regeneration_speed=50,
+        base_melee_damage_dice={
+            "physical": [[1, 6]],
+            "fire": [],
+            "ice": [],
+            "lightning": [],
+            "holy": [],
+            "chaos": [],
+            "arcane": [],
+            "poison": [],
+        },
+    )
     inventory_component = Inventory(26)
     level_component = Level()
     equipment_component = Equipment()

@@ -7,17 +7,22 @@ class Equippable:
             equippable_type=None,
             slot=None,
             melee_chance_to_hit_modifier: int = 0,
+            melee_chance_to_hit_multiplier_modifier: float = 0,
             ranged_chance_to_hit_modifier: int = 0,
+            ranged_chance_to_hit_multiplier_modifier: float = 0,
             armor_modifier: int = 0,
+            armor_multiplier_modifier: float = 0,
             armor_class_modifier: int = 0,
+            armor_class_multiplier_modifier: float = 0,
             dodge_modifier: int = 0,
             shield_armor_class: int = 0,
             max_hp_modifier: int = 0,
+            max_hp_multiplier_modifier: float = 0,
             speed_modifier: int = 0,
             movement_energy_bonus_modifier: int = 0,
             attack_energy_bonus_modifier: int = 0,
             critical_hit_chance_modifier: float = 0,
-            critical_hit_multiplier_modifier: float = 0,
+            critical_hit_damage_multiplier_modifier: float = 0,
             strength_modifier: int = 0,
             perception_modifier: int = 0,
             dexterity_modifier: int = 0,
@@ -39,7 +44,27 @@ class Equippable:
                 "arcane": 0,
                 "poison": 0,
             },
+            melee_damage_multiplier_modifiers={
+                "physical": 0,
+                "fire": 0,
+                "ice": 0,
+                "lightning": 0,
+                "holy": 0,
+                "chaos": 0,
+                "arcane": 0,
+                "poison": 0,
+            },
             ranged_damage_modifiers={
+                "physical": 0,
+                "fire": 0,
+                "ice": 0,
+                "lightning": 0,
+                "holy": 0,
+                "chaos": 0,
+                "arcane": 0,
+                "poison": 0,
+            },
+            ranged_damage_multiplier_modifiers={
                 "physical": 0,
                 "fire": 0,
                 "ice": 0,
@@ -78,6 +103,16 @@ class Equippable:
                 "chaos": 0,
                 "arcane": 0,
                 "poison": 0,
+            },
+            resistance_multiplier_modifiers={
+                "physical": 0,
+                "fire": 0,
+                "ice": 0,
+                "lightning": 0,
+                "holy": 0,
+                "chaos": 0,
+                "arcane": 0,
+                "poison": 0,
             }):
         self.slot = slot
         # equippable type is built as a class with the following properties:
@@ -89,17 +124,22 @@ class Equippable:
         # quality: quality of the equipment, giving specific bonuses
         self.equippable_type = equippable_type
         self.melee_chance_to_hit_modifier = melee_chance_to_hit_modifier
+        self.melee_chance_to_hit_multiplier_modifier = melee_chance_to_hit_multiplier_modifier
         self.ranged_chance_to_hit_modifier = ranged_chance_to_hit_modifier
+        self.ranged_chance_to_hit_multiplier_modifier = ranged_chance_to_hit_multiplier_modifier
         self.armor_modifier = armor_modifier
+        self.armor_multiplier_modifier = armor_multiplier_modifier
         self.armor_class_modifier = armor_class_modifier
+        self.aromr_class_multiplier_modifier = armor_class_multiplier_modifier
         self.dodge_modifier = dodge_modifier
         self.shield_armor_class = shield_armor_class
         self.max_hp_modifier = max_hp_modifier
+        self.max_hp_multiplier_modifier = max_hp_multiplier_modifier
         self.speed_modifier = speed_modifier
         self.movement_energy_bonus_modifier = movement_energy_bonus_modifier
         self.attack_energy_bonus_modifier = attack_energy_bonus_modifier
         self.critical_hit_chance_modifier = critical_hit_chance_modifier
-        self.critical_hit_multiplier_modifier = critical_hit_multiplier_modifier
+        self.critical_hit_damage_multiplier_modifier = critical_hit_damage_multiplier_modifier
         self.strength_modifier = strength_modifier
         self.perception_modifier = perception_modifier
         self.dexterity_modifier = dexterity_modifier
@@ -112,7 +152,10 @@ class Equippable:
         self.damage_reflection_modifier = damage_reflection_modifier
         self.natural_hp_regeneration_speed_modifier = natural_hp_regeneration_speed_modifier
         self.melee_damage_modifiers = melee_damage_modifiers
+        self.melee_damage_multiplier_modifiers = melee_damage_multiplier_modifiers
         self.ranged_damage_modifiers = ranged_damage_modifiers
+        self.ranged_damage_multiplier_modifiers = ranged_damage_multiplier_modifiers
         self.melee_damage_dice = melee_damage_dice
         self.ranged_damage_dice = ranged_damage_dice
         self.resistances = resistances
+        self.resistance_multiplier_modifiers = resistance_multiplier_modifiers

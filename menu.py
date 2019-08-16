@@ -212,12 +212,15 @@ def equipment_menu(header: str, inventory: "Inventory",
                      equipment.equippable.equippable_type.
                      rarity["rarity_color"]))
             elif player_equipment.RANGED_WEAPON_AMMUNITION == equipment:
-                options.append(
-                    (f"{equipment.name} (equipped as ammunition)", equipment.
-                     equippable.equippable_type.rarity["rarity_color"]))
+                options.append((
+                    f"{equipment.name} {'(stack of ' + str(equipment.item.quantity) + ')' if equipment.item.quantity > 1 else ''} (equipped as ammunition)",
+                    equipment.equippable.equippable_type.rarity["rarity_color"]
+                ))
             else:
-                options.append((f"{equipment.name}", equipment.equippable.
-                                equippable_type.rarity["rarity_color"]))
+                options.append((
+                    f"{equipment.name} {'(stack of ' + str(equipment.item.quantity) + ')' if equipment.item.quantity > 1 else ''}",
+                    equipment.equippable.equippable_type.rarity["rarity_color"]
+                ))
 
     menu_colored_options(header,
                          options,
@@ -268,7 +271,6 @@ def draw_menu_background(width: int,
         else:
             terminal.put(topleft_x + term_x * 4, topleft_y + term_y * 2,
                          0x2008)
-
 
 
 def main_menu(screen_width: int, screen_height: int) -> None:

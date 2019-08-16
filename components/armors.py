@@ -407,7 +407,7 @@ def generate_armor_rarity_modifiers():
         }, {
             "critical_hit_chance_modifier": randint(1, 2) / 100
         }, {
-            "critical_hit_multiplier_modifier": 5 / 100
+            "critical_hit_damage_multiplier_modifier": 5 / 100
         }, {
             "speed_modifier": randint(1, 5)
         }, {
@@ -444,7 +444,7 @@ def generate_armor_rarity_modifiers():
         }, {
             "critical_hit_chance_modifier": randint(1, 3) / 100
         }, {
-            "critical_hit_multiplier_modifier": 5 / 100
+            "critical_hit_damage_multiplier_modifier": 5 / 100
         }, {
             "speed_modifier": randint(1, 5)
         }, {
@@ -497,7 +497,7 @@ def generate_armor_rarity_modifiers():
         }, {
             "critical_hit_chance_modifier": randint(2, 4) / 100
         }, {
-            "critical_hit_multiplier_modifier": 10 / 100
+            "critical_hit_damage_multiplier_modifier": 10 / 100
         }, {
             "speed_modifier": randint(2, 6)
         }, {
@@ -636,7 +636,7 @@ def generate_armor_material_modifiers():
             "armor_modifier": randint(2, 5),
             "movement_energy_bonus_modifier": randint(-3, 0),
             "critical_hit_chance_modifier": randint(1, 5) / 100,
-            "critical_hit_multiplier_modifier": randint(1, 5) / 100,
+            "critical_hit_damage_multiplier_modifier": randint(1, 5) / 100,
             "resistances": {
                 "holy": randint(3, 8) / 100
             },
@@ -1404,7 +1404,7 @@ def generate_random_armor():
         "movement_energy_bonus_modifier": 0,
         "attack_energy_bonus_modifier": 0,
         "critical_hit_chance_modifier": 0,
-        "critical_hit_multiplier_modifier": 0,
+        "critical_hit_damage_multiplier_modifier": 0,
         "strength_modifier": 0,
         "perception_modifier": 0,
         "dexterity_modifier": 0,

@@ -5,23 +5,22 @@ from equipment_slots import EquipmentSlots
 from entity import Entity
 from random import randint
 
+
 class Weapon:
-    def __init__(
-            self,
-            rarity=None,
-            material=None,
-            weapon_type=None,
-            weapon_name=None,
-            weapon_physical_damage_type=None,
-            weapon_physical_damage_status_chance=None,
-            unidentified_name=None,
-            identified_name=None,
-            prefix=None,
-            suffix=None,
-            quality=None,
-            two_handed=False,
-            ammunition = None
-    ):
+    def __init__(self,
+                 rarity=None,
+                 material=None,
+                 weapon_type=None,
+                 weapon_name=None,
+                 weapon_physical_damage_type=None,
+                 weapon_physical_damage_status_chance=None,
+                 unidentified_name=None,
+                 identified_name=None,
+                 prefix=None,
+                 suffix=None,
+                 quality=None,
+                 two_handed=False,
+                 ammunition=None):
         self.rarity = rarity
         self.material = material
         self.weapon_type = weapon_type
@@ -35,6 +34,7 @@ class Weapon:
         self.quality = quality
         self.two_handed = two_handed
         self.ammunition = None
+
 
 def generate_melee_quality_modifiers():
     melee_quality_modifiers = {
@@ -107,7 +107,6 @@ def generate_melee_quality_modifiers():
             "melee_damage_modifiers": {
                 "physical": randint(1, 2)
             },
-
         },
         "flawless": {
             "melee_chance_to_hit_modifier": randint(2, 4),
@@ -203,6 +202,244 @@ def generate_ranged_quality_modifiers():
         }
     }
     return ranged_quality_modifiers
+
+
+def melee_weapon_material_modifiers():
+    melee_weapon_material_modifiers = {
+        "copper": {
+            "melee_chance_to_hit_modifier": randint(-1, 1),
+            "melee_damage_modifiers": {
+                "physical": 0,
+            }
+        },
+        "bronze": {
+            "melee_chance_to_hit_modifier": randint(-1, 1),
+            "melee_damage_modifiers": {
+                "physical": 0,
+            }
+        },
+        "iron": {
+            "melee_chance_to_hit_modifier": randint(-1, 1),
+            "melee_damage_modifiers": {
+                "physical": 0,
+            }
+        },
+        "steel": {
+            "melee_chance_to_hit_modifier": randint(-1, 1),
+            "melee_damage_modifiers": {
+                "physical": 0,
+            }
+        },
+        "truesteel": {
+            "melee_chance_to_hit_modifier": randint(-1, 1),
+            "melee_damage_modifiers": {
+                "physical": 0,
+            }
+        },
+        "darksteel": {
+            "melee_chance_to_hit_modifier": randint(-1, 1),
+            "melee_damage_modifiers": {
+                "physical": 0,
+            }
+        },
+        "orichalcum": {
+            "melee_chance_to_hit_modifier": randint(-1, 1),
+            "melee_damage_modifiers": {
+                "physical": 0,
+            }
+        },
+        "mithril": {
+            "melee_chance_to_hit_modifier": randint(-1, 1),
+            "melee_damage_modifiers": {
+                "physical": 0,
+            }
+        },
+        "voidstone": {
+            "melee_chance_to_hit_modifier": randint(-1, 1),
+            "melee_damage_modifiers": {
+                "physical": 0,
+            }
+        },
+        "brimstone": {
+            "melee_chance_to_hit_modifier": randint(-1, 1),
+            "melee_damage_modifiers": {
+                "physical": 0,
+            }
+        },
+        "cold iron": {
+            "melee_chance_to_hit_modifier": randint(-1, 1),
+            "melee_damage_modifiers": {
+                "physical": 0,
+            }
+        },
+        "thunderstone": {
+            "melee_chance_to_hit_modifier": randint(-1, 1),
+            "melee_damage_modifiers": {
+                "physical": 0,
+            }
+        },
+        "pearlstone": {
+            "melee_chance_to_hit_modifier": randint(-1, 1),
+            "melee_damage_modifiers": {
+                "physical": 0,
+            }
+        },
+        "electrum": {
+            "melee_chance_to_hit_modifier": randint(-1, 1),
+            "melee_damage_modifiers": {
+                "physical": 0,
+            }
+        },
+        "adamantine": {
+            "melee_chance_to_hit_modifier": randint(-1, 1),
+            "melee_damage_modifiers": {
+                "physical": 0,
+            }
+        },
+        "meteoric iron": {
+            "melee_chance_to_hit_modifier": randint(-1, 1),
+            "melee_damage_modifiers": {
+                "physical": 0,
+            }
+        },
+    }
+    return melee_weapon_material_modifiers
+
+def pistol_and_rifle_material_modifiers():
+    pistol_and_rifle_material_modifiers = {
+        "copper": {
+            "ranged_chance_to_hit_modifier": randint(-1, 1),
+            "ranged_damage_modifiers": {
+                "physical": randint(1, 3)
+            }
+        },
+        "bronze": {
+            "ranged_chance_to_hit_modifier": randint(-1, 1),
+            "ranged_damage_modifiers": {
+                "physical": randint(1, 3)
+            }
+        },
+        "iron": {
+            "ranged_chance_to_hit_modifier": randint(-1, 1),
+            "ranged_damage_modifiers": {
+                "physical": randint(1, 3)
+            }
+        },
+        "steel": {
+            "ranged_chance_to_hit_modifier": randint(-1, 1),
+            "ranged_damage_modifiers": {
+                "physical": randint(1, 3)
+            }
+        },
+        "truesteel": {
+            "ranged_chance_to_hit_modifier": randint(-1, 1),
+            "ranged_damage_modifiers": {
+                "physical": randint(1, 3)
+            }
+        },
+        "darksteel": {
+            "ranged_chance_to_hit_modifier": randint(-1, 1),
+            "ranged_damage_modifiers": {
+                "physical": randint(1, 3)
+            }
+        },
+        "orichalcum": {
+            "ranged_chance_to_hit_modifier": randint(-1, 1),
+            "ranged_damage_modifiers": {
+                "physical": randint(1, 3)
+            }
+        },
+        "mithril": {
+            "ranged_chance_to_hit_modifier": randint(-1, 1),
+            "ranged_damage_modifiers": {
+                "physical": randint(1, 3)
+            }
+        },
+        "voidstone": {
+            "ranged_chance_to_hit_modifier": randint(-1, 1),
+            "ranged_damage_modifiers": {
+                "physical": randint(1, 3)
+            }
+        },
+        "brimstone": {
+            "ranged_chance_to_hit_modifier": randint(-1, 1),
+            "ranged_damage_modifiers": {
+                "physical": randint(1, 3)
+            }
+        },
+        "cold iron": {
+            "ranged_chance_to_hit_modifier": randint(-1, 1),
+            "ranged_damage_modifiers": {
+                "physical": randint(1, 3)
+            }
+        },
+        "thunderstone": {
+            "ranged_chance_to_hit_modifier": randint(-1, 1),
+            "ranged_damage_modifiers": {
+                "physical": randint(1, 3)
+            }
+        },
+        "pearlstone": {
+            "ranged_chance_to_hit_modifier": randint(-1, 1),
+            "ranged_damage_modifiers": {
+                "physical": randint(1, 3)
+            }
+        },
+        "electrum": {
+            "ranged_chance_to_hit_modifier": randint(-1, 1),
+            "ranged_damage_modifiers": {
+                "physical": randint(1, 3)
+            }
+        },
+        "adamantine": {
+            "ranged_chance_to_hit_modifier": randint(-1, 1),
+            "ranged_damage_modifiers": {
+                "physical": randint(1, 3)
+            }
+        },
+        "meteoric iron": {
+            "ranged_chance_to_hit_modifier": randint(-1, 1),
+            "ranged_damage_modifiers": {
+                "physical": randint(1, 3)
+            }
+        },
+    }
+    return pistol_and_rifle_material_modifiers
+
+def bow_and_crossbow_material_modifiers():
+    bow_and_crossbow_material_modifiers = {
+        "maple": {
+            "ranged_chance_to_hit_modifier": randint(-1, 1)
+        },
+        "ash": {
+            "ranged_chance_to_hit_modifier": randint(-1, 1)
+        },
+        "elm": {
+            "ranged_chance_to_hit_modifier": randint(-1, 1)
+        },
+        "oak": {
+            "ranged_chance_to_hit_modifier": randint(-1, 1)
+        },
+        "hickory": {
+            "ranged_chance_to_hit_modifier": randint(-1, 1)
+        },
+        "walnut": {
+            "ranged_chance_to_hit_modifier": randint(-1, 1)
+        },
+        "ironwood": {
+            "ranged_chance_to_hit_modifier": randint(-1, 1)
+        },
+        "rosewood": {
+            "ranged_chance_to_hit_modifier": randint(-1, 1)
+        },
+        "juniper": {
+            "ranged_chance_to_hit_modifier": randint(-1, 1)
+        },
+        "yew": {
+            "ranged_chance_to_hit_modifier": randint(-1, 1)
+        },
+    }
+    return bow_and_crossbow_material_modifiers
 
 
 weapon_types = {
