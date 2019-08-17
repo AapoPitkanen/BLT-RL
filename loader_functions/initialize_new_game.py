@@ -9,6 +9,8 @@ from components.equippable import Equippable
 from components.level import Level
 from components.attributes import roll_character_attributes
 from components.armors import generate_random_armor
+from components.weapons import generate_random_weapon
+from components.status_effects import DoubleDamageToOrcs
 from entity import Entity
 from render_order import RenderOrder
 from game_messages import MessageLog, Message
@@ -166,6 +168,12 @@ def get_game_variables(constants):
                   equippable=equippable_component)
 
     player.inventory.add_item(item)
+
+    player.fighter.apply_effect(DoubleDamageToOrcs)
+
+    weapon = generate_random_weapon()
+
+    player.inventory.add_item(weapon)
 
     message_log = MessageLog(constants["message_x"],
                              constants["message_width"],

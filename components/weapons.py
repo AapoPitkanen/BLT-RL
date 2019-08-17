@@ -1,15 +1,16 @@
 import tcod as libtcod
 from components.equippable import Equippable
-from components.equipment_attributes import qualities, quality_weights, rarities, weapon_material_names, weapon_material_weights
+from components.equipment_attributes import qualities, quality_weights, rarities, weapon_metal_material_names, weapon_metal_material_weights, weapon_wood_material_names, weapon_wood_material_weights, weapon_prefixes, weapon_prefix_weights, weapon_suffixes, weapon_suffix_weights
 from equipment_slots import EquipmentSlots
 from entity import Entity
-from random import randint
+from random import random, randint, choices, sample
 
 
 class Weapon:
     def __init__(self,
                  rarity=None,
                  material=None,
+                 slot_type=None,
                  weapon_type=None,
                  weapon_name=None,
                  weapon_physical_damage_type=None,
@@ -23,6 +24,7 @@ class Weapon:
                  ammunition=None):
         self.rarity = rarity
         self.material = material
+        self.slot_type = slot_type
         self.weapon_type = weapon_type
         self.weapon_name = weapon_name
         self.weapon_physical_damage_type = weapon_physical_damage_type
@@ -33,7 +35,216 @@ class Weapon:
         self.suffix = suffix
         self.quality = quality
         self.two_handed = two_handed
-        self.ammunition = None
+        self.ammunition = ammunition
+
+
+def generate_weapon_rarity_modifiers():
+    weapon_rarity_modifiers = {
+        "common": [{
+            "armor_modifier": randint(1, 1)
+        }, {
+            "armor_class_modifier": randint(1, 1)
+        }, {
+            "max_hp_modifier": randint(1, 3)
+        }, {
+            "melee_chance_to_hit_modifier": randint(1, 2)
+        }, {
+            "ranged_chance_to_hit_modifier": randint(1, 2)
+        }, {
+            "speed_modifier": randint(1, 3)
+        }, {
+            "movement_energy_bonus_modifier": randint(1, 2)
+        }, {
+            "attack_energy_bonus_modifier": randint(1, 2)
+        }],
+        "uncommon": [{
+            "armor_modifier": randint(1, 1)
+        }, {
+            "armor_class_modifier": randint(1, 2)
+        }, {
+            "max_hp_modifier": randint(1, 4)
+        }, {
+            "melee_chance_to_hit_modifier": randint(1, 3)
+        }, {
+            "ranged_chance_to_hit_modifier": randint(1, 3)
+        }, {
+            "speed_modifier": randint(1, 4)
+        }, {
+            "movement_energy_bonus_modifier": randint(1, 3)
+        }, {
+            "attack_energy_bonus_modifier": randint(1, 3)
+        }, {
+            "resistances": {
+                "physical": randint(1, 3) / 100
+            }
+        }],
+        "rare": [{
+            "armor_modifier": randint(1, 1)
+        }, {
+            "armor_class_modifier": randint(1, 3)
+        }, {
+            "max_hp_modifier": randint(1, 5)
+        }, {
+            "melee_chance_to_hit_modifier": randint(1, 4)
+        }, {
+            "ranged_chance_to_hit_modifier": randint(1, 4)
+        }, {
+            "critical_hit_chance_modifier": randint(1, 2) / 100
+        }, {
+            "critical_hit_damage_multiplier_modifier": 5 / 100
+        }, {
+            "speed_modifier": randint(1, 5)
+        }, {
+            "movement_energy_bonus_modifier": randint(1, 4)
+        }, {
+            "attack_energy_bonus_modifier": randint(1, 4)
+        }, {
+            "resistances": {
+                "physical": randint(1, 4) / 100
+            }
+        }, {
+            "resistances": {
+                "fire": randint(1, 4) / 100
+            }
+        }, {
+            "resistances": {
+                "ice": randint(1, 4) / 100
+            }
+        }, {
+            "resistances": {
+                "lightning": randint(1, 4) / 100
+            }
+        }],
+        "epic": [{
+            "armor_modifier": randint(1, 3)
+        }, {
+            "armor_class_modifier": randint(2, 4)
+        }, {
+            "max_hp_modifier": randint(2, 6)
+        }, {
+            "melee_chance_to_hit_modifier": randint(2, 5)
+        }, {
+            "ranged_chance_to_hit_modifier": randint(2, 5)
+        }, {
+            "critical_hit_chance_modifier": randint(1, 3) / 100
+        }, {
+            "critical_hit_damage_multiplier_modifier": 5 / 100
+        }, {
+            "speed_modifier": randint(1, 5)
+        }, {
+            "movement_energy_bonus_modifier": randint(2, 5)
+        }, {
+            "attack_energy_bonus_modifier": randint(2, 5)
+        }, {
+            "resistances": {
+                "physical": randint(1, 5) / 100
+            }
+        }, {
+            "resistances": {
+                "fire": randint(1, 5) / 100
+            }
+        }, {
+            "resistances": {
+                "ice": randint(1, 5) / 100
+            }
+        }, {
+            "resistances": {
+                "lightning": randint(1, 5) / 100
+            }
+        }, {
+            "resistances": {
+                "holy": randint(1, 5) / 100
+            }
+        }, {
+            "resistances": {
+                "chaos": randint(1, 5) / 100
+            }
+        }, {
+            "resistances": {
+                "arcane": randint(1, 5) / 100
+            }
+        }, {
+            "resistances": {
+                "poison": randint(1, 5) / 100
+            }
+        }],
+        "mythical": [{
+            "armor_modifier": randint(2, 4)
+        }, {
+            "armor_class_modifier": randint(3, 6)
+        }, {
+            "max_hp_modifier": randint(3, 8)
+        }, {
+            "melee_chance_to_hit_modifier": randint(3, 6)
+        }, {
+            "ranged_chance_to_hit_modifier": randint(3, 6)
+        }, {
+            "critical_hit_chance_modifier": randint(2, 4) / 100
+        }, {
+            "critical_hit_damage_multiplier_modifier": 10 / 100
+        }, {
+            "speed_modifier": randint(2, 6)
+        }, {
+            "movement_energy_bonus_modifier": randint(2, 6)
+        }, {
+            "attack_energy_bonus_modifier": randint(2, 6)
+        }, {
+            "life_steal_modifier": randint(3, 8) / 100
+        }, {
+            "damage_reflection_modifier": randint(3, 8) / 100
+        }, {
+            "strength_modifier": 1
+        }, {
+            "perception_modifier": 1
+        }, {
+            "dexterity_modifier": 1
+        }, {
+            "constitution_modifier": 1
+        }, {
+            "intelligence_modifier": 1
+        }, {
+            "wisdom_modifier": 1
+        }, {
+            "charisma_modifier": 1
+        }, {
+            "luck_modifier": 1
+        }, {
+            "resistances": {
+                "physical": randint(1, 6) / 100
+            }
+        }, {
+            "resistances": {
+                "fire": randint(1, 6) / 100
+            }
+        }, {
+            "resistances": {
+                "ice": randint(1, 6) / 100
+            }
+        }, {
+            "resistances": {
+                "lightning": randint(1, 6) / 100
+            }
+        }, {
+            "resistances": {
+                "holy": randint(1, 6) / 100
+            }
+        }, {
+            "resistances": {
+                "chaos": randint(1, 6) / 100
+            }
+        }, {
+            "resistances": {
+                "arcane": randint(1, 6) / 100
+            }
+        }, {
+            "resistances": {
+                "poison": randint(1, 6) / 100
+            }
+        }, {
+            "dodge_modifier": randint(1, 2)
+        }]
+    }
+    return weapon_rarity_modifiers
 
 
 def generate_melee_quality_modifiers():
@@ -204,7 +415,7 @@ def generate_ranged_quality_modifiers():
     return ranged_quality_modifiers
 
 
-def melee_weapon_material_modifiers():
+def generate_melee_weapon_material_modifiers():
     melee_weapon_material_modifiers = {
         "copper": {
             "melee_chance_to_hit_modifier": randint(-1, 1),
@@ -305,7 +516,8 @@ def melee_weapon_material_modifiers():
     }
     return melee_weapon_material_modifiers
 
-def pistol_and_rifle_material_modifiers():
+
+def generate_pistol_and_rifle_material_modifiers():
     pistol_and_rifle_material_modifiers = {
         "copper": {
             "ranged_chance_to_hit_modifier": randint(-1, 1),
@@ -406,7 +618,8 @@ def pistol_and_rifle_material_modifiers():
     }
     return pistol_and_rifle_material_modifiers
 
-def bow_and_crossbow_material_modifiers():
+
+def generate_bow_and_crossbow_material_modifiers():
     bow_and_crossbow_material_modifiers = {
         "maple": {
             "ranged_chance_to_hit_modifier": randint(-1, 1)
@@ -511,7 +724,7 @@ weapon_names = {
             "double axe",
             "war axe",
             "military pick",
-            "war pick"
+            "war pick",
             "battleaxe",
             "broadaxe",
             "hatchet",
@@ -788,7 +1001,7 @@ weapon_names = {
     },
 }
 
-weapon_physical_damage_type = {
+weapon_physical_damage_types = {
     "short sword": "slashing",
     "broadsword": "slashing",
     "longsword": "slashing",
@@ -910,7 +1123,7 @@ weapon_physical_damage_type = {
     "hand ballista": "piercing",
 }
 
-weapon_physical_damage_status_chance = {
+weapon_physical_damage_status_chances = {
     "short sword": 0.05,
     "broadsword": 0.06,
     "longsword": 0.07,
@@ -1033,6 +1246,973 @@ weapon_physical_damage_status_chance = {
 }
 
 
+def generate_weapon_suffix_modifiers():
+    weapon_suffix_modifiers = {
+        "of Alacrity": {},
+        "of Celerity": {},
+        "of Defense": {},
+        "of Protection": {},
+        "of Strength": {},
+        "of the Juggernaut": {},
+        "of the Hawk": {},
+        "of the Eagle": {},
+        "of the Cat": {},
+        "of the Fox": {},
+        "of Endurance": {},
+        "of Toughness": {},
+        "of the Magi": {},
+        "of the Wizard": {},
+        "of Wisdom": {},
+        "of Piety": {},
+        "of Charisma": {},
+        "of the Silver Tongue": {},
+        "of Fate": {},
+        "of Fortune": {},
+        "of Longevity": {},
+        "of Health": {},
+        "of Life": {},
+        "of Flames": {},
+        "of the Glacier": {},
+        "of Thunder": {},
+        "of the Heavens": {},
+        "of the Void": {},
+        "of the Arcane": {},
+        "of Toxins": {},
+        "of Evasion": {},
+        "of Ruin": {},
+        "of Scorching": {},
+        "of Frostbite": {},
+        "of Thunder": {},
+        "of Decay": {},
+        "of Death": {},
+        "of Conflagaration": {},
+        "of Insanity": {},
+        "of Sanctification": {},
+        "of the Slayer": {},
+        "of the Excecutioner": {},
+        "of Fervor": {},
+        "of Voracity": {},
+        "of Cruelty": {},
+        "of Ruthlessness": {},
+        "of Fury": {},
+        "of Slaughter": {},
+        "of Ferocity": {},
+        "of Onslaught": {},
+        "of Wildfire": {},
+        "of Blight": {},
+        "of Destruction": {},
+        "of Devastation": {},
+        "of Decimation": {},
+        "of Annihilation": {},
+        "of Disintegration": {},
+        "of Obliteration": {},
+        "of the Elements": {},
+        "of the Flamecaller": {},
+        "of Shattering": {},
+        "of Torment": {},
+        "of Celestial Wrath": {},
+        "of Mortality": {},
+    }
+    return weapon_suffix_modifiers
+
+
+def generate_weapon_prefix_modifiers():
+    weapon_prefix_modifiers = {
+        "Deadly": {},
+        "Blazing": {},
+        "Searing": {},
+        "Freezing": {},
+        "Chilled": {},
+        "Frostborn": {},
+        "Fireborn": {},
+        "Shocking": {},
+        "Charged": {},
+        "Thunderstruck": {},
+        "Sanctified": {},
+        "Abyssal": {},
+        "Esoteric": {},
+        "Venomous": {},
+        "Relentless": {},
+        "Murderous": {},
+        "Masterwork": {},
+        "Swift": {},
+        "Quick": {},
+        "Vampiric": {},
+        "Dastardly": {},
+        "Brutal": {},
+        "Barbaric": {},
+        "Bloodthirsty": {},
+        "Demonic": {},
+        "Infernal": {},
+        "Enchanted": {},
+        "Eldritch": {},
+        "Wretched": {},
+        "Sinister": {},
+        "Stoneforged": {},
+        "Skyforged": {},
+    }
+    return weapon_prefix_modifiers
+
+
+def generate_weapon_name_modifiers():
+
+    weapon_name_modifiers = {
+        "short sword": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "broadsword": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "longsword": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "bastard sword": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "scimitar": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "falchion": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "gladius": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "arming sword": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "sabre": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "estoc": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "rapier": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "fencing sword": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "hand axe": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "axe": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "double axe": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "war axe": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "military pick": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "war pick": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "battleaxe": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "broadaxe": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "hatchet": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "cleaver": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "bearded axe": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "knife": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "dagger": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "dirk": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "kris": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "rondel dagger": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "hunting dagger": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "blade": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "stiletto": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "light mace": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "mace": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "ball mace": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "heavy mace": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "morning star": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "light flail": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "flail": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "flanged mace": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "bladed mace": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "mallet": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "club": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "cudgel": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "bludgeon": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "truncheon": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "war club": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "heavy cudgel": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "light hammer": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "hammer": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "war hammer": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "battle hammer": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "large hammer": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "short staff": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "staff": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "long staff": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "quarterstaff": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "battle staff": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "war staff": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "halberd": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "bardiche": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "voulge": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "poleaxe": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "fauchard": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "guisarme": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "glaive": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "partisan": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "lochaber axe": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "war scythe": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "shortspear": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "spear": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "longspear": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "pike": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "lance": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "war spear": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "spetum": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "brandistock": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "greatsword": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "greataxe": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "claymore": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "zweihänder": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "flamberge": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "warsword": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "maul": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "heavy maul": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "two-handed hammer": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "two-handed war hammer": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "heavy flail": {
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "revolver": {
+            "ranged_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "repeater": {
+            "ranged_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "flintlock pistol": {
+            "ranged_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "howdah": {
+            "ranged_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "hand cannon": {
+            "ranged_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "derringer": {
+            "ranged_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "rifle": {
+            "ranged_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "repeater carbine": {
+            "ranged_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "flintlock rifle": {
+            "ranged_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "musket": {
+            "ranged_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "blunderbuss": {
+            "ranged_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "bolt-action rifle": {
+            "ranged_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "repeating rifle": {
+            "ranged_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "carbine": {
+            "ranged_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "assault carbine": {
+            "ranged_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "revolver rifle": {
+            "ranged_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "shortbow": {
+            "ranged_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "bow": {
+            "ranged_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "hunting bow": {
+            "ranged_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "composite bow": {
+            "ranged_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "longbow": {
+            "ranged_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "recurve bow": {
+            "ranged_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "war bow": {
+            "ranged_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "siege bow": {
+            "ranged_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "light crossbow": {
+            "ranged_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "crossbow": {
+            "ranged_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "heavy crossbow": {
+            "ranged_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "repeating crossbow": {
+            "ranged_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "arbalest": {
+            "ranged_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "heavy arbalest": {
+            "ranged_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "siege crossbow": {
+            "ranged_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+        "hand ballista": {
+            "ranged_damage_dice": {
+                "physical": [[1, 6]]
+            }
+        },
+    }
+    return weapon_name_modifiers
+
+
+def generate_random_weapon():
+    rarity_level = ''.join(
+        choices(rarities["rarity_levels"], rarities["rarity_weights"], k=1))
+    quality = ''.join(choices(qualities, quality_weights, k=1))
+
+    prefix = None
+    prefix_seed = random()
+    suffix = None
+    suffix_seed = random()
+
+    if prefix_seed <= 0.25:
+        prefix = ''.join(choices(weapon_prefixes, weapon_prefix_weights, k=1))
+
+    if suffix_seed <= 0.25:
+        suffix = ''.join(choices(weapon_suffixes, weapon_suffix_weights, k=1))
+
+    rarity = {
+        "rarity_level": rarity_level,
+        "rarity_color": rarities["rarity_colors"][rarity_level]
+    }
+
+    weapon_type = "".join(
+        choices(weapon_types["types"], weapon_types["weights"]))
+
+    if weapon_type in ["pistol", "rifle", "bow", "crossbow"]:
+        slot = EquipmentSlots.RANGED_WEAPON
+        weapon_quality_modifiers = generate_ranged_quality_modifiers()[quality]
+    else:
+        slot = EquipmentSlots.MAIN_HAND
+        weapon_quality_modifiers = generate_melee_quality_modifiers()[quality]
+
+    weapon_name = "".join(
+        choices(weapon_names[weapon_type]["names"],
+                weapon_names[weapon_type]["weights"]))
+
+    if weapon_type in ["bow", "crossbow"]:
+        material = "".join(
+            choices(weapon_wood_material_names, weapon_wood_material_weights))
+    else:
+        material = "".join(
+            choices(weapon_metal_material_names,
+                    weapon_metal_material_weights))
+
+    if weapon_type in ["bow", "crossbow"]:
+        material_modifiers = generate_bow_and_crossbow_material_modifiers(
+        )[material]
+    elif weapon_type in ["pistol", "rifle"]:
+        material_modifiers = generate_pistol_and_rifle_material_modifiers(
+        )[material]
+    else:
+        material_modifiers = generate_melee_weapon_material_modifiers(
+        )[material]
+
+    if weapon_type == "bow":
+        ammunition = "arrow"
+    elif weapon_type == "crossbow":
+        ammunition = "bolt"
+    elif weapon_type in ["pistol", "rifle"]:
+        ammunition = "bullet"
+    else:
+        ammunition = None
+
+    two_handed = True if weapon_type == "twohanded" else False
+
+    weapon_name_modifiers = generate_weapon_name_modifiers()[weapon_name]
+
+    weapon_physical_damage_type = weapon_physical_damage_types[weapon_name]
+    weapon_physical_damage_status_chance = weapon_physical_damage_status_chances[
+        weapon_name]
+
+    total_modifiers = [
+        material_modifiers, weapon_name_modifiers, weapon_quality_modifiers
+    ]
+
+    if prefix:
+        prefix_modifiers = generate_weapon_prefix_modifiers()[prefix]
+        total_modifiers.append(prefix_modifiers)
+
+    if suffix:
+        suffix_modifiers = generate_weapon_suffix_modifiers()[suffix]
+        total_modifiers.append(suffix_modifiers)
+
+    if rarity_level != "normal":
+        possible_rarity_modifiers = generate_weapon_rarity_modifiers(
+        )[rarity_level]
+        modifier_count = rarities["rarity_modifier_counts"][rarity_level]
+        rarity_modifier_sample = sample(possible_rarity_modifiers,
+                                        modifier_count)
+        rarity_modifiers = {}
+        for modifier in rarity_modifier_sample:
+            for modifier_name in modifier.keys():
+                rarity_modifiers.update(
+                    {modifier_name: modifier[modifier_name]})
+        total_modifiers.append(rarity_modifiers)
+
+    unidentified_name = f"{material.title()} {weapon_name.title()}"
+    identified_name = f"{rarity_level.title() + ' ' if rarity_level != 'normal' else ''}{prefix + ' ' if prefix else ''}{material.title()} {weapon_name.title()}{' ' + suffix if suffix else ''}{' (' + quality + ')' if quality != 'normal' else ''}"
+
+    random_weapon = Weapon(
+        rarity=rarity,
+        material=material,
+        slot_type=slot,
+        weapon_type=weapon_type,
+        weapon_name=weapon_name,
+        weapon_physical_damage_type=weapon_physical_damage_type,
+        weapon_physical_damage_status_chance=
+        weapon_physical_damage_status_chance,
+        unidentified_name=unidentified_name,
+        identified_name=identified_name,
+        prefix=prefix,
+        suffix=suffix,
+        quality=quality,
+        two_handed=two_handed,
+        ammunition=ammunition)
+
+    combined_modifiers = {
+        "melee_chance_to_hit_modifier": 0,
+        "ranged_chance_to_hit_modifier": 0,
+        "armor_modifier": 0,
+        "armor_class_modifier": 0,
+        "dodge_modifier": 0,
+        "shield_armor_class": 0,
+        "max_hp_modifier": 0,
+        "speed_modifier": 0,
+        "movement_energy_bonus_modifier": 0,
+        "attack_energy_bonus_modifier": 0,
+        "critical_hit_chance_modifier": 0,
+        "critical_hit_damage_multiplier_modifier": 0,
+        "strength_modifier": 0,
+        "perception_modifier": 0,
+        "dexterity_modifier": 0,
+        "constitution_modifier": 0,
+        "intelligence_modifier": 0,
+        "wisdom_modifier": 0,
+        "charisma_modifier": 0,
+        "luck_modifier": 0,
+        "life_steal_modifier": 0,
+        "damage_reflection_modifier": 0,
+        "natural_hp_regeneration_speed_modifier": 0,
+        "melee_damage_modifiers": {
+            "physical": 0,
+            "fire": 0,
+            "ice": 0,
+            "lightning": 0,
+            "holy": 0,
+            "chaos": 0,
+            "arcane": 0,
+            "poison": 0,
+        },
+        "ranged_damage_modifiers": {
+            "physical": 0,
+            "fire": 0,
+            "ice": 0,
+            "lightning": 0,
+            "holy": 0,
+            "chaos": 0,
+            "arcane": 0,
+            "poison": 0,
+        },
+        "melee_damage_dice": {
+            "physical": [],
+            "fire": [],
+            "ice": [],
+            "lightning": [],
+            "holy": [],
+            "chaos": [],
+            "arcane": [],
+            "poison": [],
+        },
+        "ranged_damage_dice": {
+            "physical": [],
+            "fire": [],
+            "ice": [],
+            "lightning": [],
+            "holy": [],
+            "chaos": [],
+            "arcane": [],
+            "poison": [],
+        },
+        "resistances": {
+            "physical": 0,
+            "fire": 0,
+            "ice": 0,
+            "lightning": 0,
+            "holy": 0,
+            "chaos": 0,
+            "arcane": 0,
+            "poison": 0,
+        }
+    }
+
+    for modifiers in total_modifiers:
+        for modifier_name, modifier_value in modifiers.items():
+            if modifier_name in modifiers:
+                if type(modifier_value) is dict:
+                    if "damage_dice" in modifier_name:
+                        for damage_type in modifiers[modifier_name]:
+                            new_value = modifiers[modifier_name][damage_type]
+                            combined_modifiers[modifier_name][
+                                damage_type].extend(new_value)
+                    elif modifier_name == "melee_damage_dice_modifiers":
+                        for damage_type in modifiers[modifier_name]:
+                            for dice_count, dice_sides in modifiers[
+                                    modifier_name][damage_type]:
+                                if combined_modifiers["melee_damage_dice"][
+                                        damage_type]:
+                                    combined_modifiers["melee_damage_dice"][
+                                        damage_type][0][0] += dice_count
+                                    combined_modifiers["melee_damage_dice"][
+                                        damage_type][0][1] += dice_sides
+                                else:
+                                    combined_modifiers["melee_damage_dice"][
+                                        damage_type].append(
+                                            [dice_count, dice_sides])
+                    elif modifier_name == "ranged_damage_dice_modifiers":
+                        for damage_type in modifiers[modifier_name]:
+                            for dice_count, dice_sides in modifiers[
+                                    modifier_name][damage_type]:
+                                if combined_modifiers["ranged_damage_dice"][
+                                        damage_type]:
+                                    combined_modifiers["ranged_damage_dice"][
+                                        damage_type][0][0] += dice_count
+                                    combined_modifiers["ranged_damage_dice"][
+                                        damage_type][0][1] += dice_sides
+                                else:
+                                    combined_modifiers["ranged_damage_dice"][
+                                        damage_type].append(
+                                            [dice_count, dice_sides])
+                    else:
+                        modifier_dict = modifiers[modifier_name]
+                        combined_dict = combined_modifiers[modifier_name]
+                        new_value = {
+                            key: modifier_dict.get(key, 0) +
+                            combined_dict.get(key, 0)
+                            for key in set(modifier_dict)
+                            | set(combined_dict)
+                        }
+                        combined_modifiers[modifier_name] = new_value
+                else:
+                    new_value = modifiers[modifier_name] + combined_modifiers[
+                        modifier_name]
+                    combined_modifiers[modifier_name] = new_value
+
+    equippable_component = Equippable(random_weapon, slot)
+
+    for modifier_name, modifier_value in combined_modifiers.items():
+        setattr(equippable_component, modifier_name, modifier_value)
+
+    new_weapon = Entity(0,
+                        0,
+                        "(",
+                        random_weapon.unidentified_name,
+                        equippable=equippable_component)
+
+    return new_weapon
+
+
 def generate_starter_weapon():
     rarity = {
         "rarity_level": "normal",
@@ -1075,7 +2255,7 @@ def generate_starter_weapon():
                         0,
                         "(",
                         starter_weapon.rarity["rarity_color"],
-                        starter_weapon.unidentified_name,
+                        starter_weapon.identified_name,
                         equippable=equippable_component)
 
     return new_entity

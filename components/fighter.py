@@ -3,7 +3,7 @@ from game_messages import Message
 import tcod
 from random import randint, random
 from components.attributes import attribute_modifier_values
-from components.status_effects import status_effects_by_damage_type
+from components.status_effects import status_effects_by_damage_type, HalveMaxHP
 from copy import deepcopy
 
 if TYPE_CHECKING:
@@ -12,9 +12,6 @@ if TYPE_CHECKING:
 
 
 class Fighter:
-
-
-
     def __init__(
             self,
             attributes: "Attributes",
@@ -127,7 +124,7 @@ class Fighter:
             "chaos": 1,
             "arcane": 1,
             "poison": 1,
-        },
+        }
         self.base_ranged_damage_modifiers = base_ranged_damage_modifiers
         self.base_ranged_damage_multipliers = {
             "physical": 1,
@@ -138,7 +135,7 @@ class Fighter:
             "chaos": 1,
             "arcane": 1,
             "poison": 1,
-        },
+        }
         self.base_melee_damage_dice = base_melee_damage_dice
         self.base_ranged_damage_dice = base_ranged_damage_dice
         self.status_effects: List = []
@@ -398,8 +395,7 @@ class Fighter:
 
         if max_hp > 0:
             max_hp = int(round(max_hp * self.max_hp_multiplier))
-        if self.current_hp > max_hp:
-            self.current_hp = max_hp
+
         return max_hp
 
     @property
@@ -466,9 +462,23 @@ class Fighter:
         else:
             modifier = 0
 
+        armor = self.base_armor + modifier + self.calculate_effect_modifiers(
+            "armor_modifier")
+
+        armor = int(round(armor * self.armor_multiplier))
+
+        # Prevent armor from going below zero, negative armor wouldn't make sense thematically
         return max(
-            0, self.base_armor + modifier +
-            self.calculate_effect_modifiers("armor_modifier"))
+            0, armor)
+
+    @property
+    def armor_multiplier(self) -> float:
+        if self.owner and self.owner.equipment:
+            modifier = self.owner.equipment.armor_multiplier_modifier
+        else:
+            modifier = 0
+        return self.base_armor_multiplier + modifier + self.calculate_effect_modifiers(
+            "armor_multiplier_modifier")
 
     @property
     def strength(self) -> Dict[str, int]:
@@ -668,6 +678,7 @@ class Fighter:
                     reflected=False,
                     from_effect=False,
                     from_ranged=False):
+
         results = []
         # There are cases where the entity might take damage from multiple different sources at the same time (such as effects that
         # are applied immediately), so it's easier to just return nothing if the entity is already dead before
@@ -675,6 +686,10 @@ class Fighter:
         # entity is already dead.)
         if self.current_hp <= 0:
             return results
+
+        for effect in self.status_effects:
+            if effect.on_take_damage:
+                results.extend(effect.on_take_damage(effect))
 
         # Don't modify the original rolled damage, the original damage is needed for damage reflection
         rolled_damage = dict.copy(damage_by_type)
@@ -715,10 +730,8 @@ class Fighter:
 
         for damage_value in rolled_damage.values():
             damage_amount += damage_value
+
         self.current_hp -= damage_amount
-        for effect in self.status_effects:
-            if effect.on_take_damage:
-                results.extend(effect.on_take_damage(effect))
 
         if self.current_hp <= 0:
 
@@ -732,6 +745,13 @@ class Fighter:
                     "entity": self.owner
                 }
                 results.append({"drop_loot": drop_loot})
+
+        # Makes most sense to recalculate the HP here in the case that
+        # afte receiving damage some effect will cause the fighter's max HP
+        # drop below it's current HP.
+        if self.current_hp > self.max_hp:
+            self.recalculate_hp()
+
         return results
 
     def heal(self, amount: int) -> None:
@@ -747,10 +767,6 @@ class Fighter:
         for effect in self.status_effects:
             if effect.on_attack:
                 results.extend(effect.on_attack(effect, target))
-
-        target_status_effects = [
-            effect.name for effect in target.fighter.status_effects
-        ]
 
         automatic_hit_seed: float = random()
         dodge_seed: int = randint(1, 20)
@@ -771,6 +787,8 @@ class Fighter:
             cth_modifier: int = self.melee_chance_to_hit_modifier
             damage_dice = self.melee_damage_dice
             damage_modifiers = self.melee_damage
+
+        print(f"{self.owner.name} damage dice are {damage_dice}")
 
         lower_bound_cth_modifier: int = self.chance_to_hit_lower_bound_modifier
         dice_roll: int = randint(1,

@@ -73,9 +73,12 @@ def player_turn(player, entities, camera, game_map, game_state,
             if not player.equipment.RANGED_WEAPON:
                 player_turn_results.append({
                     "message":
-                    Message("You'll need to equip a ranged weapon first.", "yellow")
+                    Message("You'll need to equip a ranged weapon first.",
+                            "yellow")
                 })
-            elif player.equipment.RANGED_WEAPON.equippable_type.ammunition in player.equipment.RANGED_WEAPON_AMMUNITION.name:
+            # TODO figure out better way to recognize ranged weapon ammp
+            elif player.equipment.RANGED_WEAPON.equippable.equippable_type.ammunition in player.equipment.RANGED_WEAPON_AMMUNITION.name.lower(
+            ):
                 ammunition = player.equipment.RANGED_WEAPON_AMMUNITION
                 player_turn_results.extend(
                     player.inventory.use_ammunition(ammunition,
@@ -84,7 +87,8 @@ def player_turn(player, entities, camera, game_map, game_state,
             else:
                 player_turn_results.append({
                     "message":
-                    Message("You don't have any proper ammunition equipped.", "yellow")
+                    Message("You don't have any proper ammunition equipped.",
+                            "yellow")
                 })
 
         if pass_turn:

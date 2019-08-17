@@ -133,10 +133,16 @@ def generate_armor_prefix_modifiers():
         "Blazing": {
             "melee_damage_dice": {
                 "fire": [[1, 4]]
+            },
+            "ranged_damage_dice": {
+                "fire": [[1, 4]]
             }
         },
         "Freezing": {
             "melee_damage_dice": {
+                "ice": [[1, 4]],
+            },
+            "ranged_damage_dice": {
                 "ice": [[1, 4]],
             }
         },
@@ -144,9 +150,15 @@ def generate_armor_prefix_modifiers():
             "melee_damage_dice": {
                 "lightning": [[1, 4]]
             },
+            "ranged_damage_dice": {
+                "lightning": [[1, 4]]
+            },
         },
         "Sanctified": {
             "melee_damage_dice": {
+                "holy": [[1, 4]]
+            },
+            "ranged_damage_dice": {
                 "holy": [[1, 4]]
             },
         },
@@ -154,14 +166,23 @@ def generate_armor_prefix_modifiers():
             "melee_damage_dice": {
                 "chaos": [[1, 4]]
             },
+            "ranged_damage_dice": {
+                "chaos": [[1, 4]]
+            },
         },
         "Esoteric": {
             "melee_damage_dice": {
                 "arcane": [[1, 4]]
             },
+            "ranged_damage_dice": {
+                "arcane": [[1, 4]]
+            },
         },
         "Venomous": {
             "melee_damage_dice": {
+                "poison": [[1, 4]]
+            },
+            "ranged_damage_dice": {
                 "poison": [[1, 4]]
             },
         },

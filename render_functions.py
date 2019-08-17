@@ -140,7 +140,7 @@ def render_all(entities, player, game_map, message_log, bar_width, panel_y,
                                          c=0x3014)
 
     terminal.color(terminal.color_from_name("white"))
-    
+
     terminal.layer(RenderLayer.HUD_BACKGROUND.value)
 
     hud_background_menu(9)

@@ -58,6 +58,41 @@ class Effect():
         self.magnitudes = magnitudes
 
 
+def DealDoublePhysicalDamage():
+    DealDoublePhysicalDamage = Effect(
+        name="double_physical_damage",
+        duration=0,
+        modifiers={"melee_damage_multiplier_modifiers": {
+            "physical": 1
+        }})
+    return DealDoublePhysicalDamage
+
+
+def on_attack_apply_double_damage_to_orcs(self, target):
+    results = []
+
+    if target.name == "Orc":
+        for effect in self.effects_to_apply.get("on_attack", []):
+            results.extend(self.owner.fighter.apply_effect(effect))
+    return results
+
+
+def DoubleDamageToOrcs():
+    DoubleDamageToOrcs = Effect(
+        name="double_damage_to_orcs",
+        on_attack=on_attack_apply_double_damage_to_orcs,
+        effects_to_apply={"on_attack": [DealDoublePhysicalDamage]})
+    return DoubleDamageToOrcs
+
+
+def HalveMaxHP():
+    HalveMaxHP = Effect("halve_max_hp",
+                        duration=10,
+                        resolve=general_duration_resolve,
+                        modifiers={"max_hp_multiplier_modifier": -0.5})
+    return HalveMaxHP
+
+
 def on_apply_deal_fire_damage(self, **kwargs):
     effect_caster = kwargs.get("effect_caster")
     results = []

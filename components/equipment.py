@@ -122,6 +122,9 @@ class Equipment:
             "arcane": 0,
             "poison": 0,
         }
+
+        damage_multipliers = self.calculate_melee_damage_multipliers
+
         for slot, entity in self.__dict__.items():
             if entity and entity.equippable:
                 for damage_type, damage_modifier in entity.equippable.melee_damage_modifiers.items(
@@ -138,7 +141,41 @@ class Equipment:
 
         damage_modifiers["physical"] += self.owner.fighter.strength[
             "attribute_modifier"]
+
+        for damage_type in damage_modifiers.keys():
+            damage_modifiers[damage_type] = int(
+                round(damage_modifiers[damage_type] *
+                      damage_multipliers[damage_type]))
+
         return damage_modifiers
+
+    @property
+    def calculate_melee_damage_multipliers(self):
+        damage_multipliers = {
+            "physical": 0,
+            "fire": 0,
+            "ice": 0,
+            "lightning": 0,
+            "holy": 0,
+            "chaos": 0,
+            "arcane": 0,
+            "poison": 0,
+        }
+        for entity in self.__dict__.values():
+            if entity and entity.equippable:
+                for damage_type, damage_multiplier in entity.equippable.melee_damage_multiplier_modifiers.items(
+                ):
+                    damage_multipliers[damage_type] += damage_multiplier
+
+        for damage_type, damage_multiplier in self.owner.fighter.base_melee_damage_multipliers.items(
+        ):
+            damage_multipliers[damage_type] += damage_multiplier
+
+        for effect in self.owner.fighter.effects_with_melee_damage_multiplier_modifiers:
+            for damage_type, damage_multiplier in effect.modifiers.get(
+                    "melee_damage_multiplier_modifiers", {}).items():
+                damage_multipliers[damage_type] += damage_multiplier
+        return damage_multipliers
 
     @property
     def calculate_ranged_damage_modifiers(self):
@@ -152,6 +189,9 @@ class Equipment:
             "arcane": 0,
             "poison": 0,
         }
+
+        damage_multipliers = self.calculate_ranged_damage_multipliers
+
         for slot, entity in self.__dict__.items():
             if entity and entity.equippable:
                 for damage_type, damage_modifier in entity.equippable.ranged_damage_modifiers.items(
@@ -168,7 +208,41 @@ class Equipment:
 
         damage_modifiers["physical"] += self.owner.fighter.dexterity[
             "attribute_modifier"]
+
+        for damage_type in damage_modifiers.keys():
+            damage_modifiers[damage_type] = int(
+                round(damage_modifiers[damage_type] *
+                      damage_multipliers[damage_type]))
+
         return damage_modifiers
+
+    @property
+    def calculate_ranged_damage_multipliers(self):
+        damage_multipliers = {
+            "physical": 0,
+            "fire": 0,
+            "ice": 0,
+            "lightning": 0,
+            "holy": 0,
+            "chaos": 0,
+            "arcane": 0,
+            "poison": 0,
+        }
+        for entity in self.__dict__.values():
+            if entity and entity.equippable:
+                for damage_type, damage_multiplier in entity.equippable.ranged_damage_multiplier_modifiers.items(
+                ):
+                    damage_multipliers[damage_type] += damage_multiplier
+        for damage_type, damage_multiplier in self.owner.fighter.base_ranged_damage_multipliers.items(
+        ):
+            damage_multipliers[damage_type] += damage_multiplier
+
+        for effect in self.owner.fighter.effects_with_ranged_damage_multiplier_modifiers:
+            for damage_type, damage_multiplier in effect.modifiers.get(
+                    "ranged_damage_multiplier_modifiers", {}).items():
+                damage_multipliers[damage_type] += damage_multiplier
+
+        return damage_multipliers
 
     @property
     def calculate_resistance_multipliers(self):
