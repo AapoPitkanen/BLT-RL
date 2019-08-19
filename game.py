@@ -35,6 +35,11 @@ class Game:
 
     def tick(self) -> None:
 
+        # Turns are processed only after all animations have been processed and rendered
+        # The gfx_effects list will be empty after all effects have been rendered.
+        if self.game_map.gfx_effects:
+            return
+
         # Get a list of dicts where the results are specified e.g. {"move": True}
         player_turn_results = player_turn(self.player, self.entities,
                                           self.camera, self.game_map,

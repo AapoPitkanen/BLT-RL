@@ -175,13 +175,13 @@ def cast_confuse(*args, **kwargs):
     return results
 
 
-def arrow_attack(*args, **kwargs):
+def ranged_attack(*args, **kwargs):
     caster = args[0]
     entities = kwargs.get("entities")
     game_map = kwargs.get("game_map")
+    ranged_weapon_type = kwargs.get("ranged_weapon_type")
     target_x = kwargs.get("target_x")
     target_y = kwargs.get("target_y")
-
     results = []
 
     if not game_map.fov[target_x, target_y]:
@@ -196,12 +196,19 @@ def arrow_attack(*args, **kwargs):
 
     for entity in entities:
         if entity.x == target_x and entity.y == target_y and entity.ai:
+            fire_ranged_weapon_messages = {
+                "bow": f"You fire your bow at the {entity.name}!",
+                "crossbow": f"You fire your crossbow at the {entity.name}!",
+                "pistol": f"You fire your pistol at the {entity.name}!",
+                "rifle": f"You fire your rifle at the {entity.name}!",
+            }
             results.append({
                 "consumed":
                 True,
                 "message":
-                Message(f"You fire your bow at the {entity.name}!")
+                Message(fire_ranged_weapon_messages[ranged_weapon_type])
             })
+            results.append({"ranged_attack": True})
             results.extend(caster.fighter.attack(entity, ranged=True))
             break
     else:

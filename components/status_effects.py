@@ -575,7 +575,8 @@ def Chilled():
             }
         },
         modifiers={
-            "attack_energy_bonus_modifier": -25,
+            "melee_attack_energy_bonus_modifier": -25,
+            "ranged_attack_energy_bonus_modifier": -25,
             "movement_energy_bonus_modifier": -25
         },
         resolve=resolve_chilled)

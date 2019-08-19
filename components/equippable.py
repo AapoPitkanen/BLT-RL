@@ -20,7 +20,8 @@ class Equippable:
             max_hp_multiplier_modifier: float = 0,
             speed_modifier: int = 0,
             movement_energy_bonus_modifier: int = 0,
-            attack_energy_bonus_modifier: int = 0,
+            melee_attack_energy_bonus_modifier: int = 0,
+            ranged_attack_energy_bonus_modifier: int = 0,
             critical_hit_chance_modifier: float = 0,
             critical_hit_damage_multiplier_modifier: float = 0,
             strength_modifier: int = 0,
@@ -137,7 +138,8 @@ class Equippable:
         self.max_hp_multiplier_modifier = max_hp_multiplier_modifier
         self.speed_modifier = speed_modifier
         self.movement_energy_bonus_modifier = movement_energy_bonus_modifier
-        self.attack_energy_bonus_modifier = attack_energy_bonus_modifier
+        self.melee_attack_energy_bonus_modifier = melee_attack_energy_bonus_modifier
+        self.ranged_attack_energy_bonus_modifier = ranged_attack_energy_bonus_modifier
         self.critical_hit_chance_modifier = critical_hit_chance_modifier
         self.critical_hit_damage_multiplier_modifier = critical_hit_damage_multiplier_modifier
         self.strength_modifier = strength_modifier

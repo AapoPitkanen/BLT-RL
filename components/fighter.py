@@ -22,7 +22,8 @@ class Fighter:
             base_melee_cth_modifier: int,
             base_ranged_cth_modifier: int,
             base_speed: int,
-            base_attack_energy_bonus: int,
+            base_melee_attack_energy_bonus: int,
+            base_ranged_attack_energy_bonus: int,
             base_movement_energy_bonus: int,
             base_natural_hp_regeneration_speed: int,
             base_resistances: Dict[str, float] = {
@@ -95,7 +96,8 @@ class Fighter:
         self.base_ranged_cth_modifier = base_ranged_cth_modifier
         self.base_ranged_cth_multiplier = 1
         self.base_speed = base_speed
-        self.base_attack_energy_bonus = base_attack_energy_bonus
+        self.base_melee_attack_energy_bonus = base_melee_attack_energy_bonus
+        self.base_ranged_attack_energy_bonus = base_ranged_attack_energy_bonus
         self.base_movement_energy_bonus = base_movement_energy_bonus
         self.base_natural_hp_regeneration_speed = base_natural_hp_regeneration_speed
         self.turns_to_natural_regenerate: int = 0
@@ -366,13 +368,22 @@ class Fighter:
             "speed_modifier")
 
     @property
-    def attack_energy_bonus(self) -> int:
+    def melee_attack_energy_bonus(self) -> int:
         if self.owner and self.owner.equipment:
-            modifier = self.owner.equipment.attack_energy_bonus_modifier
+            modifier = self.owner.equipment.melee_attack_energy_bonus_modifier
         else:
             modifier = 0
-        return self.base_attack_energy_bonus + modifier + self.calculate_effect_modifiers(
-            "attack_energy_bonus_modifier")
+        return self.base_melee_attack_energy_bonus + modifier + self.calculate_effect_modifiers(
+            "melee_attack_energy_bonus_modifier")
+
+    @property
+    def ranged_attack_energy_bonus(self) -> int:
+        if self.owner and self.owner.equipment:
+            modifier = self.owner.equipment.ranged_attack_energy_bonus_modifier
+        else:
+            modifier = 0
+        return self.base_ranged_attack_energy_bonus + modifier + self.calculate_effect_modifiers(
+            "ranged_attack_energy_bonus_modifier")
 
     @property
     def movement_energy_bonus(self) -> int:
@@ -787,8 +798,6 @@ class Fighter:
             cth_modifier: int = self.melee_chance_to_hit_modifier
             damage_dice = self.melee_damage_dice
             damage_modifiers = self.melee_damage
-
-        print(f"{self.owner.name} damage dice are {damage_dice}")
 
         lower_bound_cth_modifier: int = self.chance_to_hit_lower_bound_modifier
         dice_roll: int = randint(1,

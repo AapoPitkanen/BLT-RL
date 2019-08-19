@@ -415,9 +415,14 @@ class Equipment:
             "movement_energy_bonus_modifier")
 
     @property
-    def attack_energy_bonus_modifier(self):
+    def melee_attack_energy_bonus_modifier(self):
         return self.calculate_equipment_modifier(
-            "attack_energy_bonus_modifier")
+            "melee_attack_energy_bonus_modifier")
+    
+    @property
+    def ranged_attack_energy_bonus_modifier(self):
+        return self.calculate_equipment_modifier(
+            "ranged_attack_energy_bonus_modifier")
 
     @property
     def armor_modifier(self):

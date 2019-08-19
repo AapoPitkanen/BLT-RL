@@ -1,6 +1,6 @@
 from components.inventory import Inventory
 from components.item import Item
-from item_functions import cast_fireball, cast_chaos_bolt, cast_confuse, arrow_attack
+from item_functions import cast_fireball, cast_chaos_bolt, cast_confuse, ranged_attack
 from components.fighter import Fighter
 from components.equipment import Equipment
 from components.ammunition import Ammunition
@@ -85,7 +85,8 @@ def get_game_variables(constants):
         base_melee_cth_modifier=100,
         base_ranged_cth_modifier=0,
         base_speed=100,
-        base_attack_energy_bonus=0,
+        base_melee_attack_energy_bonus=0,
+        base_ranged_attack_energy_bonus=0,
         base_movement_energy_bonus=0,
         base_natural_hp_regeneration_speed=50,
         base_melee_damage_dice={
@@ -139,7 +140,7 @@ def get_game_variables(constants):
     player.inventory.add_item(item)
 
     item_component = Item(
-        use_function=arrow_attack,
+        use_function=ranged_attack,
         targeting=True,
         quantity=10,
         targeting_message=Message(

@@ -55,7 +55,7 @@ def generate_weapon_rarity_modifiers():
         }, {
             "movement_energy_bonus_modifier": randint(1, 2)
         }, {
-            "attack_energy_bonus_modifier": randint(1, 2)
+            "melee_attack_energy_bonus_modifier": randint(1, 2)
         }],
         "uncommon": [{
             "armor_modifier": randint(1, 1)
@@ -72,7 +72,7 @@ def generate_weapon_rarity_modifiers():
         }, {
             "movement_energy_bonus_modifier": randint(1, 3)
         }, {
-            "attack_energy_bonus_modifier": randint(1, 3)
+            "melee_attack_energy_bonus_modifier": randint(1, 3)
         }, {
             "resistances": {
                 "physical": randint(1, 3) / 100
@@ -97,7 +97,7 @@ def generate_weapon_rarity_modifiers():
         }, {
             "movement_energy_bonus_modifier": randint(1, 4)
         }, {
-            "attack_energy_bonus_modifier": randint(1, 4)
+            "melee_attack_energy_bonus_modifier": randint(1, 4)
         }, {
             "resistances": {
                 "physical": randint(1, 4) / 100
@@ -134,7 +134,7 @@ def generate_weapon_rarity_modifiers():
         }, {
             "movement_energy_bonus_modifier": randint(2, 5)
         }, {
-            "attack_energy_bonus_modifier": randint(2, 5)
+            "melee_attack_energy_bonus_modifier": randint(2, 5)
         }, {
             "resistances": {
                 "physical": randint(1, 5) / 100
@@ -187,7 +187,7 @@ def generate_weapon_rarity_modifiers():
         }, {
             "movement_energy_bonus_modifier": randint(2, 6)
         }, {
-            "attack_energy_bonus_modifier": randint(2, 6)
+            "melee_attack_energy_bonus_modifier": randint(2, 6)
         }, {
             "life_steal_modifier": randint(3, 8) / 100
         }, {
@@ -314,14 +314,14 @@ def generate_melee_quality_modifiers():
         },
         "exquisite": {
             "melee_chance_to_hit_modifier": randint(2, 3),
-            "attack_energy_bonus_modifier": randint(1, 2),
+            "melee_attack_energy_bonus_modifier": randint(1, 2),
             "melee_damage_modifiers": {
                 "physical": randint(1, 2)
             },
         },
         "flawless": {
             "melee_chance_to_hit_modifier": randint(2, 4),
-            "attack_energy_bonus_modifier": randint(1, 3),
+            "melee_attack_energy_bonus_modifier": randint(1, 3),
             "critical_hit_chance_modifier": randint(1, 2) / 100,
             "melee_damage_modifiers": {
                 "physical": randint(1, 3)
@@ -398,14 +398,14 @@ def generate_ranged_quality_modifiers():
         },
         "exquisite": {
             "ranged_chance_to_hit_modifier": randint(2, 3),
-            "attack_energy_bonus_modifier": randint(1, 2),
+            "melee_attack_energy_bonus_modifier": randint(1, 2),
             "ranged_damage_modifiers": {
                 "physical": randint(1, 2)
             },
         },
         "flawless": {
             "ranged_chance_to_hit_modifier": randint(2, 4),
-            "attack_energy_bonus_modifier": randint(1, 3),
+            "melee_attack_energy_bonus_modifier": randint(1, 3),
             "critical_hit_chance_modifier": randint(1, 2) / 100,
             "ranged_damage_modifiers": {
                 "physical": randint(1, 3)
@@ -1065,7 +1065,7 @@ weapon_physical_damage_types = {
     "voulge": "slashing",
     "poleaxe": "slashing",
     "fauchard": "slashing",
-    "guisarme": "slashing",
+    "guisarme": "piercing",
     "glaive": "slashing",
     "partisan": "slashing",
     "lochaber axe": "slashing",
@@ -1244,115 +1244,6 @@ weapon_physical_damage_status_chances = {
     "siege crossbow": 0.16,
     "hand ballista": 0.17,
 }
-
-
-def generate_weapon_suffix_modifiers():
-    weapon_suffix_modifiers = {
-        "of Alacrity": {},
-        "of Celerity": {},
-        "of Defense": {},
-        "of Protection": {},
-        "of Strength": {},
-        "of the Juggernaut": {},
-        "of the Hawk": {},
-        "of the Eagle": {},
-        "of the Cat": {},
-        "of the Fox": {},
-        "of Endurance": {},
-        "of Toughness": {},
-        "of the Magi": {},
-        "of the Wizard": {},
-        "of Wisdom": {},
-        "of Piety": {},
-        "of Charisma": {},
-        "of the Silver Tongue": {},
-        "of Fate": {},
-        "of Fortune": {},
-        "of Longevity": {},
-        "of Health": {},
-        "of Life": {},
-        "of Flames": {},
-        "of the Glacier": {},
-        "of Thunder": {},
-        "of the Heavens": {},
-        "of the Void": {},
-        "of the Arcane": {},
-        "of Toxins": {},
-        "of Evasion": {},
-        "of Ruin": {},
-        "of Scorching": {},
-        "of Frostbite": {},
-        "of Thunder": {},
-        "of Decay": {},
-        "of Death": {},
-        "of Conflagaration": {},
-        "of Insanity": {},
-        "of Sanctification": {},
-        "of the Slayer": {},
-        "of the Excecutioner": {},
-        "of Fervor": {},
-        "of Voracity": {},
-        "of Cruelty": {},
-        "of Ruthlessness": {},
-        "of Fury": {},
-        "of Slaughter": {},
-        "of Ferocity": {},
-        "of Onslaught": {},
-        "of Wildfire": {},
-        "of Blight": {},
-        "of Destruction": {},
-        "of Devastation": {},
-        "of Decimation": {},
-        "of Annihilation": {},
-        "of Disintegration": {},
-        "of Obliteration": {},
-        "of the Elements": {},
-        "of the Flamecaller": {},
-        "of Shattering": {},
-        "of Torment": {},
-        "of Celestial Wrath": {},
-        "of Mortality": {},
-    }
-    return weapon_suffix_modifiers
-
-
-def generate_weapon_prefix_modifiers():
-    weapon_prefix_modifiers = {
-        "Deadly": {},
-        "Blazing": {},
-        "Searing": {},
-        "Freezing": {},
-        "Chilled": {},
-        "Frostborn": {},
-        "Fireborn": {},
-        "Shocking": {},
-        "Charged": {},
-        "Thunderstruck": {},
-        "Sanctified": {},
-        "Abyssal": {},
-        "Esoteric": {},
-        "Venomous": {},
-        "Relentless": {},
-        "Murderous": {},
-        "Masterwork": {},
-        "Swift": {},
-        "Quick": {},
-        "Vampiric": {},
-        "Dastardly": {},
-        "Brutal": {},
-        "Barbaric": {},
-        "Bloodthirsty": {},
-        "Demonic": {},
-        "Infernal": {},
-        "Enchanted": {},
-        "Eldritch": {},
-        "Wretched": {},
-        "Sinister": {},
-        "Stoneforged": {},
-        "Skyforged": {},
-    }
-    return weapon_prefix_modifiers
-
 
 def generate_weapon_name_modifiers():
 
@@ -1955,6 +1846,226 @@ def generate_weapon_name_modifiers():
     }
     return weapon_name_modifiers
 
+def generate_melee_weapon_prefix_modifiers():
+    melee_weapon_prefix_modifiers = {
+        "Deadly": {},
+        "Blazing": {},
+        "Searing": {},
+        "Freezing": {},
+        "Chilled": {},
+        "Frostborn": {},
+        "Fireborn": {},
+        "Shocking": {},
+        "Charged": {},
+        "Thunderstruck": {},
+        "Sanctified": {},
+        "Abyssal": {},
+        "Esoteric": {},
+        "Venomous": {},
+        "Relentless": {},
+        "Murderous": {},
+        "Masterwork": {},
+        "Swift": {},
+        "Quick": {},
+        "Vampiric": {},
+        "Dastardly": {},
+        "Brutal": {},
+        "Barbaric": {},
+        "Bloodthirsty": {},
+        "Demonic": {},
+        "Infernal": {},
+        "Enchanted": {},
+        "Eldritch": {},
+        "Wretched": {},
+        "Sinister": {},
+        "Stoneforged": {},
+        "Skyforged": {},
+    }
+    return melee_weapon_prefix_modifiers
+
+
+def generate_ranged_weapon_prefix_modifiers():
+    ranged_weapon_prefix_modifiers = {
+        "Deadly": {},
+        "Blazing": {},
+        "Searing": {},
+        "Freezing": {},
+        "Chilled": {},
+        "Frostborn": {},
+        "Fireborn": {},
+        "Shocking": {},
+        "Charged": {},
+        "Thunderstruck": {},
+        "Sanctified": {},
+        "Abyssal": {},
+        "Esoteric": {},
+        "Venomous": {},
+        "Relentless": {},
+        "Murderous": {},
+        "Masterwork": {},
+        "Swift": {},
+        "Quick": {},
+        "Vampiric": {},
+        "Dastardly": {},
+        "Brutal": {},
+        "Barbaric": {},
+        "Bloodthirsty": {},
+        "Demonic": {},
+        "Infernal": {},
+        "Enchanted": {},
+        "Eldritch": {},
+        "Wretched": {},
+        "Sinister": {},
+        "Stoneforged": {},
+        "Skyforged": {},
+    }
+    return ranged_weapon_prefix_modifiers
+
+
+def generate_melee_weapon_suffix_modifiers():
+    melee_weapon_suffix_modifiers = {
+        "of Alacrity": {},
+        "of Celerity": {},
+        "of Defense": {},
+        "of Protection": {},
+        "of Strength": {},
+        "of the Juggernaut": {},
+        "of the Hawk": {},
+        "of the Eagle": {},
+        "of the Cat": {},
+        "of the Fox": {},
+        "of Endurance": {},
+        "of Toughness": {},
+        "of the Magi": {},
+        "of the Wizard": {},
+        "of Wisdom": {},
+        "of Piety": {},
+        "of Charisma": {},
+        "of the Silver Tongue": {},
+        "of Fate": {},
+        "of Fortune": {},
+        "of Longevity": {},
+        "of Health": {},
+        "of Life": {},
+        "of Flames": {},
+        "of the Glacier": {},
+        "of Thunder": {},
+        "of the Heavens": {},
+        "of the Void": {},
+        "of the Arcane": {},
+        "of Toxins": {},
+        "of Evasion": {},
+        "of Ruin": {},
+        "of Scorching": {},
+        "of Frostbite": {},
+        "of Thunder": {},
+        "of Decay": {},
+        "of Death": {},
+        "of Conflagaration": {},
+        "of Insanity": {},
+        "of Sanctification": {},
+        "of the Slayer": {},
+        "of the Excecutioner": {},
+        "of Fervor": {},
+        "of Voracity": {},
+        "of Cruelty": {},
+        "of Ruthlessness": {},
+        "of Fury": {},
+        "of Slaughter": {},
+        "of Ferocity": {},
+        "of Onslaught": {},
+        "of Wildfire": {},
+        "of Blight": {},
+        "of Destruction": {},
+        "of Devastation": {
+            "melee_damage_dice_modifiers": {
+                "physical": [[4, 0]]
+            }
+        },
+        "of Decimation": {},
+        "of Annihilation": {},
+        "of Disintegration": {},
+        "of Obliteration": {
+        },
+        "of the Elements": {},
+        "of the Flamecaller": {},
+        "of Shattering": {},
+        "of Torment": {},
+        "of Celestial Wrath": {},
+        "of Mortality": {},
+    }
+    return melee_weapon_suffix_modifiers
+
+
+def generate_ranged_weapon_suffix_modifiers():
+    ranged_weapon_suffix_modifiers = {
+        "of Alacrity": {},
+        "of Celerity": {},
+        "of Defense": {},
+        "of Protection": {},
+        "of Strength": {},
+        "of the Juggernaut": {},
+        "of the Hawk": {},
+        "of the Eagle": {},
+        "of the Cat": {},
+        "of the Fox": {},
+        "of Endurance": {},
+        "of Toughness": {},
+        "of the Magi": {},
+        "of the Wizard": {},
+        "of Wisdom": {},
+        "of Piety": {},
+        "of Charisma": {},
+        "of the Silver Tongue": {},
+        "of Fate": {},
+        "of Fortune": {},
+        "of Longevity": {},
+        "of Health": {},
+        "of Life": {},
+        "of Flames": {},
+        "of the Glacier": {},
+        "of Thunder": {},
+        "of the Heavens": {},
+        "of the Void": {},
+        "of the Arcane": {},
+        "of Toxins": {},
+        "of Evasion": {},
+        "of Ruin": {},
+        "of Scorching": {},
+        "of Frostbite": {},
+        "of Thunder": {},
+        "of Decay": {},
+        "of Death": {},
+        "of Conflagaration": {},
+        "of Insanity": {},
+        "of Sanctification": {},
+        "of the Slayer": {},
+        "of the Excecutioner": {},
+        "of Fervor": {},
+        "of Voracity": {},
+        "of Cruelty": {},
+        "of Ruthlessness": {},
+        "of Fury": {},
+        "of Slaughter": {},
+        "of Ferocity": {},
+        "of Onslaught": {},
+        "of Wildfire": {},
+        "of Blight": {},
+        "of Destruction": {},
+        "of Devastation": {},
+        "of Decimation": {},
+        "of Annihilation": {},
+        "of Disintegration": {},
+        "of Obliteration": {},
+        "of the Elements": {},
+        "of the Flamecaller": {},
+        "of Shattering": {},
+        "of Torment": {},
+        "of Celestial Wrath": {},
+        "of Mortality": {},
+    }
+    return ranged_weapon_suffix_modifiers
+
 
 def generate_random_weapon():
     rarity_level = ''.join(
@@ -1972,6 +2083,8 @@ def generate_random_weapon():
     if suffix_seed <= 0.25:
         suffix = ''.join(choices(weapon_suffixes, weapon_suffix_weights, k=1))
 
+    suffix = "of Devastation"
+
     rarity = {
         "rarity_level": rarity_level,
         "rarity_color": rarities["rarity_colors"][rarity_level]
@@ -1980,12 +2093,22 @@ def generate_random_weapon():
     weapon_type = "".join(
         choices(weapon_types["types"], weapon_types["weights"]))
 
+    weapon_type = "bow"
+
     if weapon_type in ["pistol", "rifle", "bow", "crossbow"]:
         slot = EquipmentSlots.RANGED_WEAPON
         weapon_quality_modifiers = generate_ranged_quality_modifiers()[quality]
+        if prefix:
+            prefix_modifiers = generate_ranged_weapon_prefix_modifiers()[prefix]
+        if suffix:
+            suffix_modifiers = generate_ranged_weapon_suffix_modifiers()[suffix]
     else:
         slot = EquipmentSlots.MAIN_HAND
         weapon_quality_modifiers = generate_melee_quality_modifiers()[quality]
+        if prefix:
+            prefix_modifiers = generate_melee_weapon_prefix_modifiers()[prefix]
+        if suffix:
+            suffix_modifiers = generate_melee_weapon_suffix_modifiers()[suffix]
 
     weapon_name = "".join(
         choices(weapon_names[weapon_type]["names"],
@@ -2031,11 +2154,9 @@ def generate_random_weapon():
     ]
 
     if prefix:
-        prefix_modifiers = generate_weapon_prefix_modifiers()[prefix]
         total_modifiers.append(prefix_modifiers)
 
     if suffix:
-        suffix_modifiers = generate_weapon_suffix_modifiers()[suffix]
         total_modifiers.append(suffix_modifiers)
 
     if rarity_level != "normal":
@@ -2081,7 +2202,7 @@ def generate_random_weapon():
         "max_hp_modifier": 0,
         "speed_modifier": 0,
         "movement_energy_bonus_modifier": 0,
-        "attack_energy_bonus_modifier": 0,
+        "melee_attack_energy_bonus_modifier": 0,
         "critical_hit_chance_modifier": 0,
         "critical_hit_damage_multiplier_modifier": 0,
         "strength_modifier": 0,
@@ -2151,7 +2272,7 @@ def generate_random_weapon():
         for modifier_name, modifier_value in modifiers.items():
             if modifier_name in modifiers:
                 if type(modifier_value) is dict:
-                    if "damage_dice" in modifier_name:
+                    if modifier_name in ["melee_damage_dice", "ranged_damage_dice"]:
                         for damage_type in modifiers[modifier_name]:
                             new_value = modifiers[modifier_name][damage_type]
                             combined_modifiers[modifier_name][

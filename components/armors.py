@@ -392,7 +392,7 @@ def generate_armor_rarity_modifiers():
         }, {
             "movement_energy_bonus_modifier": randint(1, 2)
         }, {
-            "attack_energy_bonus_modifier": randint(1, 2)
+            "melee_attack_energy_bonus_modifier": randint(1, 2)
         }],
         "uncommon": [{
             "armor_modifier": randint(1, 1)
@@ -409,7 +409,7 @@ def generate_armor_rarity_modifiers():
         }, {
             "movement_energy_bonus_modifier": randint(1, 3)
         }, {
-            "attack_energy_bonus_modifier": randint(1, 3)
+            "melee_attack_energy_bonus_modifier": randint(1, 3)
         }, {
             "resistances": {
                 "physical": randint(1, 3) / 100
@@ -434,7 +434,7 @@ def generate_armor_rarity_modifiers():
         }, {
             "movement_energy_bonus_modifier": randint(1, 4)
         }, {
-            "attack_energy_bonus_modifier": randint(1, 4)
+            "melee_attack_energy_bonus_modifier": randint(1, 4)
         }, {
             "resistances": {
                 "physical": randint(1, 4) / 100
@@ -471,7 +471,7 @@ def generate_armor_rarity_modifiers():
         }, {
             "movement_energy_bonus_modifier": randint(2, 5)
         }, {
-            "attack_energy_bonus_modifier": randint(2, 5)
+            "melee_attack_energy_bonus_modifier": randint(2, 5)
         }, {
             "resistances": {
                 "physical": randint(1, 5) / 100
@@ -524,7 +524,7 @@ def generate_armor_rarity_modifiers():
         }, {
             "movement_energy_bonus_modifier": randint(2, 6)
         }, {
-            "attack_energy_bonus_modifier": randint(2, 6)
+            "melee_attack_energy_bonus_modifier": randint(2, 6)
         }, {
             "life_steal_modifier": randint(3, 8) / 100
         }, {
@@ -1051,42 +1051,42 @@ def generate_armor_name_modifiers():
         "bracers": {
             "armor_class_modifier": randint(0, 1),
             "armor_modifier": randint(0, 1),
-            "attack_energy_bonus_modifier": randint(-5, 0)
+            "melee_attack_energy_bonus_modifier": randint(-5, 0)
         },
         "rerebraces": {
             "armor_class_modifier": randint(0, 2),
             "armor_modifier": randint(0, 1),
-            "attack_energy_bonus_modifier": randint(-6, 0)
+            "melee_attack_energy_bonus_modifier": randint(-6, 0)
         },
         "bracers": {
             "armor_class_modifier": randint(1, 3),
             "armor_modifier": 1,
-            "attack_energy_bonus_modifier": randint(-7, 0)
+            "melee_attack_energy_bonus_modifier": randint(-7, 0)
         },
         "vambraces": {
             "armor_class_modifier": randint(2, 3),
             "armor_modifier": randint(1, 2),
-            "attack_energy_bonus_modifier": randint(-8, 0)
+            "melee_attack_energy_bonus_modifier": randint(-8, 0)
         },
         # Hand armor
         "gloves": {
             "armor_class_modifier": randint(0, 1),
-            "attack_energy_bonus_modifier": randint(1, 2)
+            "melee_attack_energy_bonus_modifier": randint(1, 2)
         },
         "grips": {
             "armor_class_modifier": randint(0, 1),
             "armor_modifier": randint(0, 1),
-            "attack_energy_bonus_modifier": randint(0, 3)
+            "melee_attack_energy_bonus_modifier": randint(0, 3)
         },
         "handguards": {
             "armor_class_modifier": randint(1, 2),
             "armor_modifier": 1,
-            "attack_energy_bonus_modifier": randint(1, 4)
+            "melee_attack_energy_bonus_modifier": randint(1, 4)
         },
         "gauntlets": {
             "armor_class_modifier": randint(1, 3),
             "armor_modifier": randint(1, 2),
-            "attack_energy_bonus_modifier": randint(1, 5)
+            "melee_attack_energy_bonus_modifier": randint(1, 5)
         },
         # Boots
         "footwear": {
@@ -1423,7 +1423,7 @@ def generate_random_armor():
         "max_hp_modifier": 0,
         "speed_modifier": 0,
         "movement_energy_bonus_modifier": 0,
-        "attack_energy_bonus_modifier": 0,
+        "melee_attack_energy_bonus_modifier": 0,
         "critical_hit_chance_modifier": 0,
         "critical_hit_damage_multiplier_modifier": 0,
         "strength_modifier": 0,

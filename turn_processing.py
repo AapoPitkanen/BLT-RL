@@ -62,6 +62,7 @@ def player_turn(player, entities, camera, game_map, game_state,
                     player_turn_results.append(
                         {"game_state": GameStates.ENEMY_TURN})
                     player_turn_results.append({"action_consumed": True})
+                    player_turn_results.append({"melee_attack": True})
 
                 else:
                     player_turn_results.append({"move": (dx, dy)})
@@ -81,9 +82,11 @@ def player_turn(player, entities, camera, game_map, game_state,
             ):
                 ammunition = player.equipment.RANGED_WEAPON_AMMUNITION
                 player_turn_results.extend(
-                    player.inventory.use_ammunition(ammunition,
-                                                    entities=entities,
-                                                    game_map=game_map))
+                    player.inventory.use_ammunition(
+                        ammunition,
+                        entities=entities,
+                        game_map=game_map,
+                    ))
             else:
                 player_turn_results.append({
                     "message":
@@ -192,15 +195,16 @@ def player_turn(player, entities, camera, game_map, game_state,
         if game_state == GameStates.TARGETING:
             if left_click:
                 target_x, target_y = left_click
-
-                if isinstance(targeting_item.equippable.equippable_type,
-                              Ammunition):
+                if targeting_item.equippable and isinstance(
+                        targeting_item.equippable.equippable_type, Ammunition):
+                    ranged_weapon_type = player.equipment.RANGED_WEAPON.equippable.equippable_type.weapon_type
                     item_use_results = player.inventory.use_ammunition(
                         targeting_item,
                         entities=entities,
                         game_map=game_map,
                         target_x=target_x,
-                        target_y=target_y)
+                        target_y=target_y,
+                        ranged_weapon_type=ranged_weapon_type)
                 else:
                     item_use_results = player.inventory.use(targeting_item,
                                                             entities=entities,
@@ -244,7 +248,8 @@ def process_player_turn_results(results, game):
         stairs_taken = player_turn_result.get("stairs_taken")
         move = player_turn_result.get("move")
         pass_turn = player_turn_result.get("pass_turn")
-        attack = player_turn_result.get("attack")
+        melee_attack = player_turn_result.get("melee_attack")
+        ranged_attack = player_turn_result.get("ranged_attack")
         new_game_state = player_turn_result.get("game_state")
         new_previous_game_state = player_turn_result.get("previous_game_state")
         new_mouse_coordinates = player_turn_result.get("mouse_coordinates")
@@ -377,8 +382,11 @@ def process_player_turn_results(results, game):
             game.fov_recompute = True
             fighter.energy += fighter.movement_energy_bonus
 
-        if attack:
-            fighter.energy += fighter.attack_energy_bonus
+        if melee_attack:
+            fighter.energy += fighter.melee_attack_energy_bonus
+
+        if ranged_attack:
+            fighter.energy += fighter.ranged_attack_energy_bonus
 
         if heal:
             fighter.heal(heal)
@@ -426,7 +434,7 @@ def process_enemy_turn(game, monster_entity):
             game.message_log.add_message(message)
 
         if attack:
-            monster_entity.fighter.energy += monster_entity.fighter.attack_energy_bonus
+            monster_entity.fighter.energy += monster_entity.fighter.melee_attack_energy_bonus
 
         if move:
             monster_entity.fighter.energy += monster_entity.fighter.movement_energy_bonus
