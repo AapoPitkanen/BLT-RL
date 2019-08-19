@@ -13,16 +13,17 @@ class GFX_Effect:
         self.start_time = None
         self.render = True
         self.expired = False
-        self.start_time = time.perf_counter()
+        self.start_time = time.perf_counter() + delay
 
     def update(self):
-        # Update effect states.
+        # Update gfx_effect states.
         # Check for delay
-        if self.start_time < self.delay:
+
+        if self.start_time > time.perf_counter():
             self.render = False
             return
         # Check for duration
-        if time.perf_counter() - self.start_time > self.duration + self.delay:
+        if time.perf_counter() - self.start_time > self.duration:
             self.expired = True
             return
 

@@ -102,6 +102,7 @@ class Inventory:
                         ammunition.item.quantity -= 1
                     else:
                         self.remove_item(ammunition)
+                        self.owner.equipment.RANGED_WEAPON_AMMUNITION = None
 
             results.extend(item_use_results)
         return results

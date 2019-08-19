@@ -143,7 +143,7 @@ class Fighter:
         self.status_effects: List = []
         self.xp_reward: int = xp_reward
         self.energy: int = 0
-        self.base_fov_radius: int = 5
+        self.base_fov_radius: int = 7
         self.owner = None
         self.actions = 0
 

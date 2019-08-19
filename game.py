@@ -35,27 +35,28 @@ class Game:
 
     def tick(self) -> None:
 
-        # Turns are processed only after all animations have been processed and rendered
-        # The gfx_effects list will be empty after all effects have been rendered.
-        if self.game_map.gfx_effects:
-            return
-
         # Get a list of dicts where the results are specified e.g. {"move": True}
         player_turn_results = player_turn(self.player, self.entities,
                                           self.camera, self.game_map,
                                           self.state, self.previous_state,
                                           self.targeting_item)
-        # Wait for player input, the list will be empty if the player didn't do anything
-        if not player_turn_results:
+
+        # Wait for player input during player's turn, the list will be empty if the player didn't do anything
+        if self.state == GameStates.PLAYERS_TURN and not player_turn_results:
+            print("no player input, returning")
             return
 
         # After getting input the results will be processed
         if player_turn_results:
             process_player_turn_results(player_turn_results, self)
 
+        # Enemy turns are processed only after all animations have been processed and rendered
+        # The gfx_effects list will be empty after all effects have been rendered.
+        if len(self.game_map.gfx_effects) > 0:
+            return
+
         if self.state == GameStates.ENEMY_TURN:
             self.game_map.update_scent_tiles(self.player)
-
             # Resolve and process all status effects
             player_effect_results = resolve_effects(self.player.fighter)
             process_player_effect_results(player_effect_results, self)
@@ -67,7 +68,6 @@ class Game:
 
             # Run enemy turns until the player gets enough energy to act
             while self.player.fighter.actions <= 0:
-
                 for fighter in self.fighter_entities:
                     if fighter.speed > 0:
                         fighter.energy += fighter.speed

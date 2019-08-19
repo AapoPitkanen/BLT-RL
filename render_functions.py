@@ -54,7 +54,6 @@ def render_bar(x, y, total_width, name, value, maximum, bar_color, back_color):
 
 def render_all(entities, player, game_map, message_log, bar_width, panel_y,
                coordinates, camera, game_state, targeting_item):
-
     entities_in_render_order = sorted(entities,
                                       key=lambda x: x.render_order.value)
 
@@ -71,7 +70,6 @@ def render_all(entities, player, game_map, message_log, bar_width, panel_y,
     # This layer contains all stuff that goes over the entities,
     # such as targeting assistance and graphical effects
     terminal.layer(RenderLayer.OVERLAY.value)
-
     for gfx in game_map.gfx_effects:
         gfx.update()
         if gfx.expired:

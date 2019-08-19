@@ -78,8 +78,7 @@ def player_turn(player, entities, camera, game_map, game_state,
                             "yellow")
                 })
             # TODO figure out better way to recognize ranged weapon ammp
-            elif player.equipment.RANGED_WEAPON.equippable.equippable_type.ammunition in player.equipment.RANGED_WEAPON_AMMUNITION.name.lower(
-            ):
+            elif player.equipment.RANGED_WEAPON_AMMUNITION and player.equipment.RANGED_WEAPON.equippable.equippable_type.ammunition in player.equipment.RANGED_WEAPON_AMMUNITION.equippable.equippable_type.ammunition_name:
                 ammunition = player.equipment.RANGED_WEAPON_AMMUNITION
                 player_turn_results.extend(
                     player.inventory.use_ammunition(

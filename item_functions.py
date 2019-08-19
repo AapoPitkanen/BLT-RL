@@ -4,7 +4,7 @@ from game_messages import Message
 from components.ai import ConfusedMonster
 from components.status_effects import Fireball
 from utils import disk
-from effect import GFX_Effect
+from gfx_effect import GFX_Effect
 
 
 def heal(*args, **kwargs):
@@ -202,14 +202,38 @@ def ranged_attack(*args, **kwargs):
                 "pistol": f"You fire your pistol at the {entity.name}!",
                 "rifle": f"You fire your rifle at the {entity.name}!",
             }
+
             results.append({
                 "consumed":
                 True,
                 "message":
                 Message(fire_ranged_weapon_messages[ranged_weapon_type])
             })
+
             results.append({"ranged_attack": True})
+
             results.extend(caster.fighter.attack(entity, ranged=True))
+
+            # Add projectile animations
+            line = tcod.line_iter(caster.x, caster.y, entity.x, entity.y)
+            anim_delay = 0
+            for coord in line:
+                if coord[0] == caster.x and coord[1] == caster.y:
+                    continue
+                game_map.gfx_effects.append(
+                    GFX_Effect(coord[0],
+                               coord[1],
+                               gfx_effect_tile=0x1012,
+                               duration=0.085,
+                               delay=anim_delay))
+                anim_delay += 0.085
+                if coord[0] == entity.x and coord[1] == entity.y:
+                    game_map.gfx_effects.append(
+                        GFX_Effect(coord[0],
+                                   coord[1],
+                                   gfx_effect_tile=0x1013,
+                                   duration=0.25,
+                                   delay=anim_delay))
             break
     else:
         results.append({

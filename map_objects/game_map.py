@@ -188,7 +188,8 @@ class GameMap(Map):
                         self.create_v_tunnel(prev_y, new_y, prev_x)
                         self.create_h_tunnel(prev_x, new_x, new_y)
 
-                self.place_entities(new_room, entities)
+                if num_rooms > 0:
+                    self.place_entities(new_room, entities)
 
                 # finally, append the new room to the list
                 rooms.append(new_room)

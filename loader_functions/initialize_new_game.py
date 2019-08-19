@@ -29,9 +29,9 @@ def get_constants():
     map_width: int = 80
     map_height: int = 60
 
-    room_max_size: int = 12
-    room_min_size: int = 5
-    max_rooms: int = 60
+    room_max_size: int = 10
+    room_min_size: int = 4
+    max_rooms: int = 70
 
     fov_algorithm: int = 0
     fov_light_walls: bool = True
@@ -91,6 +91,16 @@ def get_game_variables(constants):
         base_natural_hp_regeneration_speed=50,
         base_melee_damage_dice={
             "physical": [[1, 6]],
+            "fire": [],
+            "ice": [],
+            "lightning": [],
+            "holy": [],
+            "chaos": [],
+            "arcane": [],
+            "poison": [],
+        },
+        base_ranged_damage_dice={
+            "physical": [[3, 6]],
             "fire": [],
             "ice": [],
             "lightning": [],
