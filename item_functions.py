@@ -5,6 +5,17 @@ from components.ai import ConfusedMonster
 from components.status_effects import Fireball
 from gfx_effect import GFX_Effect
 from utils import disk
+import math
+
+NORTH_ARROW = 0x1012
+EAST_ARROW = 0x1013
+SOUTH_ARROW = 0x1014
+WEST_ARROW = 0x1015
+NORTHEAST_ARROW = 0x1016
+NORTHWEST_ARROW = 0x1017
+SOUTHEAST_ARROW = 0x1018
+SOUTHWEST_ARROW = 0x1019
+BLOOD_TILE = 0x101A
 
 
 def heal(*args, **kwargs):
@@ -226,27 +237,46 @@ def ranged_attack(*args, **kwargs):
                 tcod.line_iter(caster_term_x, caster_term_y, entity_term_x,
                                entity_term_y))
 
-            terminal_line = terminal_line[1::]
+            terminal_line = terminal_line[1::2]
 
             anim_delay = 0
+
+            radian_value = math.atan2(caster.y - entity.y, entity.x - caster.x)
+
+            if radian_value < 0:
+                radian_value = math.pi * 2 + radian_value
+
+            degree_value = round(radian_value * (180 / math.pi))
+
+            if 0 >= degree_value < 30 or 360 >= degree_value > 330:
+                arrow_tile = EAST_ARROW
+            elif 30 <= degree_value <= 60:
+                arrow_tile = NORTHEAST_ARROW
+            elif 60 < degree_value < 120:
+                arrow_tile = NORTH_ARROW
+            elif 120 <= degree_value <= 150:
+                arrow_tile = NORTHWEST_ARROW
+            elif 150 < degree_value < 210:
+                arrow_tile = WEST_ARROW
+            elif 210 <= degree_value <= 240:
+                arrow_tile = SOUTHWEST_ARROW
+            elif 240 < degree_value < 300:
+                arrow_tile = SOUTH_ARROW
+            elif 300 <= degree_value <= 330:
+                arrow_tile = SOUTHEAST_ARROW
 
             for coord in terminal_line:
 
                 game_map.gfx_effects.append(
                     GFX_Effect(coord[0],
                                coord[1],
-                               gfx_effect_tile=0x1012,
-                               duration=0.025,
+                               gfx_effect_tile=arrow_tile,
+                               duration=0.03,
                                delay=anim_delay,
                                projectile=True))
-                anim_delay += 0.025
+                anim_delay += 0.03
 
-            game_map.gfx_effects.append(
-                GFX_Effect(entity.x,
-                           entity.y,
-                           gfx_effect_tile=0x1013,
-                           duration=0.25,
-                           delay=anim_delay))
+            results.append({"ranged_anim_delay": anim_delay})
 
             break
     else:

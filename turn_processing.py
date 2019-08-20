@@ -235,7 +235,6 @@ def player_turn(player, entities, camera, game_map, game_state,
 def process_player_turn_results(results, game):
     player = game.player
     fighter = game.player.fighter
-
     for player_turn_result in results:
         message = player_turn_result.get("message")
         dead_entity = player_turn_result.get("dead")
@@ -259,6 +258,8 @@ def process_player_turn_results(results, game):
         equip = player_turn_result.get("equip")
         heal = player_turn_result.get("heal")
         effect = player_turn_result.get("apply_effect")
+        anim_delay = player_turn_result.get("ranged_anim_delay")
+        attack_hit = player_turn_result.get("attack_hit")
 
         if new_mouse_coordinates:
             game.mouse_coordinates = new_mouse_coordinates
@@ -395,6 +396,12 @@ def process_player_turn_results(results, game):
 
         if action_consumed:
             fighter.actions -= 1
+
+        if anim_delay:
+            print("anim delay is", anim_delay)
+
+        if attack_hit:
+            print("attack hit is", attack_hit)
 
 
 def process_player_effect_results(results, game):

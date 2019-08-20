@@ -148,7 +148,15 @@ def play_game(game: Game) -> None:
 
         terminal.refresh()
 
-        game.tick()
+        if not game.game_map.gfx_effects:
+            dead_entities = [
+                entity for entity in game.entities
+                if entity.ai and entity.ai.dead
+            ]
+            for entity in dead_entities:
+                entity.char = 0x1006
+                entity.ai = None
+            game.tick()
 
         if game.exit:
             return

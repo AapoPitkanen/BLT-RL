@@ -64,10 +64,6 @@ def render_all(entities, player, game_map, message_log, bar_width, panel_y,
 
     game_map.render_from_camera(camera)
 
-    terminal.layer(RenderLayer.ENTITIES.value)
-    for entity in entities_in_render_order:
-        entity.draw(camera, game_map)
-
     # This layer contains all stuff that goes over the entities,
     # such as targeting assistance and graphical effects
     terminal.layer(RenderLayer.OVERLAY.value)
@@ -82,15 +78,23 @@ def render_all(entities, player, game_map, message_log, bar_width, panel_y,
                 (term_x, term_y) = camera.map_to_term_coord(gfx.x, gfx.y)
                 terminal.put(term_x, term_y, gfx.gfx_effect_tile)
 
-    for x in range(-5, 6):
-        for y in range(-5, 6):
+    terminal.layer(RenderLayer.ENTITIES.value)
+
+    for entity in entities_in_render_order:
+        entity.draw(camera, game_map)
+    """
+    for x in range(-7, 8):
+        for y in range(-7, 8):
             new_x = player.x + x
             new_y = player.y + y
-            radian_value = math.atan2(new_y - player.y, new_x - player.x)
-            radian_value = str(round(radian_value, 3))
+            radian_value = math.atan2(player.y - new_y, new_x - player.x)
+            if radian_value < 0:
+                radian_value = math.pi * 2 + radian_value
+            degree_value = str(round(radian_value * (180 / math.pi)))
             (term_x, term_y) = camera.map_to_term_coord(new_x, new_y)
-            terminal.printf(term_x, term_y, radian_value)
-
+            terminal.printf(term_x, term_y, degree_value)
+    """
+    terminal.layer(RenderLayer.OVERLAY.value)
     if game_state == GameStates.TARGETING:
         from entity import get_blocking_entities_at_location
         terminal.composition(terminal.TK_ON)

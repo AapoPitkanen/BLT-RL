@@ -18,6 +18,7 @@ class BasicMonster:
         self.extra_attacks = extra_attacks
         self.last_player_position = None
         self.scent_tile = None
+        self.dead = False
 
     def find_and_update_scent_tile(self, game_map):
         """

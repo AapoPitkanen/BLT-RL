@@ -215,8 +215,8 @@ class Fighter:
     @property
     def effects_with_resistance_multiplier_modifiers(self):
         return [
-            effect for effect in self.status_effects
-            if effect.modifiers and effect.modifiers.get("resistance_multiplier_modifiers", {})
+            effect for effect in self.status_effects if effect.modifiers
+            and effect.modifiers.get("resistance_multiplier_modifiers", {})
         ]
 
     @property
@@ -263,7 +263,6 @@ class Fighter:
         return self.base_melee_cth_multiplier + modifier + self.calculate_effect_modifiers(
             "melee_chance_to_hit_multiplier_modifier")
 
-
     @property
     def ranged_chance_to_hit_modifier(self) -> int:
         if self.owner and self.owner.equipment:
@@ -302,8 +301,8 @@ class Fighter:
     def critical_hit_damage_multiplier(self) -> float:
         if self.owner and self.owner.equipment:
             modifier = (
-                self.luck["attribute_modifier"] *
-                0.05) + self.owner.equipment.critical_hit_damage_multiplier_modifier
+                self.luck["attribute_modifier"] * 0.05
+            ) + self.owner.equipment.critical_hit_damage_multiplier_modifier
         else:
             modifier = (self.luck["attribute_modifier"] * 0.05)
         return self.base_critical_hit_damage_multiplier + modifier + self.calculate_effect_modifiers(
@@ -479,8 +478,7 @@ class Fighter:
         armor = int(round(armor * self.armor_multiplier))
 
         # Prevent armor from going below zero, negative armor wouldn't make sense thematically
-        return max(
-            0, armor)
+        return max(0, armor)
 
     @property
     def armor_multiplier(self) -> float:
@@ -775,6 +773,8 @@ class Fighter:
 
         results = []
 
+        attack_hit = False
+
         for effect in self.status_effects:
             if effect.on_attack:
                 results.extend(effect.on_attack(effect, target))
@@ -946,6 +946,8 @@ class Fighter:
                 if not self.owner.ai:
                     self.energy += 25
 
+                attack_hit = True
+
             elif critical_seed <= self.critical_hit_chance and total_damage_dealt < 0:
 
                 results.append({
@@ -960,6 +962,8 @@ class Fighter:
 
                 if not self.owner.ai:
                     self.energy += 25
+
+                attack_hit = True
 
             elif total_damage_dealt > 0:
                 results.append({
@@ -983,6 +987,8 @@ class Fighter:
                     target.fighter.take_damage(rolled_damage_by_type,
                                                attacker=self,
                                                from_ranged=ranged))
+
+                attack_hit = True
             else:
                 results.append({
                     "message":
@@ -993,6 +999,7 @@ class Fighter:
                 for effect in self.status_effects:
                     if effect.on_attack_hit:
                         results.extend(effect.on_attack_hit(effect))
+                attack_hit = True
 
         elif critical_seed >= 0.95:
             results.append({
@@ -1072,6 +1079,8 @@ class Fighter:
                 if not self.owner.ai:
                     self.energy += 25
 
+                attack_hit = True
+
             elif critical_seed <= self.critical_hit_chance and total_damage_dealt < 0:
                 results.append({
                     "message":
@@ -1108,6 +1117,8 @@ class Fighter:
                     target.fighter.take_damage(rolled_damage_by_type,
                                                attacker=self,
                                                from_ranged=ranged))
+
+                attack_hit = True
             else:
                 results.append({
                     "message":
@@ -1128,4 +1139,7 @@ class Fighter:
             for effect in self.status_effects:
                 if effect.on_attack_miss:
                     results.extend(effect.on_attack_miss(effect))
+
+        results.append({"attack_hit": attack_hit})        
+    
         return results

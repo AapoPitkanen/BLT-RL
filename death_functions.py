@@ -15,11 +15,9 @@ def kill_player(player, game):
 def kill_monster(monster, game):
     death_message = Message(f'The {monster.name.capitalize()} is killed!',
                             "orange")
-    monster.char = 0x1006
-    monster.color = "dark_red"
     monster.blocks = False
     monster.fighter = None
-    monster.ai = None
+    monster.ai.dead = True
     monster.name = 'remains of ' + monster.name
     monster.render_order = RenderOrder.CORPSE
     return death_message
