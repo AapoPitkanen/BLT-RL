@@ -182,6 +182,7 @@ def ranged_attack(*args, **kwargs):
     ranged_weapon_type = kwargs.get("ranged_weapon_type")
     target_x = kwargs.get("target_x")
     target_y = kwargs.get("target_y")
+    camera = kwargs.get("camera")
     results = []
 
     if not game_map.fov[target_x, target_y]:
@@ -214,26 +215,36 @@ def ranged_attack(*args, **kwargs):
 
             results.extend(caster.fighter.attack(entity, ranged=True))
 
-            # Add projectile animations
-            line = tcod.line_iter(caster.x, caster.y, entity.x, entity.y)
+            # Add projectile animations. Unlike other tiles, projectiles are rendered on each terminal cell.
+
+            (caster_term_x,
+             caster_term_y) = camera.map_to_term_coord(caster.x, caster.y)
+            (entity_term_x,
+             entity_term_y) = camera.map_to_term_coord(entity.x, entity.y)
+
+            terminal_line = tcod.line_iter(caster_term_x, caster_term_y,
+                                           entity_term_x, entity_term_y)
+
             anim_delay = 0
-            for coord in line:
+            for coord in terminal_line:
+                print("coord is", coord)
                 if coord[0] == caster.x and coord[1] == caster.y:
                     continue
                 game_map.gfx_effects.append(
                     GFX_Effect(coord[0],
                                coord[1],
                                gfx_effect_tile=0x1012,
-                               duration=0.085,
-                               delay=anim_delay))
-                anim_delay += 0.085
-                if coord[0] == entity.x and coord[1] == entity.y:
-                    game_map.gfx_effects.append(
-                        GFX_Effect(coord[0],
-                                   coord[1],
-                                   gfx_effect_tile=0x1013,
-                                   duration=0.25,
-                                   delay=anim_delay))
+                               duration=0.027,
+                               delay=anim_delay,
+                               projectile=True))
+                anim_delay += 0.027
+            game_map.gfx_effects.append(
+                GFX_Effect(entity.x,
+                           entity.y,
+                           gfx_effect_tile=0x1013,
+                           duration=0.25,
+                           delay=anim_delay))
+
             break
     else:
         results.append({

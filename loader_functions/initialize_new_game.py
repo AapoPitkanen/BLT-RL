@@ -21,7 +21,7 @@ from game import GameStates
 
 def get_constants():
     window_title: str = "Voidstone"
-    fps = 30
+    fps = 60
 
     screen_width: int = 224
     screen_height: int = 59

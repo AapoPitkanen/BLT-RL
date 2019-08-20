@@ -75,8 +75,11 @@ def render_all(entities, player, game_map, message_log, bar_width, panel_y,
         if gfx.expired:
             game_map.gfx_effects.remove(gfx)
         elif gfx.render:
-            (term_x, term_y) = camera.map_to_term_coord(gfx.x, gfx.y)
-            terminal.put(term_x, term_y, gfx.gfx_effect_tile)
+            if gfx.projectile:
+                terminal.put(gfx.x, gfx.y, gfx.gfx_effect_tile)
+            else:
+                (term_x, term_y) = camera.map_to_term_coord(gfx.x, gfx.y)
+                terminal.put(term_x, term_y, gfx.gfx_effect_tile)
 
     if game_state == GameStates.TARGETING:
         from entity import get_blocking_entities_at_location

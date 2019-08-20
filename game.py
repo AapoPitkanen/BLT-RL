@@ -43,7 +43,6 @@ class Game:
 
         # Wait for player input during player's turn, the list will be empty if the player didn't do anything
         if self.state == GameStates.PLAYERS_TURN and not player_turn_results:
-            print("no player input, returning")
             return
 
         # After getting input the results will be processed

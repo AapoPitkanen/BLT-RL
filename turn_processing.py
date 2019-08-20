@@ -203,7 +203,8 @@ def player_turn(player, entities, camera, game_map, game_state,
                         game_map=game_map,
                         target_x=target_x,
                         target_y=target_y,
-                        ranged_weapon_type=ranged_weapon_type)
+                        ranged_weapon_type=ranged_weapon_type,
+                        camera=camera)
                 else:
                     item_use_results = player.inventory.use(targeting_item,
                                                             entities=entities,
