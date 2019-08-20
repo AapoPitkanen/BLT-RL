@@ -105,6 +105,20 @@ class Inventory:
                         self.owner.equipment.RANGED_WEAPON_AMMUNITION = None
 
             results.extend(item_use_results)
+
+            if not self.owner.equipment.RANGED_WEAPON_AMMUNITION:
+                if self.owner.ai:
+                    results.append({
+                        "message":
+                        Message(f"The {self.owner.name} is out of ammunition!",
+                                "yellow")
+                    })
+                else:
+                    results.append({
+                        "message":
+                        Message("You are out of ammunition!", "red")
+                    })
+
         return results
 
     def remove_item(self, item_entity):

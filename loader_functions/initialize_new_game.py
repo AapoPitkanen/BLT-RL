@@ -84,9 +84,9 @@ def get_game_variables(constants):
         base_armor=0,
         base_melee_cth_modifier=100,
         base_ranged_cth_modifier=0,
-        base_speed=100,
+        base_speed=150,
         base_melee_attack_energy_bonus=0,
-        base_ranged_attack_energy_bonus=0,
+        base_ranged_attack_energy_bonus=50,
         base_movement_energy_bonus=0,
         base_natural_hp_regeneration_speed=50,
         base_melee_damage_dice={

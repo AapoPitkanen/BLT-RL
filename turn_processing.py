@@ -10,6 +10,7 @@ from game_messages import Message
 from copy import deepcopy
 from input_handlers import handle_keys, handle_mouse, handle_main_menu
 from game_states import GameStates
+import math
 
 if TYPE_CHECKING:
     from camera import Camera
@@ -234,6 +235,7 @@ def player_turn(player, entities, camera, game_map, game_state,
 def process_player_turn_results(results, game):
     player = game.player
     fighter = game.player.fighter
+
     for player_turn_result in results:
         message = player_turn_result.get("message")
         dead_entity = player_turn_result.get("dead")

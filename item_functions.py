@@ -3,8 +3,8 @@ import tcod
 from game_messages import Message
 from components.ai import ConfusedMonster
 from components.status_effects import Fireball
-from utils import disk
 from gfx_effect import GFX_Effect
+from utils import disk
 
 
 def heal(*args, **kwargs):
@@ -222,22 +222,25 @@ def ranged_attack(*args, **kwargs):
             (entity_term_x,
              entity_term_y) = camera.map_to_term_coord(entity.x, entity.y)
 
-            terminal_line = tcod.line_iter(caster_term_x, caster_term_y,
-                                           entity_term_x, entity_term_y)
+            terminal_line = list(
+                tcod.line_iter(caster_term_x, caster_term_y, entity_term_x,
+                               entity_term_y))
+
+            terminal_line = terminal_line[1::]
 
             anim_delay = 0
+
             for coord in terminal_line:
-                print("coord is", coord)
-                if coord[0] == caster.x and coord[1] == caster.y:
-                    continue
+
                 game_map.gfx_effects.append(
                     GFX_Effect(coord[0],
                                coord[1],
                                gfx_effect_tile=0x1012,
-                               duration=0.027,
+                               duration=0.025,
                                delay=anim_delay,
                                projectile=True))
-                anim_delay += 0.027
+                anim_delay += 0.025
+
             game_map.gfx_effects.append(
                 GFX_Effect(entity.x,
                            entity.y,

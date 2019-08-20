@@ -6,6 +6,7 @@ from map_objects.game_map import GameMap
 import tcod
 from utils import disk, circle, sector
 import re
+import math
 
 
 def get_names_under_mouse(cur_coord, camera, entities, game_map):
@@ -80,6 +81,15 @@ def render_all(entities, player, game_map, message_log, bar_width, panel_y,
             else:
                 (term_x, term_y) = camera.map_to_term_coord(gfx.x, gfx.y)
                 terminal.put(term_x, term_y, gfx.gfx_effect_tile)
+
+    for x in range(-5, 6):
+        for y in range(-5, 6):
+            new_x = player.x + x
+            new_y = player.y + y
+            radian_value = math.atan2(new_y - player.y, new_x - player.x)
+            radian_value = str(round(radian_value, 3))
+            (term_x, term_y) = camera.map_to_term_coord(new_x, new_y)
+            terminal.printf(term_x, term_y, radian_value)
 
     if game_state == GameStates.TARGETING:
         from entity import get_blocking_entities_at_location
