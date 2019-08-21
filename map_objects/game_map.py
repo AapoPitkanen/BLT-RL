@@ -241,8 +241,8 @@ class GameMap(Map):
                     inventory_seed = randint(1, 20)
                     fighter_component = Fighter(
                         generate_attributes(16, 13, 12, 16, 7, 11, 10, 10),
-                        current_hp=20,
-                        base_armor_class=8,
+                        current_hp=8,
+                        base_armor_class=9,
                         base_armor=0,
                         base_dodge=1,
                         base_melee_cth_modifier=0,

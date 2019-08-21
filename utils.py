@@ -14,6 +14,9 @@ import itertools
 
 
 def circle(center_x, center_y, size, radius):
+    """
+    Return a list of cells that form a circle.
+    """
     cells = []
     for x in range(-size, size + 1):
         for y in range(-size, size + 1):

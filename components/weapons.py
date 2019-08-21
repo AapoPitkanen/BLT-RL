@@ -445,24 +445,36 @@ def generate_melee_weapon_material_modifiers():
             "melee_chance_to_hit_modifier": randint(-1, 1),
             "melee_damage_modifiers": {
                 "physical": 0,
+            },
+            "melee_damage_dice_modifiers": {
+                "physical": [[0, 2]]
             }
         },
         "darksteel": {
-            "melee_chance_to_hit_modifier": randint(-1, 1),
+            "melee_chance_to_hit_modifier": randint(-3, 1),
             "melee_damage_modifiers": {
-                "physical": 0,
+                "physical": randint(2, 6),
+            },
+            "melee_damage_dice_modifiers": {
+                "physical": [[1, 0]]
             }
         },
         "orichalcum": {
             "melee_chance_to_hit_modifier": randint(-1, 1),
             "melee_damage_modifiers": {
-                "physical": 0,
+                "physical": randint(1, 4),
+            },
+            "melee_damage_dice_modifiers": {
+                "physical": [[0, 4]]
             }
         },
         "mithril": {
             "melee_chance_to_hit_modifier": randint(-1, 1),
             "melee_damage_modifiers": {
-                "physical": 0,
+                "physical": randint(3, 6),
+            },
+            "melee_damage_dice_modifiers": {
+                "physical": [[2, 0]]
             }
         },
         "voidstone": {
@@ -504,13 +516,19 @@ def generate_melee_weapon_material_modifiers():
         "adamantine": {
             "melee_chance_to_hit_modifier": randint(-1, 1),
             "melee_damage_modifiers": {
-                "physical": 0,
+                "physical": randint(4, 8),
+            },
+            "melee_damage_dice_modifiers": {
+                "physical": [[3, 0]]
             }
         },
         "meteoric iron": {
             "melee_chance_to_hit_modifier": randint(-1, 1),
             "melee_damage_modifiers": {
                 "physical": 0,
+            },
+            "melee_damage_dice_modifiers": {
+                "physical": [[1, 2]]
             }
         },
     }
@@ -1255,27 +1273,30 @@ def generate_weapon_name_modifiers():
         },
         "broadsword": {
             "melee_damage_dice": {
-                "physical": [[1, 6]]
+                "physical": [[1, 7]]
             }
         },
         "longsword": {
             "melee_damage_dice": {
-                "physical": [[1, 6]]
+                "physical": [[1, 8]]
             }
         },
         "bastard sword": {
             "melee_damage_dice": {
-                "physical": [[1, 6]]
+                "physical": [[1, 10]]
             }
         },
         "scimitar": {
             "melee_damage_dice": {
-                "physical": [[1, 6]]
+                "physical": [[1, 8]]
+            },
+            "melee_damage_modifiers": {
+                "physical": 1
             }
         },
         "falchion": {
             "melee_damage_dice": {
-                "physical": [[1, 6]]
+                "physical": [[1, 9]]
             }
         },
         "gladius": {
@@ -1285,27 +1306,33 @@ def generate_weapon_name_modifiers():
         },
         "arming sword": {
             "melee_damage_dice": {
-                "physical": [[1, 6]]
+                "physical": [[1, 8]]
             }
         },
         "sabre": {
             "melee_damage_dice": {
-                "physical": [[1, 6]]
+                "physical": [[1, 7]]
             }
         },
         "estoc": {
             "melee_damage_dice": {
-                "physical": [[1, 6]]
+                "physical": [[1, 7]]
+            },
+            "melee_damage_modifiers": {
+                "physical": 1
             }
         },
         "rapier": {
+            "melee_chance_to_hit_modifier": 2,
             "melee_damage_dice": {
                 "physical": [[1, 6]]
-            }
+            },
+            "melee_attack_energy_bonus_modifier": 2
         },
         "fencing sword": {
+            "melee_chance_to_hit_modifier": 1,
             "melee_damage_dice": {
-                "physical": [[1, 6]]
+                "physical": [[1, 8]]
             }
         },
         "hand axe": {
@@ -1804,19 +1831,24 @@ def generate_weapon_name_modifiers():
             }
         },
         "light crossbow": {
+            "ranged_chance_to_hit_modifier": 1,
             "ranged_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[2, 4]]
+            },
+            "ranged_attack_energy_bonus_modifier": -5
         },
         "crossbow": {
+            "ranged_chance_to_hit_modifier": randint(1, 2),
             "ranged_damage_dice": {
                 "physical": [[1, 6]]
-            }
+            },
+            "ranged_attack_energy_bonus_modifier": -7
         },
         "heavy crossbow": {
             "ranged_damage_dice": {
                 "physical": [[1, 6]]
-            }
+            },
+            "ranged_attack_energy_bonus_modifier": -10
         },
         "repeating crossbow": {
             "ranged_damage_dice": {

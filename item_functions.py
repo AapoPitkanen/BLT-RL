@@ -3,6 +3,7 @@ import tcod
 from game_messages import Message
 from components.ai import ConfusedMonster
 from components.status_effects import Fireball
+from entity import get_blocking_entities_at_location
 from gfx_effect import GFX_Effect
 from utils import disk
 import math
@@ -208,6 +209,37 @@ def ranged_attack(*args, **kwargs):
 
     for entity in entities:
         if entity.x == target_x and entity.y == target_y and entity.ai:
+
+            # This line is used to check if anything's in the way of the caster and the target
+            map_line_to_target = list(
+                tcod.line_iter(caster.x, caster.y, entity.x, entity.y))
+
+            # The caster and the target itself are removed from the line
+            map_line_to_target = map_line_to_target[1:-1]
+
+            for coord in map_line_to_target:
+                blocking_entity = get_blocking_entities_at_location(
+                    entities, coord[0], coord[1])
+                if not game_map.transparent[coord[0], coord[1]]:
+                    results.append({
+                        "consumed":
+                        False,
+                        "message":
+                        Message(
+                            f"You don't have a clear line of sight to the {entity.name}!",
+                            "red")
+                    })
+                    return results
+                elif blocking_entity:
+                    results.append({
+                        "consumed":
+                        False,
+                        "message":
+                        Message(f"The {blocking_entity.name} is in the way!",
+                                "red")
+                    })
+                    return results
+
             fire_ranged_weapon_messages = {
                 "bow": f"You fire your bow at the {entity.name}!",
                 "crossbow": f"You fire your crossbow at the {entity.name}!",
@@ -248,22 +280,39 @@ def ranged_attack(*args, **kwargs):
 
             degree_value = round(radian_value * (180 / math.pi))
 
-            if 0 >= degree_value < 30 or 360 >= degree_value > 330:
+            if 0 <= degree_value < 30 or 360 >= degree_value >= 330:
                 arrow_tile = EAST_ARROW
+                direction = "east"
             elif 30 <= degree_value <= 60:
                 arrow_tile = NORTHEAST_ARROW
+                direction = "northeast"
             elif 60 < degree_value < 120:
                 arrow_tile = NORTH_ARROW
+                direction = "north"
             elif 120 <= degree_value <= 150:
                 arrow_tile = NORTHWEST_ARROW
+                direction = "northwest"
             elif 150 < degree_value < 210:
                 arrow_tile = WEST_ARROW
+                direction = "west"
             elif 210 <= degree_value <= 240:
                 arrow_tile = SOUTHWEST_ARROW
+                direction = "southwest"
             elif 240 < degree_value < 300:
                 arrow_tile = SOUTH_ARROW
+                direction = "south"
             elif 300 <= degree_value <= 330:
                 arrow_tile = SOUTHEAST_ARROW
+                direction = "southeast"
+
+            if direction in ["north", "east", "south", "west"]:
+                duration = 0.026
+                anim_delay_step = 0.026
+            elif direction in [
+                    "northeast", "southeast", "southwest", "northwest"
+            ]:
+                duration = 0.03
+                anim_delay_step = 0.03
 
             for coord in terminal_line:
 
@@ -271,10 +320,10 @@ def ranged_attack(*args, **kwargs):
                     GFX_Effect(coord[0],
                                coord[1],
                                gfx_effect_tile=arrow_tile,
-                               duration=0.03,
+                               duration=duration,
                                delay=anim_delay,
                                projectile=True))
-                anim_delay += 0.03
+                anim_delay += anim_delay_step
 
             results.append({"ranged_anim_delay": anim_delay})
 

@@ -434,9 +434,28 @@ class Fighter:
     @property
     def melee_damage_dice(self) -> Dict[str, List]:
         if self.owner and self.owner.equipment:
-            return self.owner.equipment.calculate_total_melee_damage_dice
+            total_melee_damage_dice = self.owner.equipment.calculate_total_melee_damage_dice
         else:
-            return self.base_melee_damage_dice
+            total_melee_damage_dice = self.base_melee_damage_dice
+
+        # If the fighter doesn't have any damage dice from its base damage dice or from equipment, default to
+        # a 1d3 physical damage dice.
+        for dice_list in total_melee_damage_dice.values():
+            if dice_list:
+                break
+        else:
+            total_melee_damage_dice = {
+                "physical": [[1, 3]],
+                "fire": [],
+                "ice": [],
+                "lightning": [],
+                "holy": [],
+                "chaos": [],
+                "arcane": [],
+                "poison": [],
+            }
+
+        return total_melee_damage_dice
 
     @property
     def ranged_damage_dice(self) -> Dict[str, List]:
@@ -1140,6 +1159,7 @@ class Fighter:
                 if effect.on_attack_miss:
                     results.extend(effect.on_attack_miss(effect))
 
-        results.append({"attack_hit": attack_hit})        
-    
+        if ranged and attack_hit:
+            results.append({"ranged_attack_hit": target})
+
         return results

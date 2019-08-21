@@ -4,6 +4,7 @@ from bearlibterminal import terminal
 from death_functions import kill_monster, kill_player
 from components.status_effects import resolve_effects
 from components.ammunition import Ammunition
+from gfx_effect import GFX_Effect
 from entity import Entity, get_blocking_entities_at_location
 from loader_functions.data_loaders import save_game
 from game_messages import Message
@@ -235,6 +236,14 @@ def player_turn(player, entities, camera, game_map, game_state,
 def process_player_turn_results(results, game):
     player = game.player
     fighter = game.player.fighter
+
+    anim_delay = next(
+        (result for result in results if result.get('ranged_anim_delay')),
+        None)
+
+    if anim_delay:
+        anim_delay = anim_delay.get("ranged_anim_delay")
+
     for player_turn_result in results:
         message = player_turn_result.get("message")
         dead_entity = player_turn_result.get("dead")
@@ -258,8 +267,7 @@ def process_player_turn_results(results, game):
         equip = player_turn_result.get("equip")
         heal = player_turn_result.get("heal")
         effect = player_turn_result.get("apply_effect")
-        anim_delay = player_turn_result.get("ranged_anim_delay")
-        attack_hit = player_turn_result.get("attack_hit")
+        ranged_attack_hit = player_turn_result.get("ranged_attack_hit")
 
         if new_mouse_coordinates:
             game.mouse_coordinates = new_mouse_coordinates
@@ -355,7 +363,7 @@ def process_player_turn_results(results, game):
         if xp:
             leveled_up = game.player.level.add_xp(xp)
             game.message_log.add_message(
-                Message(f"You gained {xp} experience points!"))
+                Message(f"You gained {xp} experience points."))
 
             if leveled_up:
                 game.message_log.add_message(
@@ -397,11 +405,14 @@ def process_player_turn_results(results, game):
         if action_consumed:
             fighter.actions -= 1
 
-        if anim_delay:
-            print("anim delay is", anim_delay)
-
-        if attack_hit:
-            print("attack hit is", attack_hit)
+        if ranged_attack_hit:
+            entity = ranged_attack_hit
+            game.game_map.gfx_effects.append(
+                GFX_Effect(entity.x,
+                           entity.y,
+                           gfx_effect_tile=0x101A,
+                           duration=0.2,
+                           delay=anim_delay))
 
 
 def process_player_effect_results(results, game):

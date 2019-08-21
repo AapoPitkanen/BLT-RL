@@ -31,9 +31,29 @@ class Game:
 
     @property
     def monster_fighter_entities(self):
-        return [entity.fighter for entity in self.entities if entity.ai]
+        return [
+            entity.fighter for entity in self.entities
+            if entity.ai and not entity.ai.dead
+        ]
+
+    @property
+    def dead_entities(self):
+        dead_entities = [
+            entity for entity in self.entities if entity.ai and entity.ai.dead
+        ]
+        return dead_entities
 
     def tick(self) -> None:
+
+        # Clearing monster components and changing the character to a corpse here allows the animations
+        # to be run first, so the monster will transform to a corpse only after the animation has been finished
+        # The monsters are cleared at the start of the tick so that the player input doesn't interfere with
+        # the clearing (or the lack of input to be precise.)
+        for entity in self.dead_entities:
+            entity.char = 0x1006
+            entity.ai = None
+            entity.blocks = False
+            entity.fighter = None
 
         # Get a list of dicts where the results are specified e.g. {"move": True}
         player_turn_results = player_turn(self.player, self.entities,

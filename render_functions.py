@@ -2,6 +2,7 @@ from render_order import RenderLayer, Visible
 from bearlibterminal import terminal
 from game import GameStates
 from menu import inventory_menu, hud_background_menu, menu, equipment_menu
+from entity import get_blocking_entities_at_location
 from map_objects.game_map import GameMap
 import tcod
 from utils import disk, circle, sector
@@ -82,18 +83,7 @@ def render_all(entities, player, game_map, message_log, bar_width, panel_y,
 
     for entity in entities_in_render_order:
         entity.draw(camera, game_map)
-    """
-    for x in range(-7, 8):
-        for y in range(-7, 8):
-            new_x = player.x + x
-            new_y = player.y + y
-            radian_value = math.atan2(player.y - new_y, new_x - player.x)
-            if radian_value < 0:
-                radian_value = math.pi * 2 + radian_value
-            degree_value = str(round(radian_value * (180 / math.pi)))
-            (term_x, term_y) = camera.map_to_term_coord(new_x, new_y)
-            terminal.printf(term_x, term_y, degree_value)
-    """
+
     terminal.layer(RenderLayer.OVERLAY.value)
     if game_state == GameStates.TARGETING:
         from entity import get_blocking_entities_at_location
@@ -114,7 +104,9 @@ def render_all(entities, player, game_map, message_log, bar_width, panel_y,
                 coord[0], coord[1])
             if cell_term_x and cell_term_y:
                 if coord[0] == mouse_map_x and coord[
-                        1] == mouse_map_y and game_map.fov[
+                        1] == mouse_map_y and get_blocking_entities_at_location(
+                            entities, mouse_map_x, mouse_map_y
+                        ) and game_map.fov[
                             coord[0], coord[1]] and not game_map.is_blocked(
                                 coord[0], coord[1]):
                     terminal.color(terminal.color_from_argb(125, 0, 255, 0))
