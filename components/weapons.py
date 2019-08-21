@@ -2125,7 +2125,7 @@ def generate_random_weapon():
     weapon_type = "".join(
         choices(weapon_types["types"], weapon_types["weights"]))
 
-    weapon_type = "bow"
+    weapon_type = "pistol"
 
     if weapon_type in ["pistol", "rifle", "bow", "crossbow"]:
         slot = EquipmentSlots.RANGED_WEAPON
@@ -2235,6 +2235,7 @@ def generate_random_weapon():
         "speed_modifier": 0,
         "movement_energy_bonus_modifier": 0,
         "melee_attack_energy_bonus_modifier": 0,
+        "ranged_attack_energy_bonus_modifier": 0,
         "critical_hit_chance_modifier": 0,
         "critical_hit_damage_multiplier_modifier": 0,
         "strength_modifier": 0,

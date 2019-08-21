@@ -241,8 +241,14 @@ def process_player_turn_results(results, game):
         (result for result in results if result.get('ranged_anim_delay')),
         None)
 
+    ammo_type = next((result for result in results if result.get('ammo_type')),
+                     None)
+
     if anim_delay:
         anim_delay = anim_delay.get("ranged_anim_delay")
+
+    if ammo_type:
+        ammo_type = ammo_type.get("ammo_type")
 
     for player_turn_result in results:
         message = player_turn_result.get("message")
@@ -407,10 +413,14 @@ def process_player_turn_results(results, game):
 
         if ranged_attack_hit:
             entity = ranged_attack_hit
+            if ammo_type in ["arrow", "bolt"]:
+                effect_tile = 0x101A
+            elif ammo_type in ["pistol bullet", "rifle bullet"]:
+                effect_tile = 0x1023
             game.game_map.gfx_effects.append(
                 GFX_Effect(entity.x,
                            entity.y,
-                           gfx_effect_tile=0x101A,
+                           gfx_effect_tile=effect_tile,
                            duration=0.2,
                            delay=anim_delay))
 

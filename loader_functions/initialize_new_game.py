@@ -154,7 +154,7 @@ def get_game_variables(constants):
         targeting=True,
         quantity=10,
         targeting_message=Message(
-            'Left-click to shoot your ranged weapon, or right-click to cancel.',
+            'Left-click to shoot your bow, or right-click to cancel.',
             "light cyan"),
     )
 
@@ -180,7 +180,36 @@ def get_game_variables(constants):
 
     player.inventory.add_item(item)
 
-    player.fighter.apply_effect(DoubleDamageToOrcs)
+    item_component = Item(
+        use_function=ranged_attack,
+        targeting=True,
+        quantity=10,
+        targeting_message=Message(
+            'Left-click to shoot your pistol, or right-click to cancel.',
+            "light cyan"),
+    )
+
+    ammo_component = Ammunition(rarity={
+        "rarity": "normal",
+        "rarity_color": "white"
+    },
+                                ammunition_name="pistol bullet",
+                                material="iron",
+                                quality="normal")
+
+    equippable_component = Equippable(
+        equippable_type=ammo_component,
+        slot=EquipmentSlots.RANGED_WEAPON_AMMUNITION)
+
+    item = Entity(0,
+                  0,
+                  0x1000,
+                  ammo_component.identified_name.title(),
+                  render_order=RenderOrder.ITEM,
+                  item=item_component,
+                  equippable=equippable_component)
+
+    player.inventory.add_item(item)
 
     weapon = generate_random_weapon()
 

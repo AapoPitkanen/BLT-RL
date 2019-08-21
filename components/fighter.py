@@ -1161,5 +1161,6 @@ class Fighter:
 
         if ranged and attack_hit:
             results.append({"ranged_attack_hit": target})
+            results.append({"ammo_type": self.owner.equipment.RANGED_WEAPON_AMMUNITION.equippable.equippable_type.ammunition_name})
 
         return results

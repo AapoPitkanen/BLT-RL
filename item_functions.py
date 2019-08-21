@@ -18,6 +18,50 @@ SOUTHEAST_ARROW = 0x1018
 SOUTHWEST_ARROW = 0x1019
 BLOOD_TILE = 0x101A
 
+NORTHEAST_BOLT = 0x101B
+NORTHWEST_BOLT = 0x101C
+SOUTHEAST_BOLT = 0x101D
+SOUTHWEST_BOLT = 0x101E
+NORTH_BOLT = 0x101F
+SOUTH_BOLT = 0x1020
+WEST_BOLT = 0x1021
+EAST_BOLT = 0x1022
+BULLET_EXPLOSION = 0x1023
+BULLET = 0x1024
+
+projectile_tiles = {
+    "arrow": {
+        "north": 0x1012,
+        "east": 0x1013,
+        "south": 0x1014,
+        "west": 0x1015,
+        "northeast": 0x1016,
+        "northwest": 0x1017,
+        "southeast": 0x1018,
+        "southwest": 0x1019
+    },
+    "bolt": {
+        "north": 0x101F,
+        "east": 0x1022,
+        "south": 0x1020,
+        "west": 0x1021,
+        "northeast": 0x101B,
+        "northwest": 0x101C,
+        "southeast": 0x101D,
+        "southwest": 0x101E
+    },
+    "bullet": {
+        "north": 0x1024,
+        "east": 0x1024,
+        "south": 0x1024,
+        "west": 0x1024,
+        "northeast": 0x1024,
+        "northwest": 0x1024,
+        "southeast": 0x1024,
+        "southwest": 0x1024
+    }
+}
+
 
 def heal(*args, **kwargs):
     entity = args[0]
@@ -254,6 +298,13 @@ def ranged_attack(*args, **kwargs):
                 Message(fire_ranged_weapon_messages[ranged_weapon_type])
             })
 
+            if ranged_weapon_type in ["pistol", "rifle"]:
+                projectile_type = "bullet"
+            elif ranged_weapon_type == "bow":
+                projectile_type = "arrow"
+            elif ranged_weapon_type == "crossbow":
+                projectile_type = "bolt"
+
             results.append({"ranged_attack": True})
 
             results.extend(caster.fighter.attack(entity, ranged=True))
@@ -281,45 +332,49 @@ def ranged_attack(*args, **kwargs):
             degree_value = round(radian_value * (180 / math.pi))
 
             if 0 <= degree_value < 30 or 360 >= degree_value >= 330:
-                arrow_tile = EAST_ARROW
                 direction = "east"
             elif 30 <= degree_value <= 60:
-                arrow_tile = NORTHEAST_ARROW
                 direction = "northeast"
             elif 60 < degree_value < 120:
-                arrow_tile = NORTH_ARROW
                 direction = "north"
             elif 120 <= degree_value <= 150:
-                arrow_tile = NORTHWEST_ARROW
                 direction = "northwest"
             elif 150 < degree_value < 210:
-                arrow_tile = WEST_ARROW
                 direction = "west"
             elif 210 <= degree_value <= 240:
-                arrow_tile = SOUTHWEST_ARROW
                 direction = "southwest"
             elif 240 < degree_value < 300:
-                arrow_tile = SOUTH_ARROW
                 direction = "south"
             elif 300 <= degree_value <= 330:
-                arrow_tile = SOUTHEAST_ARROW
                 direction = "southeast"
 
-            if direction in ["north", "east", "south", "west"]:
-                duration = 0.026
-                anim_delay_step = 0.026
-            elif direction in [
-                    "northeast", "southeast", "southwest", "northwest"
-            ]:
-                duration = 0.03
-                anim_delay_step = 0.03
+            if projectile_type in ["arrow", "bolt"]:
+                if direction in ["north", "east", "south", "west"]:
+                    duration = 0.03
+                    anim_delay_step = 0.03
+                elif direction in [
+                        "northeast", "southeast", "southwest", "northwest"
+                ]:
+                    duration = 0.034
+                    anim_delay_step = 0.034
+            elif projectile_type == "bullet":
+                if direction in ["north", "east", "south", "west"]:
+                    duration = 0.024
+                    anim_delay_step = 0.024
+                elif direction in [
+                        "northeast", "southeast", "southwest", "northwest"
+                ]:
+                    duration = 0.029
+                    anim_delay_step = 0.029
+
+            projectile_tile = projectile_tiles[projectile_type][direction]
 
             for coord in terminal_line:
 
                 game_map.gfx_effects.append(
                     GFX_Effect(coord[0],
                                coord[1],
-                               gfx_effect_tile=arrow_tile,
+                               gfx_effect_tile=projectile_tile,
                                duration=duration,
                                delay=anim_delay,
                                projectile=True))
