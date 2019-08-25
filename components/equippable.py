@@ -114,7 +114,8 @@ class Equippable:
                 "chaos": 0,
                 "arcane": 0,
                 "poison": 0,
-            }):
+            },
+            equippable_effects=None):
         self.slot = slot
         # equippable type is built as a class with the following properties:
         # equipment_type: e.g. "weapon", "torso", "ring" etc.
@@ -161,3 +162,4 @@ class Equippable:
         self.ranged_damage_dice = ranged_damage_dice
         self.resistances = resistances
         self.resistance_multiplier_modifiers = resistance_multiplier_modifiers
+        self.equippable_effects = equippable_effects if equippable_effects else []

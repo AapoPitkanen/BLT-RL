@@ -1,6 +1,7 @@
 import tcod as libtcod
 from components.equippable import Equippable
 from components.equipment_attributes import qualities, quality_weights, rarities, weapon_metal_material_names, weapon_metal_material_weights, weapon_wood_material_names, weapon_wood_material_weights, weapon_prefixes, weapon_prefix_weights, weapon_suffixes, weapon_suffix_weights
+from components.status_effects import ApplyDecay_50OnAttack, Regeneration
 from equipment_slots import EquipmentSlots
 from entity import Entity
 from random import random, randint, choices, sample
@@ -38,18 +39,14 @@ class Weapon:
         self.ammunition = ammunition
 
 
-def generate_weapon_rarity_modifiers():
+def generate_melee_weapon_rarity_modifiers():
     weapon_rarity_modifiers = {
         "common": [{
-            "armor_modifier": randint(1, 1)
-        }, {
             "armor_class_modifier": randint(1, 1)
         }, {
             "max_hp_modifier": randint(1, 3)
         }, {
             "melee_chance_to_hit_modifier": randint(1, 2)
-        }, {
-            "ranged_chance_to_hit_modifier": randint(1, 2)
         }, {
             "speed_modifier": randint(1, 3)
         }, {
@@ -58,15 +55,11 @@ def generate_weapon_rarity_modifiers():
             "melee_attack_energy_bonus_modifier": randint(1, 2)
         }],
         "uncommon": [{
-            "armor_modifier": randint(1, 1)
-        }, {
             "armor_class_modifier": randint(1, 2)
         }, {
             "max_hp_modifier": randint(1, 4)
         }, {
             "melee_chance_to_hit_modifier": randint(1, 3)
-        }, {
-            "ranged_chance_to_hit_modifier": randint(1, 3)
         }, {
             "speed_modifier": randint(1, 4)
         }, {
@@ -79,15 +72,11 @@ def generate_weapon_rarity_modifiers():
             }
         }],
         "rare": [{
-            "armor_modifier": randint(1, 1)
-        }, {
             "armor_class_modifier": randint(1, 3)
         }, {
             "max_hp_modifier": randint(1, 5)
         }, {
             "melee_chance_to_hit_modifier": randint(1, 4)
-        }, {
-            "ranged_chance_to_hit_modifier": randint(1, 4)
         }, {
             "critical_hit_chance_modifier": randint(1, 2) / 100
         }, {
@@ -116,15 +105,11 @@ def generate_weapon_rarity_modifiers():
             }
         }],
         "epic": [{
-            "armor_modifier": randint(1, 3)
-        }, {
             "armor_class_modifier": randint(2, 4)
         }, {
             "max_hp_modifier": randint(2, 6)
         }, {
             "melee_chance_to_hit_modifier": randint(2, 5)
-        }, {
-            "ranged_chance_to_hit_modifier": randint(2, 5)
         }, {
             "critical_hit_chance_modifier": randint(1, 3) / 100
         }, {
@@ -169,13 +154,198 @@ def generate_weapon_rarity_modifiers():
             }
         }],
         "mythical": [{
-            "armor_modifier": randint(2, 4)
-        }, {
             "armor_class_modifier": randint(3, 6)
         }, {
             "max_hp_modifier": randint(3, 8)
         }, {
             "melee_chance_to_hit_modifier": randint(3, 6)
+        }, {
+            "critical_hit_chance_modifier": randint(2, 4) / 100
+        }, {
+            "critical_hit_damage_multiplier_modifier": 10 / 100
+        }, {
+            "speed_modifier": randint(2, 6)
+        }, {
+            "movement_energy_bonus_modifier": randint(2, 6)
+        }, {
+            "melee_attack_energy_bonus_modifier": randint(2, 6)
+        }, {
+            "life_steal_modifier": randint(3, 8) / 100
+        }, {
+            "damage_reflection_modifier": randint(3, 8) / 100
+        }, {
+            "strength_modifier": 1
+        }, {
+            "perception_modifier": 1
+        }, {
+            "dexterity_modifier": 1
+        }, {
+            "constitution_modifier": 1
+        }, {
+            "intelligence_modifier": 1
+        }, {
+            "wisdom_modifier": 1
+        }, {
+            "charisma_modifier": 1
+        }, {
+            "luck_modifier": 1
+        }, {
+            "resistances": {
+                "physical": randint(1, 6) / 100
+            }
+        }, {
+            "resistances": {
+                "fire": randint(1, 6) / 100
+            }
+        }, {
+            "resistances": {
+                "ice": randint(1, 6) / 100
+            }
+        }, {
+            "resistances": {
+                "lightning": randint(1, 6) / 100
+            }
+        }, {
+            "resistances": {
+                "holy": randint(1, 6) / 100
+            }
+        }, {
+            "resistances": {
+                "chaos": randint(1, 6) / 100
+            }
+        }, {
+            "resistances": {
+                "arcane": randint(1, 6) / 100
+            }
+        }, {
+            "resistances": {
+                "poison": randint(1, 6) / 100
+            }
+        }, {
+            "dodge_modifier": randint(1, 2)
+        }]
+    }
+    return weapon_rarity_modifiers
+
+
+def generate_ranged_weapon_rarity_modifiers():
+    weapon_rarity_modifiers = {
+        "common": [{
+            "armor_class_modifier": randint(1, 2)
+        }, {
+            "max_hp_modifier": randint(1, 3)
+        }, {
+            "ranged_chance_to_hit_modifier": randint(1, 2)
+        }, {
+            "speed_modifier": randint(1, 3)
+        }, {
+            "movement_energy_bonus_modifier": randint(1, 2)
+        }, {
+            "ranged_attack_energy_bonus_modifier": randint(1, 2)
+        }],
+        "uncommon": [{
+            "armor_class_modifier": randint(1, 2)
+        }, {
+            "max_hp_modifier": randint(1, 4)
+        }, {
+            "ranged_chance_to_hit_modifier": randint(1, 3)
+        }, {
+            "speed_modifier": randint(1, 4)
+        }, {
+            "movement_energy_bonus_modifier": randint(1, 3)
+        }, {
+            "ranged_attack_energy_bonus_modifier": randint(1, 3)
+        }, {
+            "resistances": {
+                "physical": randint(1, 3) / 100
+            }
+        }],
+        "rare": [{
+            "armor_class_modifier": randint(1, 3)
+        }, {
+            "max_hp_modifier": randint(1, 5)
+        }, {
+            "ranged_chance_to_hit_modifier": randint(1, 4)
+        }, {
+            "critical_hit_chance_modifier": randint(1, 2) / 100
+        }, {
+            "critical_hit_damage_multiplier_modifier": 5 / 100
+        }, {
+            "speed_modifier": randint(1, 5)
+        }, {
+            "movement_energy_bonus_modifier": randint(1, 4)
+        }, {
+            "ranged_attack_energy_bonus_modifier": randint(1, 4)
+        }, {
+            "resistances": {
+                "physical": randint(1, 4) / 100
+            }
+        }, {
+            "resistances": {
+                "fire": randint(1, 4) / 100
+            }
+        }, {
+            "resistances": {
+                "ice": randint(1, 4) / 100
+            }
+        }, {
+            "resistances": {
+                "lightning": randint(1, 4) / 100
+            }
+        }],
+        "epic": [{
+            "armor_class_modifier": randint(2, 4)
+        }, {
+            "max_hp_modifier": randint(2, 6)
+        }, {
+            "ranged_chance_to_hit_modifier": randint(2, 5)
+        }, {
+            "critical_hit_chance_modifier": randint(1, 3) / 100
+        }, {
+            "critical_hit_damage_multiplier_modifier": 5 / 100
+        }, {
+            "speed_modifier": randint(1, 5)
+        }, {
+            "movement_energy_bonus_modifier": randint(2, 5)
+        }, {
+            "ranged_attack_energy_bonus_modifier": randint(2, 5)
+        }, {
+            "resistances": {
+                "physical": randint(1, 5) / 100
+            }
+        }, {
+            "resistances": {
+                "fire": randint(1, 5) / 100
+            }
+        }, {
+            "resistances": {
+                "ice": randint(1, 5) / 100
+            }
+        }, {
+            "resistances": {
+                "lightning": randint(1, 5) / 100
+            }
+        }, {
+            "resistances": {
+                "holy": randint(1, 5) / 100
+            }
+        }, {
+            "resistances": {
+                "chaos": randint(1, 5) / 100
+            }
+        }, {
+            "resistances": {
+                "arcane": randint(1, 5) / 100
+            }
+        }, {
+            "resistances": {
+                "poison": randint(1, 5) / 100
+            }
+        }],
+        "mythical": [{
+            "armor_class_modifier": randint(3, 6)
+        }, {
+            "max_hp_modifier": randint(3, 8)
         }, {
             "ranged_chance_to_hit_modifier": randint(3, 6)
         }, {
@@ -187,7 +357,7 @@ def generate_weapon_rarity_modifiers():
         }, {
             "movement_energy_bonus_modifier": randint(2, 6)
         }, {
-            "melee_attack_energy_bonus_modifier": randint(2, 6)
+            "ranged_attack_energy_bonus_modifier": randint(2, 6)
         }, {
             "life_steal_modifier": randint(3, 8) / 100
         }, {
@@ -420,47 +590,49 @@ def generate_melee_weapon_material_modifiers():
         "copper": {
             "melee_chance_to_hit_modifier": randint(-1, 1),
             "melee_damage_modifiers": {
-                "physical": 0,
+                "physical": randint(0, 1),
             }
         },
         "bronze": {
-            "melee_chance_to_hit_modifier": randint(-1, 1),
+            "melee_chance_to_hit_modifier": randint(0, 1),
             "melee_damage_modifiers": {
-                "physical": 0,
+                "physical": randint(0, 1),
             }
         },
         "iron": {
-            "melee_chance_to_hit_modifier": randint(-1, 1),
+            "melee_chance_to_hit_modifier": randint(0, 1),
             "melee_damage_modifiers": {
-                "physical": 0,
+                "physical": 1,
             }
         },
         "steel": {
-            "melee_chance_to_hit_modifier": randint(-1, 1),
+            "melee_chance_to_hit_modifier": randint(0, 2),
             "melee_damage_modifiers": {
-                "physical": 0,
+                "physical": randint(1, 2),
             }
         },
         "truesteel": {
-            "melee_chance_to_hit_modifier": randint(-1, 1),
+            "melee_chance_to_hit_modifier": randint(1, 3),
             "melee_damage_modifiers": {
-                "physical": 0,
+                "physical": randint(1, 2),
             },
             "melee_damage_dice_modifiers": {
                 "physical": [[0, 2]]
-            }
+            },
+            "critical_hit_chance_modifier": randint(1, 3) / 100,
+            "critical_hit_damage_multiplier_modifier": randint(5, 10) / 100
         },
         "darksteel": {
-            "melee_chance_to_hit_modifier": randint(-3, 1),
+            "melee_chance_to_hit_modifier": randint(-4, 1),
             "melee_damage_modifiers": {
                 "physical": randint(2, 6),
             },
             "melee_damage_dice_modifiers": {
-                "physical": [[1, 0]]
+                "physical": [[2, 0]]
             }
         },
         "orichalcum": {
-            "melee_chance_to_hit_modifier": randint(-1, 1),
+            "melee_chance_to_hit_modifier": randint(-1, 2),
             "melee_damage_modifiers": {
                 "physical": randint(1, 4),
             },
@@ -469,48 +641,84 @@ def generate_melee_weapon_material_modifiers():
             }
         },
         "mithril": {
-            "melee_chance_to_hit_modifier": randint(-1, 1),
+            "melee_chance_to_hit_modifier": randint(1, 4),
             "melee_damage_modifiers": {
-                "physical": randint(3, 6),
+                "physical": randint(2, 4),
             },
             "melee_damage_dice_modifiers": {
-                "physical": [[2, 0]]
+                "physical": [[1, 0]]
             }
         },
         "voidstone": {
-            "melee_chance_to_hit_modifier": randint(-1, 1),
+            "melee_chance_to_hit_modifier": randint(1, 2),
             "melee_damage_modifiers": {
-                "physical": 0,
+                "chaos": randint(1, 4),
+            },
+            "melee_damage_dice_modifiers": {
+                "chaos": [[1, 2]]
+            },
+            "resistances": {
+                "chaos": randint(1, 5) / 100
             }
         },
         "brimstone": {
-            "melee_chance_to_hit_modifier": randint(-1, 1),
+            "melee_chance_to_hit_modifier": randint(1, 2),
             "melee_damage_modifiers": {
-                "physical": 0,
+                "fire": randint(1, 4),
+            },
+            "melee_damage_dice_modifiers": {
+                "fire": [[1, 2]]
+            },
+            "resistances": {
+                "fire": randint(1, 5) / 100
             }
         },
         "cold iron": {
-            "melee_chance_to_hit_modifier": randint(-1, 1),
+            "melee_chance_to_hit_modifier": randint(1, 2),
             "melee_damage_modifiers": {
-                "physical": 0,
+                "ice": randint(1, 4),
+            },
+            "melee_damage_dice_modifiers": {
+                "ice": [[1, 2]]
+            },
+            "resistances": {
+                "ice": randint(1, 5) / 100
             }
         },
         "thunderstone": {
-            "melee_chance_to_hit_modifier": randint(-1, 1),
+            "melee_chance_to_hit_modifier": randint(1, 2),
             "melee_damage_modifiers": {
-                "physical": 0,
+                "lightning": randint(1, 4),
+            },
+            "melee_damage_dice_modifiers": {
+                "lightning": [[1, 2]]
+            },
+            "resistances": {
+                "lightning": randint(1, 5) / 100
             }
         },
         "pearlstone": {
-            "melee_chance_to_hit_modifier": randint(-1, 1),
+            "melee_chance_to_hit_modifier": randint(1, 2),
             "melee_damage_modifiers": {
-                "physical": 0,
+                "holy": randint(1, 4),
+            },
+            "melee_damage_dice_modifiers": {
+                "holy": [[1, 2]]
+            },
+            "resistances": {
+                "holy": randint(1, 5) / 100
             }
         },
         "electrum": {
-            "melee_chance_to_hit_modifier": randint(-1, 1),
+            "melee_chance_to_hit_modifier": randint(1, 2),
             "melee_damage_modifiers": {
-                "physical": 0,
+                "arcane": randint(1, 4),
+            },
+            "melee_damage_dice_modifiers": {
+                "arcane": [[1, 2]]
+            },
+            "resistances": {
+                "arcane": randint(1, 5) / 100
             }
         },
         "adamantine": {
@@ -523,12 +731,12 @@ def generate_melee_weapon_material_modifiers():
             }
         },
         "meteoric iron": {
-            "melee_chance_to_hit_modifier": randint(-1, 1),
+            "melee_chance_to_hit_modifier": randint(0, 5),
             "melee_damage_modifiers": {
-                "physical": 0,
+                "physical": randint(1, 3),
             },
             "melee_damage_dice_modifiers": {
-                "physical": [[1, 2]]
+                "physical": [[2, 2]]
             }
         },
     }
@@ -540,97 +748,153 @@ def generate_pistol_and_rifle_material_modifiers():
         "copper": {
             "ranged_chance_to_hit_modifier": randint(-1, 1),
             "ranged_damage_modifiers": {
-                "physical": randint(1, 3)
+                "physical": randint(0, 1),
             }
         },
         "bronze": {
-            "ranged_chance_to_hit_modifier": randint(-1, 1),
+            "ranged_chance_to_hit_modifier": randint(0, 1),
             "ranged_damage_modifiers": {
-                "physical": randint(1, 3)
+                "physical": randint(0, 1),
             }
         },
         "iron": {
-            "ranged_chance_to_hit_modifier": randint(-1, 1),
+            "ranged_chance_to_hit_modifier": randint(0, 1),
             "ranged_damage_modifiers": {
-                "physical": randint(1, 3)
+                "physical": 1,
             }
         },
         "steel": {
-            "ranged_chance_to_hit_modifier": randint(-1, 1),
+            "ranged_chance_to_hit_modifier": randint(0, 2),
             "ranged_damage_modifiers": {
-                "physical": randint(1, 3)
+                "physical": randint(1, 2),
             }
         },
         "truesteel": {
-            "ranged_chance_to_hit_modifier": randint(-1, 1),
+            "ranged_chance_to_hit_modifier": randint(1, 3),
             "ranged_damage_modifiers": {
-                "physical": randint(1, 3)
-            }
+                "physical": randint(1, 2),
+            },
+            "ranged_damage_dice_modifiers": {
+                "physical": [[0, 2]]
+            },
+            "critical_hit_chance_modifier": randint(1, 3) / 100,
+            "critical_hit_damage_multiplier_modifier": randint(5, 10) / 100
         },
         "darksteel": {
-            "ranged_chance_to_hit_modifier": randint(-1, 1),
+            "ranged_chance_to_hit_modifier": randint(-4, 1),
             "ranged_damage_modifiers": {
-                "physical": randint(1, 3)
+                "physical": randint(2, 6),
+            },
+            "ranged_damage_dice_modifiers": {
+                "physical": [[2, 0]]
             }
         },
         "orichalcum": {
-            "ranged_chance_to_hit_modifier": randint(-1, 1),
+            "ranged_chance_to_hit_modifier": randint(-1, 2),
             "ranged_damage_modifiers": {
-                "physical": randint(1, 3)
+                "physical": randint(1, 4),
+            },
+            "ranged_damage_dice_modifiers": {
+                "physical": [[0, 4]]
             }
         },
         "mithril": {
-            "ranged_chance_to_hit_modifier": randint(-1, 1),
+            "ranged_chance_to_hit_modifier": randint(1, 4),
             "ranged_damage_modifiers": {
-                "physical": randint(1, 3)
+                "physical": randint(2, 4),
+            },
+            "ranged_damage_dice_modifiers": {
+                "physical": [[1, 0]]
             }
         },
         "voidstone": {
-            "ranged_chance_to_hit_modifier": randint(-1, 1),
+            "ranged_chance_to_hit_modifier": randint(1, 2),
             "ranged_damage_modifiers": {
-                "physical": randint(1, 3)
+                "chaos": randint(1, 4),
+            },
+            "ranged_damage_dice_modifiers": {
+                "chaos": [[1, 2]]
+            },
+            "resistances": {
+                "chaos": randint(1, 5) / 100
             }
         },
         "brimstone": {
-            "ranged_chance_to_hit_modifier": randint(-1, 1),
+            "ranged_chance_to_hit_modifier": randint(1, 2),
             "ranged_damage_modifiers": {
-                "physical": randint(1, 3)
+                "fire": randint(1, 4),
+            },
+            "ranged_damage_dice_modifiers": {
+                "fire": [[1, 2]]
+            },
+            "resistances": {
+                "fire": randint(1, 5) / 100
             }
         },
         "cold iron": {
-            "ranged_chance_to_hit_modifier": randint(-1, 1),
+            "ranged_chance_to_hit_modifier": randint(1, 2),
             "ranged_damage_modifiers": {
-                "physical": randint(1, 3)
+                "ice": randint(1, 4),
+            },
+            "ranged_damage_dice_modifiers": {
+                "ice": [[1, 2]]
+            },
+            "resistances": {
+                "ice": randint(1, 5) / 100
             }
         },
         "thunderstone": {
-            "ranged_chance_to_hit_modifier": randint(-1, 1),
+            "ranged_chance_to_hit_modifier": randint(1, 2),
             "ranged_damage_modifiers": {
-                "physical": randint(1, 3)
+                "lightning": randint(1, 4),
+            },
+            "ranged_damage_dice_modifiers": {
+                "lightning": [[1, 2]]
+            },
+            "resistances": {
+                "lightning": randint(1, 5) / 100
             }
         },
         "pearlstone": {
-            "ranged_chance_to_hit_modifier": randint(-1, 1),
+            "ranged_chance_to_hit_modifier": randint(1, 2),
             "ranged_damage_modifiers": {
-                "physical": randint(1, 3)
+                "holy": randint(1, 4),
+            },
+            "ranged_damage_dice_modifiers": {
+                "holy": [[1, 2]]
+            },
+            "resistances": {
+                "holy": randint(1, 5) / 100
             }
         },
         "electrum": {
-            "ranged_chance_to_hit_modifier": randint(-1, 1),
+            "ranged_chance_to_hit_modifier": randint(1, 2),
             "ranged_damage_modifiers": {
-                "physical": randint(1, 3)
+                "arcane": randint(1, 4),
+            },
+            "ranged_damage_dice_modifiers": {
+                "arcane": [[1, 2]]
+            },
+            "resistances": {
+                "arcane": randint(1, 5) / 100
             }
         },
         "adamantine": {
             "ranged_chance_to_hit_modifier": randint(-1, 1),
             "ranged_damage_modifiers": {
-                "physical": randint(1, 3)
+                "physical": randint(4, 8),
+            },
+            "ranged_damage_dice_modifiers": {
+                "physical": [[3, 0]]
             }
         },
         "meteoric iron": {
-            "ranged_chance_to_hit_modifier": randint(-1, 1),
+            "ranged_chance_to_hit_modifier": randint(0, 5),
             "ranged_damage_modifiers": {
-                "physical": randint(1, 3)
+                "physical": randint(1, 3),
+            },
+            "ranged_damage_dice_modifiers": {
+                "physical": [[2, 2]]
             }
         },
     }
@@ -640,34 +904,76 @@ def generate_pistol_and_rifle_material_modifiers():
 def generate_bow_and_crossbow_material_modifiers():
     bow_and_crossbow_material_modifiers = {
         "maple": {
-            "ranged_chance_to_hit_modifier": randint(-1, 1)
+            "ranged_chance_to_hit_modifier": randint(0, 1),
+            "ranged_damage_modifiers": {
+                "physical": randint(0, 1)
+            }
         },
         "ash": {
-            "ranged_chance_to_hit_modifier": randint(-1, 1)
+            "ranged_chance_to_hit_modifier": randint(0, 2),
+            "ranged_damage_modifiers": {
+                "physical": randint(0, 1)
+            }
         },
         "elm": {
-            "ranged_chance_to_hit_modifier": randint(-1, 1)
+            "ranged_chance_to_hit_modifier": randint(1, 2),
+            "ranged_damage_modifiers": {
+                "physical": randint(0, 1)
+            }
         },
         "oak": {
-            "ranged_chance_to_hit_modifier": randint(-1, 1)
+            "ranged_chance_to_hit_modifier": randint(1, 3),
+            "ranged_damage_modifiers": {
+                "physical": randint(0, 2)
+            }
         },
         "hickory": {
-            "ranged_chance_to_hit_modifier": randint(-1, 1)
+            "ranged_chance_to_hit_modifier": randint(1, 3),
+            "ranged_damage_modifiers": {
+                "physical": randint(1, 3)
+            }
         },
         "walnut": {
-            "ranged_chance_to_hit_modifier": randint(-1, 1)
+            "ranged_chance_to_hit_modifier": randint(1, 3),
+            "ranged_damage_modifiers": {
+                "physical": randint(2, 3)
+            }
         },
         "ironwood": {
-            "ranged_chance_to_hit_modifier": randint(-1, 1)
+            "ranged_chance_to_hit_modifier": randint(1, 3),
+            "ranged_damage_modifiers": {
+                "physical": randint(2, 3)
+            },
+            "ranged_damage_dice_modifiers": {
+                "physical": [[0, 2]]
+            }
         },
         "rosewood": {
-            "ranged_chance_to_hit_modifier": randint(-1, 1)
+            "ranged_chance_to_hit_modifier": randint(1, 3),
+            "ranged_damage_modifiers": {
+                "physical": randint(2, 3)
+            },
+            "ranged_damage_dice_modifiers": {
+                "physical": [[0, 4]]
+            }
         },
         "juniper": {
-            "ranged_chance_to_hit_modifier": randint(-1, 1)
+            "ranged_chance_to_hit_modifier": randint(2, 4),
+            "ranged_damage_modifiers": {
+                "physical": randint(2, 4)
+            },
+            "ranged_damage_dice_modifiers": {
+                "physical": [[1, 2]]
+            }
         },
         "yew": {
-            "ranged_chance_to_hit_modifier": randint(-1, 1)
+            "ranged_chance_to_hit_modifier": randint(2, 6),
+            "ranged_damage_modifiers": {
+                "physical": randint(2, 6)
+            },
+            "ranged_damage_dice_modifiers": {
+                "physical": [[2, 2]]
+            }
         },
     }
     return bow_and_crossbow_material_modifiers
@@ -854,11 +1160,16 @@ weapon_names = {
             "voulge",
             "poleaxe",
             "fauchard",
+            "trident",
+            "spetum",
+            "brandistock",
             "guisarme",
             "glaive",
             "partisan",
             "lochaber axe",
             "war scythe",
+            "pike",
+            "lance",
         ],
         "weights": [
             0.10,
@@ -871,10 +1182,15 @@ weapon_names = {
             0.09,
             0.08,
             0.07,
+            0.065,
             0.06,
+            0.055,
             0.05,
+            0.045,
             0.04,
+            0.035,
             0.03,
+            0.025,
             0.02,
             0.01,
         ]
@@ -883,12 +1199,12 @@ weapon_names = {
         "names": [
             "shortspear",
             "spear",
+            "javelin",
+            "pilum",
+            "harpoon",
+            "fuscina",
             "longspear",
-            "pike",
-            "lance",
             "war spear",
-            "spetum",
-            "brandistock",
         ],
         "weights": [
             0.20,
@@ -1044,6 +1360,7 @@ weapon_physical_damage_types = {
     "cleaver": "slashing",
     "bearded axe": "slashing",
     "knife": "slashing",
+    "long knife": "slashing",
     "dagger": "piercing",
     "dirk": "piercing",
     "kris": "piercing",
@@ -1083,6 +1400,7 @@ weapon_physical_damage_types = {
     "voulge": "slashing",
     "poleaxe": "slashing",
     "fauchard": "slashing",
+    "trident": "piercing",
     "guisarme": "piercing",
     "glaive": "slashing",
     "partisan": "slashing",
@@ -1092,6 +1410,10 @@ weapon_physical_damage_types = {
     "spear": "piercing",
     "longspear": "piercing",
     "pike": "piercing",
+    "harpoon": "piercing",
+    "javelin": "piercing",
+    "fuscina": "piercing",
+    "pilum": "piercing",
     "lance": "piercing",
     "war spear": "piercing",
     "spetum": "piercing",
@@ -1166,6 +1488,7 @@ weapon_physical_damage_status_chances = {
     "cleaver": 0.13,
     "bearded axe": 0.15,
     "knife": 0.05,
+    "long knife": 0.07,
     "dagger": 0.06,
     "dirk": 0.07,
     "kris": 0.1,
@@ -1208,11 +1531,16 @@ weapon_physical_damage_status_chances = {
     "guisarme": 0.1,
     "glaive": 0.11,
     "partisan": 0.12,
+    "trident": 0.11,
     "lochaber axe": 0.13,
     "war scythe": 0.18,
     "shortspear": 0.08,
     "spear": 0.09,
     "longspear": 0.1,
+    "javelin": 0.07,
+    "pilum": 0.09,
+    "harpoon": 0.15,
+    "fuscina": 0.11,
     "pike": 0.11,
     "lance": 0.12,
     "war spear": 0.13,
@@ -1263,8 +1591,8 @@ weapon_physical_damage_status_chances = {
     "hand ballista": 0.17,
 }
 
-def generate_weapon_name_modifiers():
 
+def generate_weapon_name_modifiers():
     weapon_name_modifiers = {
         "short sword": {
             "melee_damage_dice": {
@@ -1300,534 +1628,908 @@ def generate_weapon_name_modifiers():
             }
         },
         "gladius": {
+            "melee_chance_to_hit_modifier": 1,
             "melee_damage_dice": {
                 "physical": [[1, 6]]
-            }
-        },
-        "arming sword": {
-            "melee_damage_dice": {
-                "physical": [[1, 8]]
-            }
-        },
-        "sabre": {
-            "melee_damage_dice": {
-                "physical": [[1, 7]]
-            }
-        },
-        "estoc": {
-            "melee_damage_dice": {
-                "physical": [[1, 7]]
             },
             "melee_damage_modifiers": {
                 "physical": 1
             }
         },
+        "arming sword": {
+            "melee_chance_to_hit_modifier": randint(1, 2),
+            "melee_damage_dice": {
+                "physical": [[1, 8]]
+            },
+            "melee_damage_modifiers": {
+                "physical": randint(1, 2)
+            }
+        },
+        "sabre": {
+            "melee_chance_to_hit_modifier": randint(1, 3),
+            "melee_damage_dice": {
+                "physical": [[1, 7]]
+            },
+            "melee_damage_modifiers": {
+                "physical": randint(0, 2)
+            }
+        },
+        "estoc": {
+            "melee_chance_to_hit_modifier": randint(1, 2),
+            "melee_damage_dice": {
+                "physical": [[1, 7]]
+            },
+            "melee_damage_modifiers": {
+                "physical": randint(1, 2)
+            }
+        },
         "rapier": {
-            "melee_chance_to_hit_modifier": 2,
+            "melee_chance_to_hit_modifier": randint(2, 3),
             "melee_damage_dice": {
                 "physical": [[1, 6]]
             },
-            "melee_attack_energy_bonus_modifier": 2
+            "melee_attack_energy_bonus_modifier": randint(2, 4)
         },
         "fencing sword": {
             "melee_chance_to_hit_modifier": 1,
             "melee_damage_dice": {
                 "physical": [[1, 8]]
+            },
+            "melee_attack_energy_bonus_modifier": randint(3, 6),
+            "melee_damage_modifiers": {
+                "physical": randint(1, 3)
             }
         },
         "hand axe": {
             "melee_damage_dice": {
                 "physical": [[1, 6]]
-            }
+            },
+            "melee_chance_to_hit_modifier": -1,
+            "critical_hit_damage_multiplier_modifier": 1 / 100
         },
         "axe": {
             "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[1, 7]]
+            },
+            "melee_chance_to_hit_modifier": randint(-1, 0),
+            "critical_hit_damage_multiplier_modifier": randint(1, 2) / 100
         },
         "double axe": {
             "melee_damage_dice": {
-                "physical": [[1, 6]]
+                "physical": [[1, 8]]
+            },
+            "melee_chance_to_hit_modifier": randint(-2, 0),
+            "critical_hit_damage_multiplier_modifier": randint(1, 3) / 100,
+            "melee_damage_modifiers": {
+                "physical": 1
             }
         },
         "war axe": {
             "melee_damage_dice": {
-                "physical": [[1, 6]]
+                "physical": [[1, 9]]
+            },
+            "melee_chance_to_hit_modifier": randint(-2, 0),
+            "critical_hit_damage_multiplier_modifier": randint(1, 4) / 100,
+            "melee_damage_modifiers": {
+                "physical": randint(1, 2)
             }
         },
         "military pick": {
             "melee_damage_dice": {
-                "physical": [[1, 6]]
+                "physical": [[1, 7]]
+            },
+            "melee_chance_to_hit_modifier": randint(-2, 0),
+            "critical_hit_damage_multiplier_modifier": randint(2, 3) / 100,
+            "melee_damage_modifiers": {
+                "physical": randint(0, 2)
             }
         },
         "war pick": {
             "melee_damage_dice": {
-                "physical": [[1, 6]]
+                "physical": [[1, 8]]
+            },
+            "melee_chance_to_hit_modifier": randint(-2, 0),
+            "critical_hit_damage_multiplier_modifier": randint(2, 4) / 100,
+            "melee_damage_modifiers": {
+                "physical": randint(0, 3)
             }
         },
         "battleaxe": {
             "melee_damage_dice": {
-                "physical": [[1, 6]]
+                "physical": [[1, 8]]
+            },
+            "melee_chance_to_hit_modifier": randint(-3, 0),
+            "critical_hit_damage_multiplier_modifier": randint(2, 5) / 100,
+            "melee_damage_modifiers": {
+                "physical": randint(1, 3)
             }
         },
         "broadaxe": {
             "melee_damage_dice": {
                 "physical": [[1, 6]]
+            },
+            "melee_chance_to_hit_modifier": randint(-1, 0),
+            "critical_hit_damage_multiplier_modifier": randint(2, 6) / 100,
+            "melee_damage_modifiers": {
+                "physical": randint(2, 3)
             }
         },
         "hatchet": {
             "melee_damage_dice": {
                 "physical": [[1, 6]]
+            },
+            "melee_chance_to_hit_modifier": randint(-2, 0),
+            "critical_hit_damage_multiplier_modifier": randint(1, 6) / 100,
+            "melee_damage_modifiers": {
+                "physical": randint(1, 2)
             }
         },
         "cleaver": {
             "melee_damage_dice": {
-                "physical": [[1, 6]]
+                "physical": [[1, 7]]
+            },
+            "melee_chance_to_hit_modifier": randint(-3, 0),
+            "critical_hit_damage_multiplier_modifier": randint(1, 8) / 100,
+            "melee_damage_modifiers": {
+                "physical": randint(1, 3)
             }
         },
         "bearded axe": {
             "melee_damage_dice": {
-                "physical": [[1, 6]]
+                "physical": [[1, 8]]
+            },
+            "melee_chance_to_hit_modifier": randint(-1, 0),
+            "critical_hit_damage_multiplier_modifier": randint(1, 10) / 100,
+            "melee_damage_modifiers": {
+                "physical": randint(2, 3)
             }
         },
         "knife": {
+            "melee_chance_to_hit_modifier": 1,
             "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[1, 3]]
+            },
+            "melee_attack_energy_bonus_modifier": randint(1, 2)
+        },
+        "long knife": {
+            "melee_chance_to_hit_modifier": 1,
+            "melee_damage_dice": {
+                "physical": [[1, 3]]
+            },
+            "melee_damage_modifiers": {
+                "physical": randint(0, 1)
+            },
+            "melee_attack_energy_bonus_modifier": randint(1, 3)
         },
         "dagger": {
+            "melee_chance_to_hit_modifier": randint(1, 2),
             "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[1, 4]]
+            },
+            "melee_attack_energy_bonus_modifier": randint(1, 3)
         },
         "dirk": {
+            "melee_chance_to_hit_modifier": randint(1, 3),
             "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[1, 5]]
+            },
+            "melee_attack_energy_bonus_modifier": randint(1, 4)
         },
         "kris": {
+            "melee_chance_to_hit_modifier": randint(2, 3),
             "melee_damage_dice": {
                 "physical": [[1, 6]]
-            }
+            },
+            "melee_attack_energy_bonus_modifier": randint(1, 5)
         },
         "rondel dagger": {
+            "melee_chance_to_hit_modifier": randint(2, 3),
             "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[1, 7]]
+            },
+            "melee_attack_energy_bonus_modifier": randint(2, 4)
         },
         "hunting dagger": {
+            "melee_chance_to_hit_modifier": randint(0, 1),
             "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[2, 2]]
+            },
+            "melee_attack_energy_bonus_modifier": randint(2, 5)
         },
         "blade": {
+            "melee_chance_to_hit_modifier": randint(0, 2),
             "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[2, 2]]
+            },
+            "melee_attack_energy_bonus_modifier": randint(2, 6)
         },
         "stiletto": {
+            "melee_chance_to_hit_modifier": randint(1, 4),
             "melee_damage_dice": {
                 "physical": [[1, 6]]
+            },
+            "melee_attack_energy_bonus_modifier": randint(3, 8),
+            "melee_damage_modifiers": {
+                "physical": 1
             }
         },
         "light mace": {
+            "melee_chance_to_hit_modifier": randint(-1, 0),
             "melee_damage_dice": {
-                "physical": [[1, 6]]
+                "physical": [[2, 2]]
+            },
+            "melee_damage_modifiers": {
+                "physical": 1
             }
         },
         "mace": {
+            "melee_chance_to_hit_modifier": randint(-2, 0),
             "melee_damage_dice": {
-                "physical": [[1, 6]]
+                "physical": [[3, 2]]
+            },
+            "melee_damage_modifiers": {
+                "physical": randint(1, 2)
             }
         },
         "ball mace": {
+            "melee_chance_to_hit_modifier": randint(-2, 0),
             "melee_damage_dice": {
-                "physical": [[1, 6]]
+                "physical": [[2, 3]]
+            },
+            "melee_damage_modifiers": {
+                "physical": randint(1, 3)
             }
         },
         "heavy mace": {
+            "melee_chance_to_hit_modifier": randint(-3, 0),
             "melee_damage_dice": {
-                "physical": [[1, 6]]
+                "physical": [[2, 4]]
+            },
+            "melee_damage_modifiers": {
+                "physical": randint(1, 4)
             }
         },
         "morning star": {
+            "melee_chance_to_hit_modifier": randint(-3, 0),
             "melee_damage_dice": {
-                "physical": [[1, 6]]
+                "physical": [[3, 3]]
+            },
+            "melee_damage_modifiers": {
+                "physical": randint(2, 3)
             }
         },
         "light flail": {
+            "melee_chance_to_hit_modifier": randint(-3, 0),
             "melee_damage_dice": {
-                "physical": [[1, 6]]
+                "physical": [[2, 5]]
+            },
+            "melee_damage_modifiers": {
+                "physical": randint(2, 3)
             }
         },
         "flail": {
+            "melee_chance_to_hit_modifier": randint(-4, 0),
             "melee_damage_dice": {
-                "physical": [[1, 6]]
+                "physical": [[2, 6]]
+            },
+            "melee_damage_modifiers": {
+                "physical": randint(2, 4)
             }
         },
         "flanged mace": {
+            "melee_chance_to_hit_modifier": randint(-2, 0),
             "melee_damage_dice": {
-                "physical": [[1, 6]]
+                "physical": [[3, 3]]
+            },
+            "melee_damage_modifiers": {
+                "physical": randint(2, 3)
             }
         },
         "bladed mace": {
+            "melee_chance_to_hit_modifier": randint(-3, 0),
             "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[3, 3]]
+            },
+            "melee_damage_modifiers": {
+                "physical": randint(2, 4)
+            },
+            "critical_hit_chance_modifier": 1 / 100
         },
         "mallet": {
+            "melee_chance_to_hit_modifier": randint(-1, 0),
             "melee_damage_dice": {
                 "physical": [[1, 6]]
+            },
+            "melee_damage_modifiers": {
+                "physical": 1
             }
         },
         "club": {
+            "melee_chance_to_hit_modifier": randint(-1, 0),
             "melee_damage_dice": {
                 "physical": [[1, 6]]
+            },
+            "melee_damage_modifiers": {
+                "physical": 1
             }
         },
         "cudgel": {
+            "melee_chance_to_hit_modifier": randint(-1, 0),
             "melee_damage_dice": {
                 "physical": [[1, 6]]
+            },
+            "melee_damage_modifiers": {
+                "physical": 1
             }
         },
         "bludgeon": {
+            "melee_chance_to_hit_modifier": randint(-1, 0),
             "melee_damage_dice": {
                 "physical": [[1, 6]]
+            },
+            "melee_damage_modifiers": {
+                "physical": 1
             }
         },
         "truncheon": {
+            "melee_chance_to_hit_modifier": randint(-1, 0),
             "melee_damage_dice": {
                 "physical": [[1, 6]]
+            },
+            "melee_damage_modifiers": {
+                "physical": 1
             }
         },
         "war club": {
+            "melee_chance_to_hit_modifier": randint(-1, 0),
             "melee_damage_dice": {
                 "physical": [[1, 6]]
+            },
+            "melee_damage_modifiers": {
+                "physical": 1
             }
         },
         "heavy cudgel": {
+            "melee_chance_to_hit_modifier": randint(-1, 0),
             "melee_damage_dice": {
                 "physical": [[1, 6]]
+            },
+            "melee_damage_modifiers": {
+                "physical": 1
             }
         },
         "light hammer": {
+            "melee_chance_to_hit_modifier": randint(-1, 0),
             "melee_damage_dice": {
                 "physical": [[1, 6]]
+            },
+            "melee_damage_modifiers": {
+                "physical": 1
             }
         },
         "hammer": {
+            "melee_chance_to_hit_modifier": randint(-1, 0),
             "melee_damage_dice": {
-                "physical": [[1, 6]]
+                "physical": [[1, 7]]
+            },
+            "melee_damage_modifiers": {
+                "physical": randint(1, 2)
             }
         },
         "war hammer": {
+            "melee_chance_to_hit_modifier": -1,
             "melee_damage_dice": {
-                "physical": [[1, 6]]
+                "physical": [[1, 8]]
+            },
+            "melee_damage_modifiers": {
+                "physical": 2
             }
         },
         "battle hammer": {
+            "melee_chance_to_hit_modifier": -2,
             "melee_damage_dice": {
-                "physical": [[1, 6]]
+                "physical": [[1, 9]]
+            },
+            "melee_damage_modifiers": {
+                "physical": randint(2, 3)
             }
         },
         "large hammer": {
+            "melee_chance_to_hit_modifier": -3,
             "melee_damage_dice": {
-                "physical": [[1, 6]]
+                "physical": [[1, 10]]
+            },
+            "melee_damage_modifiers": {
+                "physical": 3
             }
         },
         "short staff": {
+            "melee_chance_to_hit_modifier": -1,
             "melee_damage_dice": {
                 "physical": [[1, 6]]
-            }
+            },
+            "melee_attack_energy_bonus_modifier": -10
         },
         "staff": {
+            "melee_chance_to_hit_modifier": randint(-2, -1),
             "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[1, 7]]
+            },
+            "melee_attack_energy_bonus_modifier": -10
         },
         "long staff": {
+            "melee_chance_to_hit_modifier": -2,
             "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[1, 8]]
+            },
+            "melee_attack_energy_bonus_modifier": -10
         },
         "quarterstaff": {
+            "melee_chance_to_hit_modifier": -2,
             "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[1, 10]]
+            },
+            "melee_attack_energy_bonus_modifier": -10
         },
         "battle staff": {
+            "melee_chance_to_hit_modifier": -2,
             "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[1, 11]]
+            },
+            "melee_attack_energy_bonus_modifier": -10
         },
         "war staff": {
+            "melee_chance_to_hit_modifier": randint(-3, -2),
             "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
-        },
-        "halberd": {
-            "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
-        },
-        "bardiche": {
-            "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
-        },
-        "voulge": {
-            "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
-        },
-        "poleaxe": {
-            "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
-        },
-        "fauchard": {
-            "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
-        },
-        "guisarme": {
-            "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
-        },
-        "glaive": {
-            "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
-        },
-        "partisan": {
-            "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
-        },
-        "lochaber axe": {
-            "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
-        },
-        "war scythe": {
-            "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
-        },
-        "shortspear": {
-            "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
-        },
-        "spear": {
-            "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
-        },
-        "longspear": {
-            "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
-        },
-        "pike": {
-            "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
-        },
-        "lance": {
-            "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
-        },
-        "war spear": {
-            "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[1, 12]]
+            },
+            "melee_attack_energy_bonus_modifier": -10
         },
         "spetum": {
+            "melee_chance_to_hit_modifier": -2,
             "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[1, 12]]
+            },
+            "melee_attack_energy_bonus_modifier": -10
+        },
+        "trident": {
+            "melee_chance_to_hit_modifier": randint(-3, -2),
+            "melee_damage_dice": {
+                "physical": [[1, 12]]
+            },
+            "melee_attack_energy_bonus_modifier": -10
         },
         "brandistock": {
+            "melee_chance_to_hit_modifier": randint(-4, -3),
+            "melee_damage_dice": {
+                "physical": [[1, 12]]
+            },
+            "melee_attack_energy_bonus_modifier": -10
+        },
+        "pike": {
+            "melee_chance_to_hit_modifier": randint(-5, -4),
+            "melee_damage_dice": {
+                "physical": [[1, 14]]
+            },
+            "melee_damage_modifiers": {
+                "physical": 1
+            },
+            "melee_attack_energy_bonus_modifier": -10
+        },
+        "lance": {
+            "melee_chance_to_hit_modifier": -5,
+            "melee_damage_dice": {
+                "physical": [[1, 16]]
+            },
+            "melee_damage_modifiers": {
+                "physical": randint(1, 2)
+            },
+            "melee_attack_energy_bonus_modifier": -10
+        },
+        "halberd": {
+            "melee_chance_to_hit_modifier": -1,
+            "melee_damage_dice": {
+                "physical": [[1, 8]]
+            },
+            "melee_attack_energy_bonus_modifier": -10
+        },
+        "bardiche": {
+            "melee_chance_to_hit_modifier": -1,
+            "melee_damage_dice": {
+                "physical": [[1, 9]]
+            },
+            "melee_attack_energy_bonus_modifier": -10
+        },
+        "voulge": {
+            "melee_chance_to_hit_modifier": randint(-2, -1),
+            "melee_damage_dice": {
+                "physical": [[1, 10]]
+            },
+            "melee_attack_energy_bonus_modifier": -10
+        },
+        "poleaxe": {
+            "melee_chance_to_hit_modifier": randint(-2, -1),
+            "melee_damage_dice": {
+                "physical": [[1, 11]]
+            },
+            "melee_attack_energy_bonus_modifier": -10
+        },
+        "fauchard": {
+            "melee_chance_to_hit_modifier": -2,
+            "melee_damage_dice": {
+                "physical": [[1, 12]]
+            },
+            "melee_attack_energy_bonus_modifier": -10
+        },
+        "guisarme": {
+            "melee_chance_to_hit_modifier": randint(-3, -2),
+            "melee_damage_dice": {
+                "physical": [[1, 12]]
+            },
+            "melee_attack_energy_bonus_modifier": -10
+        },
+        "glaive": {
+            "melee_chance_to_hit_modifier": -3,
+            "melee_damage_dice": {
+                "physical": [[1, 12]]
+            },
+            "melee_attack_energy_bonus_modifier": -10
+        },
+        "partisan": {
+            "melee_chance_to_hit_modifier": -3,
+            "melee_damage_dice": {
+                "physical": [[1, 13]]
+            },
+            "melee_attack_energy_bonus_modifier": -10
+        },
+        "lochaber axe": {
+            "melee_chance_to_hit_modifier": randint(-4, -3),
+            "melee_damage_dice": {
+                "physical": [[1, 14]]
+            },
+            "melee_attack_energy_bonus_modifier": -10
+        },
+        "war scythe": {
+            "melee_chance_to_hit_modifier": -4,
+            "melee_damage_dice": {
+                "physical": [[1, 14]]
+            },
+            "melee_damage_modifiers": {
+                "physical": 1
+            },
+            "melee_attack_energy_bonus_modifier": -10
+        },
+        "shortspear": {
+            "melee_chance_to_hit_modifier": randint(0, 1),
             "melee_damage_dice": {
                 "physical": [[1, 6]]
-            }
+            },
+            "melee_attack_energy_bonus_modifier": -5
+        },
+        "spear": {
+            "melee_chance_to_hit_modifier": randint(0, 1),
+            "melee_damage_dice": {
+                "physical": [[1, 8]]
+            },
+            "melee_attack_energy_bonus_modifier": -6
+        },
+        "longspear": {
+            "melee_chance_to_hit_modifier": 1,
+            "melee_damage_dice": {
+                "physical": [[1, 10]]
+            },
+            "melee_attack_energy_bonus_modifier": -7
+        },
+        "javelin": {
+            "melee_chance_to_hit_modifier": randint(1, 2),
+            "melee_damage_dice": {
+                "physical": [[1, 6]]
+            },
+            "melee_attack_energy_bonus_modifier": -5
+        },
+        "pilum": {
+            "melee_chance_to_hit_modifier": randint(1, 2),
+            "melee_damage_dice": {
+                "physical": [[1, 8]]
+            },
+            "melee_attack_energy_bonus_modifier": -6
+        },
+        "harpoon": {
+            "melee_chance_to_hit_modifier": 1,
+            "melee_damage_dice": {
+                "physical": [[1, 9]]
+            },
+            "melee_attack_energy_bonus_modifier": -7
+        },
+        "fuscina": {
+            "melee_chance_to_hit_modifier": 1,
+            "melee_damage_dice": {
+                "physical": [[1, 8]]
+            },
+            "melee_attack_energy_bonus_modifier": -6
+        },
+        "war spear": {
+            "melee_chance_to_hit_modifier": randint(1, 2),
+            "melee_damage_dice": {
+                "physical": [[1, 8]]
+            },
+            "melee_attack_energy_bonus_modifier": -8
         },
         "greatsword": {
+            "melee_chance_to_hit_modifier": randint(-6, -3),
             "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[2, 6]]
+            },
+            "melee_attack_energy_bonus_modifier": -15
         },
         "greataxe": {
+            "melee_chance_to_hit_modifier": randint(-6, -3),
             "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[3, 5]]
+            },
+            "melee_attack_energy_bonus_modifier": -16
         },
         "claymore": {
+            "melee_chance_to_hit_modifier": randint(-6, -3),
             "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[2, 8]]
+            },
+            "melee_attack_energy_bonus_modifier": -17
         },
         "zweihänder": {
+            "melee_chance_to_hit_modifier": randint(-6, -3),
             "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[4, 5]]
+            },
+            "melee_attack_energy_bonus_modifier": -18
         },
         "flamberge": {
+            "melee_chance_to_hit_modifier": randint(-6, -3),
             "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[3, 6]]
+            },
+            "melee_attack_energy_bonus_modifier": -19
         },
         "warsword": {
+            "melee_chance_to_hit_modifier": randint(-6, -3),
             "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[4, 4]]
+            },
+            "melee_attack_energy_bonus_modifier": -20
         },
         "maul": {
+            "melee_chance_to_hit_modifier": randint(-6, -3),
             "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[2, 10]]
+            },
+            "melee_attack_energy_bonus_modifier": -21
         },
         "heavy maul": {
+            "melee_chance_to_hit_modifier": randint(-6, -3),
             "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[2, 11]]
+            },
+            "melee_attack_energy_bonus_modifier": -22
         },
         "two-handed hammer": {
+            "melee_chance_to_hit_modifier": randint(-6, -3),
             "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[2, 12]]
+            },
+            "melee_attack_energy_bonus_modifier": -23
         },
         "two-handed war hammer": {
+            "melee_chance_to_hit_modifier": randint(-6, -3),
             "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[3, 8]]
+            },
+            "melee_attack_energy_bonus_modifier": -24
         },
         "heavy flail": {
+            "melee_chance_to_hit_modifier": randint(-6, -3),
             "melee_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[5, 4]]
+            },
+            "melee_attack_energy_bonus_modifier": -25
         },
         "revolver": {
             "ranged_damage_dice": {
                 "physical": [[1, 6]]
-            }
+            },
+            "ranged_damage_modifiers": {
+                "physical": randint(2, 4)
+            },
+            "ranged_attack_energy_bonus_modifier": 10
         },
         "repeater": {
             "ranged_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[3, 2]]
+            },
+            "ranged_damage_modifiers": {
+                "physical": randint(1, 5)
+            },
+            "ranged_attack_energy_bonus_modifier": 12
         },
         "flintlock pistol": {
             "ranged_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[1, 8]]
+            },
+            "ranged_damage_modifiers": {
+                "physical": randint(3, 6)
+            },
+            "ranged_attack_energy_bonus_modifier": 5
         },
         "howdah": {
             "ranged_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[2, 4]]
+            },
+            "ranged_damage_modifiers": {
+                "physical": randint(3, 7)
+            },
+            "ranged_attack_energy_bonus_modifier": 8
         },
         "hand cannon": {
             "ranged_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[1, 10]]
+            },
+            "ranged_damage_modifiers": {
+                "physical": randint(2, 8)
+            },
+            "ranged_attack_energy_bonus_modifier": 10
         },
         "derringer": {
+            "ranged_chance_to_hit_modifier": randint(3, 5),
             "ranged_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[2, 2]]
+            },
+            "ranged_damage_modifiers": {
+                "physical": 1
+            },
+            "ranged_attack_energy_bonus_modifier": 15
         },
         "rifle": {
+            "ranged_chance_to_hit_modifier": randint(1, 5),
             "ranged_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[1, 10]]
+            },
+            "ranged_attack_energy_bonus_modifier": -15
         },
         "repeater carbine": {
+            "ranged_chance_to_hit_modifier": randint(1, 6),
             "ranged_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[1, 12]]
+            },
+            "ranged_attack_energy_bonus_modifier": -16
         },
         "flintlock rifle": {
+            "ranged_chance_to_hit_modifier": randint(2, 5),
             "ranged_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[2, 5]]
+            },
+            "ranged_attack_energy_bonus_modifier": -17
         },
         "musket": {
+            "ranged_chance_to_hit_modifier": randint(2, 6),
             "ranged_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[3, 5]]
+            },
+            "ranged_attack_energy_bonus_modifier": -18
         },
         "blunderbuss": {
+            "ranged_chance_to_hit_modifier": randint(0, 3),
             "ranged_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[6, 3]]
+            },
+            "ranged_attack_energy_bonus_modifier": -19
         },
         "bolt-action rifle": {
+            "ranged_chance_to_hit_modifier": randint(2, 7),
             "ranged_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[1, 14]]
+            },
+            "ranged_attack_energy_bonus_modifier": -20
         },
         "repeating rifle": {
+            "ranged_chance_to_hit_modifier": randint(1, 4),
             "ranged_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[1, 16]]
+            },
+            "ranged_attack_damage_modifiers": {
+                "physical": randint(1, 2)
+            },
+            "ranged_attack_energy_bonus_modifier": -22
         },
         "carbine": {
+            "ranged_chance_to_hit_modifier": randint(2, 6),
             "ranged_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[1, 18]]
+            },
+            "ranged_attack_energy_bonus_modifier": -24
         },
         "assault carbine": {
+            "ranged_chance_to_hit_modifier": randint(1, 5),
             "ranged_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[4, 6]]
+            },
+            "ranged_attack_energy_bonus_modifier": -25
         },
         "revolver rifle": {
+            "ranged_chance_to_hit_modifier": randint(1, 4),
             "ranged_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[5, 6]]
+            },
+            "ranged_attack_energy_bonus_modifier": -25
         },
         "shortbow": {
+            "ranged_chance_to_hit_modifier": 1,
             "ranged_damage_dice": {
                 "physical": [[1, 6]]
+            },
+            "ranged_damage_modifiers": {
+                "physical": 1
             }
         },
         "bow": {
+            "ranged_chance_to_hit_modifier": randint(1, 2),
             "ranged_damage_dice": {
-                "physical": [[1, 6]]
+                "physical": [[1, 8]]
+            },
+            "ranged_damage_modifiers": {
+                "physical": randint(1, 2)
             }
         },
         "hunting bow": {
+            "ranged_chance_to_hit_modifier": 2,
             "ranged_damage_dice": {
-                "physical": [[1, 6]]
+                "physical": [[1, 8]]
+            },
+            "ranged_damage_modifiers": {
+                "physical": 2
             }
         },
         "composite bow": {
+            "ranged_chance_to_hit_modifier": randint(2, 3),
             "ranged_damage_dice": {
-                "physical": [[1, 6]]
+                "physical": [[1, 10]]
+            },
+            "ranged_damage_modifiers": {
+                "physical": randint(1, 3)
             }
         },
         "longbow": {
+            "ranged_chance_to_hit_modifier": randint(2, 4),
             "ranged_damage_dice": {
-                "physical": [[1, 6]]
+                "physical": [[1, 12]]
+            },
+            "ranged_damage_modifiers": {
+                "physical": 3
             }
         },
         "recurve bow": {
+            "ranged_chance_to_hit_modifier": randint(2, 5),
             "ranged_damage_dice": {
-                "physical": [[1, 6]]
+                "physical": [[1, 12]]
+            },
+            "ranged_damage_modifiers": {
+                "physical": randint(2, 4)
             }
         },
         "war bow": {
+            "ranged_chance_to_hit_modifier": randint(2, 6),
             "ranged_damage_dice": {
-                "physical": [[1, 6]]
+                "physical": [[1, 14]]
+            },
+            "ranged_damage_modifiers": {
+                "physical": randint(2, 5)
             }
         },
         "siege bow": {
+            "ranged_chance_to_hit_modifier": 5,
             "ranged_damage_dice": {
-                "physical": [[1, 6]]
+                "physical": [[1, 16]]
+            },
+            "ranged_damage_modifiers": {
+                "physical": randint(2, 6)
             }
         },
         "light crossbow": {
@@ -1840,191 +2542,1115 @@ def generate_weapon_name_modifiers():
         "crossbow": {
             "ranged_chance_to_hit_modifier": randint(1, 2),
             "ranged_damage_dice": {
-                "physical": [[1, 6]]
+                "physical": [[2, 6]]
             },
             "ranged_attack_energy_bonus_modifier": -7
         },
         "heavy crossbow": {
+            "ranged_chance_to_hit_modifier": 1,
             "ranged_damage_dice": {
-                "physical": [[1, 6]]
+                "physical": [[2, 8]]
             },
             "ranged_attack_energy_bonus_modifier": -10
         },
         "repeating crossbow": {
+            "ranged_chance_to_hit_modifier": -1,
             "ranged_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[4, 4]]
+            },
+            "ranged_attack_energy_bonus_modifier": -15
         },
         "arbalest": {
+            "ranged_chance_to_hit_modifier": -2,
             "ranged_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[2, 10]]
+            },
+            "ranged_attack_energy_bonus_modifier": -20
         },
         "heavy arbalest": {
+            "ranged_chance_to_hit_modifier": randint(-3, -2),
             "ranged_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[2, 12]]
+            },
+            "ranged_attack_energy_bonus_modifier": -25
         },
         "siege crossbow": {
+            "ranged_chance_to_hit_modifier": -3,
             "ranged_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[3, 8]]
+            },
+            "ranged_attack_energy_bonus_modifier": -28
         },
         "hand ballista": {
+            "ranged_chance_to_hit_modifier": randint(-4, -3),
             "ranged_damage_dice": {
-                "physical": [[1, 6]]
-            }
+                "physical": [[4, 8]]
+            },
+            "ranged_attack_energy_bonus_modifier": -30
         },
     }
     return weapon_name_modifiers
 
+
 def generate_melee_weapon_prefix_modifiers():
     melee_weapon_prefix_modifiers = {
-        "Deadly": {},
-        "Blazing": {},
-        "Searing": {},
-        "Freezing": {},
-        "Chilled": {},
-        "Frostborn": {},
-        "Fireborn": {},
-        "Shocking": {},
-        "Charged": {},
-        "Thunderstruck": {},
-        "Sanctified": {},
-        "Abyssal": {},
-        "Esoteric": {},
-        "Venomous": {},
-        "Relentless": {},
-        "Murderous": {},
-        "Masterwork": {},
-        "Swift": {},
-        "Quick": {},
-        "Vampiric": {},
-        "Dastardly": {},
-        "Brutal": {},
-        "Barbaric": {},
-        "Bloodthirsty": {},
-        "Demonic": {},
-        "Infernal": {},
-        "Enchanted": {},
-        "Eldritch": {},
-        "Wretched": {},
-        "Sinister": {},
-        "Stoneforged": {},
-        "Skyforged": {},
+        "Deadly": {
+            "critical_hit_chance_modifier": randint(3, 8) / 100,
+            "critical_hit_damage_multiplier_modifier": randint(5, 15) / 100
+        },
+        "Blazing": {
+            "melee_damage_dice": {
+                "fire": [[1, 4]]
+            },
+            "melee_damage_modifiers": {
+                "fire": randint(1, 3)
+            },
+            "resistances": {
+                "fire": randint(1, 5) / 100
+            }
+        },
+        "Searing": {
+            "melee_damage_dice": {
+                "fire": [[1, 6]]
+            },
+            "melee_damage_modifiers": {
+                "fire": randint(2, 3)
+            },
+            "resistances": {
+                "fire": randint(1, 8) / 100
+            }
+        },
+        "Fireborn": {
+            "melee_damage_dice": {
+                "fire": [[1, 8]]
+            },
+            "melee_damage_modifiers": {
+                "fire": randint(2, 4)
+            },
+            "resistances": {
+                "fire": randint(1, 10) / 100
+            }
+        },
+        "Chilled": {
+            "melee_damage_dice": {
+                "ice": [[1, 4]]
+            },
+            "melee_damage_modifiers": {
+                "ice": randint(1, 3)
+            },
+            "resistances": {
+                "ice": randint(1, 5) / 100
+            }
+        },
+        "Freezing": {
+            "melee_damage_dice": {
+                "ice": [[1, 6]]
+            },
+            "melee_damage_modifiers": {
+                "ice": randint(2, 3)
+            },
+            "resistances": {
+                "ice": randint(1, 8) / 100
+            }
+        },
+        "Frostborn": {
+            "melee_damage_dice": {
+                "ice": [[1, 8]]
+            },
+            "melee_damage_modifiers": {
+                "ice": randint(2, 4)
+            },
+            "resistances": {
+                "ice": randint(1, 10) / 100
+            }
+        },
+        "Shocking": {
+            "melee_damage_dice": {
+                "lightning": [[1, 4]]
+            },
+            "melee_damage_modifiers": {
+                "lightning": randint(1, 3)
+            },
+            "resistances": {
+                "lightning": randint(1, 5) / 100
+            }
+        },
+        "Charged": {
+            "melee_damage_dice": {
+                "lightning": [[1, 6]]
+            },
+            "melee_damage_modifiers": {
+                "lightning": randint(2, 3)
+            },
+            "resistances": {
+                "lightning": randint(1, 8) / 100
+            }
+        },
+        "Thunderstruck": {
+            "melee_damage_dice": {
+                "lightning": [[1, 8]]
+            },
+            "melee_damage_modifiers": {
+                "lightning": randint(2, 4)
+            },
+            "resistances": {
+                "lightning": randint(1, 10) / 100
+            }
+        },
+        "Holy": {
+            "melee_damage_dice": {
+                "holy": [[1, 4]]
+            },
+            "melee_damage_modifiers": {
+                "holy": randint(1, 3)
+            },
+            "resistances": {
+                "holy": randint(1, 5) / 100
+            }
+        },
+        "Sanctified": {
+            "melee_damage_dice": {
+                "holy": [[1, 6]]
+            },
+            "melee_damage_modifiers": {
+                "holy": randint(2, 3)
+            },
+            "resistances": {
+                "holy": randint(1, 8) / 100
+            }
+        },
+        "Sacred": {
+            "melee_damage_dice": {
+                "holy": [[1, 8]]
+            },
+            "melee_damage_modifiers": {
+                "holy": randint(2, 4)
+            },
+            "resistances": {
+                "holy": randint(1, 10) / 100
+            }
+        },
+        "Abyssal": {
+            "melee_damage_dice": {
+                "chaos": [[1, 4]]
+            },
+            "melee_damage_modifiers": {
+                "chaos": randint(1, 3)
+            },
+            "resistances": {
+                "chaos": randint(1, 5) / 100
+            }
+        },
+        "Demonic": {
+            "melee_damage_dice": {
+                "chaos": [[1, 6]]
+            },
+            "melee_damage_modifiers": {
+                "chaos": randint(2, 3)
+            },
+            "resistances": {
+                "chaos": randint(1, 8) / 100
+            }
+        },
+        "Infernal": {
+            "melee_damage_dice": {
+                "chaos": [[1, 8]]
+            },
+            "melee_damage_modifiers": {
+                "chaos": randint(2, 4)
+            },
+            "resistances": {
+                "chaos": randint(1, 10) / 100
+            }
+        },
+        "Enchanted": {
+            "melee_damage_dice": {
+                "arcane": [[1, 4]]
+            },
+            "melee_damage_modifiers": {
+                "arcane": randint(1, 3)
+            },
+            "resistances": {
+                "arcane": randint(1, 5) / 100
+            }
+        },
+        "Esoteric": {
+            "melee_damage_dice": {
+                "arcane": [[1, 6]]
+            },
+            "melee_damage_modifiers": {
+                "arcane": randint(2, 3)
+            },
+            "resistances": {
+                "arcane": randint(1, 8) / 100
+            }
+        },
+        "Eldritch": {
+            "melee_damage_dice": {
+                "arcane": [[1, 8]]
+            },
+            "melee_damage_modifiers": {
+                "arcane": randint(2, 4)
+            },
+            "resistances": {
+                "arcane": randint(1, 10) / 100
+            }
+        },
+        "Venomous": {
+            "melee_damage_dice": {
+                "poison": [[1, 4]]
+            },
+            "melee_damage_modifiers": {
+                "poison": randint(1, 3)
+            },
+            "resistances": {
+                "poison": randint(1, 5) / 100
+            }
+        },
+        "Toxic": {
+            "melee_damage_dice": {
+                "poison": [[1, 6]]
+            },
+            "melee_damage_modifiers": {
+                "poison": randint(2, 3)
+            },
+            "resistances": {
+                "poison": randint(1, 8) / 100
+            }
+        },
+        "Blighted": {
+            "melee_damage_dice": {
+                "poison": [[1, 8]]
+            },
+            "melee_damage_modifiers": {
+                "poison": randint(2, 4)
+            },
+            "resistances": {
+                "poison": randint(1, 10) / 100
+            }
+        },
+        "Relentless": {
+            "melee_chance_to_hit_modifier": 2,
+            "melee_damage_dice_modifiers": {
+                "physical": [[1, 0]]
+            },
+            "melee_damage_modifiers": {
+                "physical": 1
+            },
+        },
+        "Murderous": {
+            "melee_chance_to_hit_modifier": 3,
+            "melee_damage_dice_modifiers": {
+                "physical": [[2, 0]]
+            },
+            "melee_damage_modifiers": {
+                "physical": 2
+            },
+        },
+        "Masterwork": {
+            "melee_chance_to_hit_modifier": 4,
+            "melee_damage_modifiers": {
+                "physical": 4
+            },
+            "melee_attack_energy_bonus_modifier": 5
+        },
+        "Nimble": {
+            "speed_modifier": 3,
+            "melee_attack_energy_bonus_modifier": 3
+        },
+        "Swift": {
+            "speed_modifier": 5,
+            "melee_attack_energy_bonus_modifier": 5
+        },
+        "Quick": {
+            "speed_modifier": 8,
+            "melee_attack_energy_bonus_modifier": 8
+        },
+        "Bloodthirsty": {
+            "life_steal_modifier": randint(5, 10) / 100,
+            "melee_damage_modifiers": {
+                "physical": 1
+            }
+        },
+        "Vampiric": {
+            "life_steal_modifier": randint(5, 15) / 100,
+            "melee_damage_modifiers": {
+                "physical": 2
+            }
+        },
+        "Dastardly": {
+            "melee_damage_dice_modifiers": {
+                "melee_chance_to_hit_modifier": 1,
+                "physical": [[0, 4]]
+            },
+        },
+        "Wretched": {
+            "melee_chance_to_hit_modifier": randint(1, 2),
+            "melee_damage_dice_modifiers": {
+                "physical": [[1, 2]]
+            },
+        },
+        "Sinister": {
+            "melee_chance_to_hit_modifier": randint(1, 3),
+            "melee_damage_dice_modifiers": {
+                "physical": [[2, 2]]
+            },
+        },
+        "Brutal": {
+            "melee_chance_to_hit_modifier": randint(2, 3),
+            "melee_damage_dice_modifiers": {
+                "physical": [[3, 0]]
+            },
+        },
+        "Barbaric": {
+            "melee_chance_to_hit_modifier": -4,
+            "melee_damage_modifiers": {
+                "physical": 6
+            },
+            "melee_damage_dice_modifiers": {
+                "physical": [[0, 2]]
+            },
+        },
+        "Stoneforged": {
+            "melee_chance_to_hit_modifier": 2,
+            "melee_damage_modifiers": {
+                "physical": 2
+            },
+            "melee_damage_dice_modifiers": {
+                "physical": [[1, 0]]
+            }
+        },
+        "Skyforged": {
+            "melee_chance_to_hit_modifier": 3,
+            "melee_damage_modifiers": {
+                "physical": 3
+            },
+            "melee_damage_dice_modifiers": {
+                "physical": [[1, 4]]
+            }
+        },
     }
     return melee_weapon_prefix_modifiers
 
 
 def generate_ranged_weapon_prefix_modifiers():
     ranged_weapon_prefix_modifiers = {
-        "Deadly": {},
-        "Blazing": {},
-        "Searing": {},
-        "Freezing": {},
-        "Chilled": {},
-        "Frostborn": {},
-        "Fireborn": {},
-        "Shocking": {},
-        "Charged": {},
-        "Thunderstruck": {},
-        "Sanctified": {},
-        "Abyssal": {},
-        "Esoteric": {},
-        "Venomous": {},
-        "Relentless": {},
-        "Murderous": {},
-        "Masterwork": {},
-        "Swift": {},
-        "Quick": {},
-        "Vampiric": {},
-        "Dastardly": {},
-        "Brutal": {},
-        "Barbaric": {},
-        "Bloodthirsty": {},
-        "Demonic": {},
-        "Infernal": {},
-        "Enchanted": {},
-        "Eldritch": {},
-        "Wretched": {},
-        "Sinister": {},
-        "Stoneforged": {},
-        "Skyforged": {},
+        "Deadly": {
+            "critical_hit_chance_modifier": randint(3, 8) / 100,
+            "critical_hit_damage_multiplier_modifier": randint(5, 15) / 100
+        },
+        "Blazing": {
+            "ranged_damage_dice": {
+                "fire": [[1, 4]]
+            },
+            "ranged_damage_modifiers": {
+                "fire": randint(1, 3)
+            },
+            "resistances": {
+                "fire": randint(1, 5) / 100
+            }
+        },
+        "Searing": {
+            "ranged_damage_dice": {
+                "fire": [[1, 6]]
+            },
+            "ranged_damage_modifiers": {
+                "fire": randint(2, 3)
+            },
+            "resistances": {
+                "fire": randint(1, 8) / 100
+            }
+        },
+        "Fireborn": {
+            "ranged_damage_dice": {
+                "fire": [[1, 8]]
+            },
+            "ranged_damage_modifiers": {
+                "fire": randint(2, 4)
+            },
+            "resistances": {
+                "fire": randint(1, 10) / 100
+            }
+        },
+        "Chilled": {
+            "ranged_damage_dice": {
+                "ice": [[1, 4]]
+            },
+            "ranged_damage_modifiers": {
+                "ice": randint(1, 3)
+            },
+            "resistances": {
+                "ice": randint(1, 5) / 100
+            }
+        },
+        "Freezing": {
+            "ranged_damage_dice": {
+                "ice": [[1, 6]]
+            },
+            "ranged_damage_modifiers": {
+                "ice": randint(2, 3)
+            },
+            "resistances": {
+                "ice": randint(1, 8) / 100
+            }
+        },
+        "Frostborn": {
+            "ranged_damage_dice": {
+                "ice": [[1, 8]]
+            },
+            "ranged_damage_modifiers": {
+                "ice": randint(2, 4)
+            },
+            "resistances": {
+                "ice": randint(1, 10) / 100
+            }
+        },
+        "Shocking": {
+            "ranged_damage_dice": {
+                "lightning": [[1, 4]]
+            },
+            "ranged_damage_modifiers": {
+                "lightning": randint(1, 3)
+            },
+            "resistances": {
+                "lightning": randint(1, 5) / 100
+            }
+        },
+        "Charged": {
+            "ranged_damage_dice": {
+                "lightning": [[1, 6]]
+            },
+            "ranged_damage_modifiers": {
+                "lightning": randint(2, 3)
+            },
+            "resistances": {
+                "lightning": randint(1, 8) / 100
+            }
+        },
+        "Thunderstruck": {
+            "ranged_damage_dice": {
+                "lightning": [[1, 8]]
+            },
+            "ranged_damage_modifiers": {
+                "lightning": randint(2, 4)
+            },
+            "resistances": {
+                "lightning": randint(1, 10) / 100
+            }
+        },
+        "Holy": {
+            "ranged_damage_dice": {
+                "holy": [[1, 4]]
+            },
+            "ranged_damage_modifiers": {
+                "holy": randint(1, 3)
+            },
+            "resistances": {
+                "holy": randint(1, 5) / 100
+            }
+        },
+        "Sanctified": {
+            "ranged_damage_dice": {
+                "holy": [[1, 6]]
+            },
+            "ranged_damage_modifiers": {
+                "holy": randint(2, 3)
+            },
+            "resistances": {
+                "holy": randint(1, 8) / 100
+            }
+        },
+        "Sacred": {
+            "ranged_damage_dice": {
+                "holy": [[1, 8]]
+            },
+            "ranged_damage_modifiers": {
+                "holy": randint(2, 4)
+            },
+            "resistances": {
+                "holy": randint(1, 10) / 100
+            }
+        },
+        "Abyssal": {
+            "ranged_damage_dice": {
+                "chaos": [[1, 4]]
+            },
+            "ranged_damage_modifiers": {
+                "chaos": randint(1, 3)
+            },
+            "resistances": {
+                "chaos": randint(1, 5) / 100
+            }
+        },
+        "Demonic": {
+            "ranged_damage_dice": {
+                "chaos": [[1, 6]]
+            },
+            "ranged_damage_modifiers": {
+                "chaos": randint(2, 3)
+            },
+            "resistances": {
+                "chaos": randint(1, 8) / 100
+            }
+        },
+        "Infernal": {
+            "ranged_damage_dice": {
+                "chaos": [[1, 8]]
+            },
+            "ranged_damage_modifiers": {
+                "chaos": randint(2, 4)
+            },
+            "resistances": {
+                "chaos": randint(1, 10) / 100
+            }
+        },
+        "Enchanted": {
+            "ranged_damage_dice": {
+                "arcane": [[1, 4]]
+            },
+            "ranged_damage_modifiers": {
+                "arcane": randint(1, 3)
+            },
+            "resistances": {
+                "arcane": randint(1, 5) / 100
+            }
+        },
+        "Esoteric": {
+            "ranged_damage_dice": {
+                "arcane": [[1, 6]]
+            },
+            "ranged_damage_modifiers": {
+                "arcane": randint(2, 3)
+            },
+            "resistances": {
+                "arcane": randint(1, 8) / 100
+            }
+        },
+        "Eldritch": {
+            "ranged_damage_dice": {
+                "arcane": [[1, 8]]
+            },
+            "ranged_damage_modifiers": {
+                "arcane": randint(2, 4)
+            },
+            "resistances": {
+                "arcane": randint(1, 10) / 100
+            }
+        },
+        "Venomous": {
+            "ranged_damage_dice": {
+                "poison": [[1, 4]]
+            },
+            "ranged_damage_modifiers": {
+                "poison": randint(1, 3)
+            },
+            "resistances": {
+                "poison": randint(1, 5) / 100
+            }
+        },
+        "Toxic": {
+            "ranged_damage_dice": {
+                "poison": [[1, 6]]
+            },
+            "ranged_damage_modifiers": {
+                "poison": randint(2, 3)
+            },
+            "resistances": {
+                "poison": randint(1, 8) / 100
+            }
+        },
+        "Blighted": {
+            "ranged_damage_dice": {
+                "poison": [[1, 8]]
+            },
+            "ranged_damage_modifiers": {
+                "poison": randint(2, 4)
+            },
+            "resistances": {
+                "poison": randint(1, 10) / 100
+            }
+        },
+        "Relentless": {
+            "ranged_chance_to_hit_modifier": 2,
+            "ranged_damage_dice_modifiers": {
+                "physical": [[1, 0]]
+            },
+            "ranged_damage_modifiers": {
+                "physical": 1
+            },
+        },
+        "Murderous": {
+            "ranged_chance_to_hit_modifier": 3,
+            "ranged_damage_dice_modifiers": {
+                "physical": [[2, 0]]
+            },
+            "ranged_damage_modifiers": {
+                "physical": 2
+            },
+        },
+        "Masterwork": {
+            "ranged_chance_to_hit_modifier": 4,
+            "ranged_damage_modifiers": {
+                "physical": 4
+            },
+            "melee_attack_energy_bonus_modifier": 5
+        },
+        "Nimble": {
+            "speed_modifier": 3,
+            "melee_attack_energy_bonus_modifier": 3
+        },
+        "Swift": {
+            "speed_modifier": 5,
+            "melee_attack_energy_bonus_modifier": 5
+        },
+        "Quick": {
+            "speed_modifier": 8,
+            "melee_attack_energy_bonus_modifier": 8
+        },
+        "Bloodthirsty": {
+            "life_steal_modifier": randint(5, 10) / 100,
+            "ranged_damage_modifiers": {
+                "physical": 1
+            }
+        },
+        "Vampiric": {
+            "life_steal_modifier": randint(5, 15) / 100,
+            "ranged_damage_modifiers": {
+                "physical": 2
+            }
+        },
+        "Dastardly": {
+            "ranged_damage_dice_modifiers": {
+                "ranged_chance_to_hit_modifier": 1,
+                "physical": [[0, 4]]
+            },
+        },
+        "Wretched": {
+            "ranged_chance_to_hit_modifier": randint(1, 2),
+            "ranged_damage_dice_modifiers": {
+                "physical": [[1, 2]]
+            },
+        },
+        "Sinister": {
+            "ranged_chance_to_hit_modifier": randint(1, 3),
+            "ranged_damage_dice_modifiers": {
+                "physical": [[2, 2]]
+            },
+        },
+        "Brutal": {
+            "ranged_chance_to_hit_modifier": randint(2, 3),
+            "ranged_damage_dice_modifiers": {
+                "physical": [[3, 0]]
+            },
+        },
+        "Barbaric": {
+            "ranged_chance_to_hit_modifier": -4,
+            "ranged_damage_modifiers": {
+                "physical": 6
+            },
+            "ranged_damage_dice_modifiers": {
+                "physical": [[0, 2]]
+            },
+        },
+        "Stoneforged": {
+            "ranged_chance_to_hit_modifier": 2,
+            "ranged_damage_modifiers": {
+                "physical": 2
+            },
+            "ranged_damage_dice_modifiers": {
+                "physical": [[1, 0]]
+            }
+        },
+        "Skyforged": {
+            "ranged_chance_to_hit_modifier": 3,
+            "ranged_damage_modifiers": {
+                "physical": 3
+            },
+            "ranged_damage_dice_modifiers": {
+                "physical": [[1, 4]]
+            }
+        },
     }
     return ranged_weapon_prefix_modifiers
 
 
 def generate_melee_weapon_suffix_modifiers():
     melee_weapon_suffix_modifiers = {
-        "of Alacrity": {},
-        "of Celerity": {},
-        "of Defense": {},
-        "of Protection": {},
-        "of Strength": {},
-        "of the Juggernaut": {},
-        "of the Hawk": {},
-        "of the Eagle": {},
-        "of the Cat": {},
-        "of the Fox": {},
-        "of Endurance": {},
-        "of Toughness": {},
-        "of the Magi": {},
-        "of the Wizard": {},
-        "of Wisdom": {},
-        "of Piety": {},
-        "of Charisma": {},
-        "of the Silver Tongue": {},
-        "of Fate": {},
-        "of Fortune": {},
-        "of Longevity": {},
-        "of Health": {},
-        "of Life": {},
-        "of Flames": {},
-        "of the Glacier": {},
-        "of Thunder": {},
-        "of the Heavens": {},
-        "of the Void": {},
-        "of the Arcane": {},
-        "of Toxins": {},
-        "of Evasion": {},
-        "of Ruin": {},
-        "of Scorching": {},
-        "of Frostbite": {},
-        "of Thunder": {},
-        "of Decay": {},
-        "of Death": {},
-        "of Conflagaration": {},
+        "of Alacrity": {
+            "speed_modifier": 3,
+            "melee_attack_energy_bonus_modifier": 3
+        },
+        "of Celerity": {
+            "speed_modifier": 5,
+            "melee_attack_energy_bonus_modifier": 5
+        },
+        "of Defense": {
+            "armor_class_modifier": 3
+        },
+        "of Protection": {
+            "armor_modifier": 2
+        },
+        "of Strength": {
+            "strength_modifier": 1,
+            "melee_chance_to_hit_modifier": 1
+        },
+        "of the Juggernaut": {
+            "strength_modifier": 2,
+            "melee_chance_to_hit_modifier": 2
+        },
+        "of the Hawk": {
+            "perception_modifier": 1,
+            "ranged_chance_to_hit_modifier": 1
+        },
+        "of the Eagle": {
+            "perception_modifier": 2,
+            "ranged_chance_to_hit_modifier": 2
+        },
+        "of the Cat": {
+            "dexterity_modifier": 1,
+            "melee_chance_to_hit_modifier": 1,
+            "ranged_chance_to_hit_modifier": 1
+        },
+        "of the Fox": {
+            "dexterity_modifier": 2,
+            "melee_chance_to_hit_modifier": 1,
+            "ranged_chance_to_hit_modifier": 1
+        },
+        "of Endurance": {
+            "constitution_modifier": 1,
+            "max_hp_modifier": 5
+        },
+        "of Toughness": {
+            "constitution_modifier": 2,
+            "armor_modifier": 1
+        },
+        "of the Magi": {
+            "intelligence_modifier": 1,
+            "melee_damage_modifiers": {
+                "arcane": 1
+            }
+        },
+        "of the Wizard": {
+            "intelligence_modifier": 2,
+            "melee_damage_modifiers": {
+                "arcane": 2
+            }
+        },
+        "of Wisdom": {
+            "wisdom_modifier": 1,
+            "melee_damage_modifiers": {
+                "holy": 1
+            }
+        },
+        "of Piety": {
+            "wisdom_modifier": 2,
+            "melee_damage_modifiers": {
+                "holy": 2
+            }
+        },
+        "of Charisma": {
+            "charisma_modifier": 1
+        },
+        "of the Silver Tongue": {
+            "charisma_modifier": 2
+        },
+        "of Fate": {
+            "luck_modifier": 1,
+            "melee_chance_to_hit_modifier": 1,
+            "critical_hit_chance_modifier": 1 / 100
+        },
+        "of Fortune": {
+            "luck_modifier": 2,
+            "melee_chance_to_hit_modifier": 1,
+            "critical_hit_chance_modifier": 1 / 100
+        },
+        "of Longevity": {
+            "max_hp_modifier": randint(5, 10)
+        },
+        "of Health": {
+            "max_hp_modifier": randint(10, 15)
+        },
+        "of Life": {
+            "max_hp_modifier": 5,
+            "max_hp_multiplier_modifier": 0.2
+        },
+        "of Flames": {
+            "melee_damage_dice_modifiers": {
+                "fire": [[1, 2]]
+            },
+            "melee_damage_modifiers": {
+                "fire": 1
+            }
+        },
+        "of Scorching": {
+            "melee_damage_dice_modifiers": {
+                "fire": [[1, 3]]
+            },
+            "melee_damage_modifiers": {
+                "fire": 2
+            }
+        },
+        "of Conflagaration": {
+            "melee_damage_dice_modifiers": {
+                "fire": [[1, 4]]
+            },
+            "melee_damage_multiplier_modifiers": {
+                "fire": 0.1
+            }
+        },
+        "of the Flamecaller": {
+            "melee_damage_dice_modifiers": {
+                "fire": [[2, 2]]
+            },
+            "melee_damage_multiplier_modifiers": {
+                "fire": 0.25
+            }
+        },
+        "of Frostbite": {
+            "melee_damage_dice_modifiers": {
+                "ice": [[1, 1]]
+            },
+            "melee_damage_modifiers": {
+                "ice": 2
+            },
+            "melee_damage_multiplier_modifiers": {
+                "ice": 0.1
+            }
+        },
+        "of the Glacier": {
+            "melee_damage_dice_modifiers": {
+                "ice": [[1, 2]]
+            },
+            "melee_damage_modifiers": {
+                "ice": 4
+            },
+            "melee_damage_multiplier_modifiers": {
+                "ice": 0.2
+            }
+        },
+        "of Shocking": {
+            "melee_damage_dice_modifiers": {
+                "thunder": [[1, 1]]
+            },
+            "melee_damage_modifiers": {
+                "lightning": 2
+            },
+            "melee_damage_multiplier_modifiers": {
+                "lightning": 0.1
+            }
+        },
+        "of Thunder": {
+            "melee_damage_dice_modifiers": {
+                "thunder": [[1, 1]]
+            },
+            "melee_damage_modifiers": {
+                "lightning": 4
+            },
+            "melee_damage_multiplier_modifiers": {
+                "lightning": 0.2
+            }
+        },
+        "of Purification": {
+            "melee_damage_dice": {
+                "holy": [[1, 4]]
+            },
+            "melee_damage_modifiers": {
+                "holy": 2
+            }
+        },
+        "of the Heavens": {
+            "melee_damage_dice": {
+                "holy": [[1, 4]]
+            },
+            "melee_damage_modifiers": {
+                "holy": 4
+            }
+        },
+        "of Celestial Wrath": {
+            "melee_damage_dice": {
+                "holy": [[1, 6]]
+            },
+            "melee_damage_modifiers": {
+                "holy": 2
+            },
+            "melee_damage_multiplier_modifiers": {
+                "holy": 0.25
+            }
+        },
+        "of the Void": {
+            "melee_damage_dice": {
+                "chaos": [[1, 4]]
+            },
+            "melee_damage_modifiers": {
+                "chaos": 2
+            }
+        },
+        "of the Arcane": {
+            "melee_damage_dice": {
+                "arcane": [[1, 4]]
+            },
+            "melee_damage_modifiers": {
+                "arcane": 2
+            }
+        },
+        "of Wildfire": {
+            "melee_damage_modifiers": {
+                "fire": 2,
+                "arcane": 2
+            },
+            "melee_damage_multiplier_modifiers": {
+                "fire": 0.1,
+                "arcane": 0.1
+            }
+        },
+        "of Evasion": {
+            "armor_class_modifier": 1,
+            "dodge_modifier": 4
+        },
+        "of Ruin": {
+            "melee_damage_modifiers": {
+                "physical": 10
+            }
+        },
+        "of Poison": {
+            "melee_damage_dice": {
+                "poison": [[1, 4]]
+            },
+            "melee_damage_modifiers": {
+                "poison": 2
+            }
+        },
+        "of Decay": {
+            "equippable_effects": [ApplyDecay_50OnAttack],
+            "melee_damage_modifiers": {
+                "physical": 1
+            },
+            "critical_hit_chance_modifier": randint(1, 3) / 100
+        },
+        "of Death": {
+            "melee_chance_to_hit_modifier": 2,
+            "melee_damage_dice": {
+                "physical": [[1, 10]]
+            },
+            "melee_damage_modifiers": {
+                "physical": randint(3, 6)
+            },
+            "melee_damage_dice_modifiers": {
+                "physical": [[2, 2]]
+            },
+            "critical_hit_chance_modifier": randint(1, 2) / 100,
+            "max_hp_multiplier_modifier": -0.25
+        },
         "of Insanity": {},
-        "of Sanctification": {},
-        "of the Slayer": {},
-        "of the Excecutioner": {},
-        "of Fervor": {},
-        "of Voracity": {},
+        "of the Slayer": {
+            "melee_chance_to_hit_modifier": 6,
+            "melee_damage_modifiers": {
+                "physical": 6
+            },
+            "critical_hit_chance_modifier": randint(1, 3) / 100,
+            "critical_hit_damage_multiplier_modifier": 5 / 100
+        },
+        "of the Excecutioner": {
+            "melee_chance_to_hit_modifier": 8,
+            "melee_damage_modifiers": {
+                "physical": 8
+            },
+            "melee_damage_dice_modifiers": {
+                "physical": [[0, 1]]
+            },
+            "critical_hit_chance_modifier": randint(2, 4) / 100,
+            "critical_hit_damage_multiplier_modifier": 10 / 100
+        },
+        "of Fervor": {
+            "speed_modifier": 3,
+            "melee_attack_energy_bonus_modifier": 8,
+            "melee_chance_to_hit_modifier": 2,
+        },
+        "of Voracity": {
+            "speed_modifier": 2,
+            "melee_attack_energy_bonus_modifier": 5,
+            "life_steal_modifier": 5 / 100
+        },
         "of Cruelty": {},
         "of Ruthlessness": {},
-        "of Fury": {},
-        "of Slaughter": {},
-        "of Ferocity": {},
+        "of Fury": {
+            "speed_modifier": randint(1, 10),
+            "melee_attack_energy_bonus_modifier": randint(1, 10),
+            "melee_damage_modifiers": {
+                "physical": randint(1, 4)
+            },
+            "melee_damage_multiplier_modifiers": {
+                "physical": 0.1
+            }
+        },
+        "of Slaughter": {
+            "melee_damage_dice": {
+                "physical": [[2, 4]]
+            },
+            "melee_damage_multiplier_modifiers": {
+                "physical": 0.2
+            }
+        },
+        "of Ferocity": {
+            "melee_attack_energy_bonus_modifier": 5,
+            "melee_damage_modifiers": {
+                "physical": 2
+            },
+            "melee_chance_to_hit_modifier": 2
+        },
         "of Onslaught": {},
-        "of Wildfire": {},
-        "of Blight": {},
-        "of Destruction": {},
+        "of Destruction": {
+            "melee_damage_dice_modifiers": {
+                "physical": [[2, 0]]
+            }
+        },
         "of Devastation": {
+            "melee_damage_dice_modifiers": {
+                "physical": [[3, 0]]
+            }
+        },
+        "of Decimation": {
             "melee_damage_dice_modifiers": {
                 "physical": [[4, 0]]
             }
         },
-        "of Decimation": {},
-        "of Annihilation": {},
-        "of Disintegration": {},
-        "of Obliteration": {
+        "of Annihilation": {
+            "melee_damage_dice_modifiers": {
+                "physical": [[2, 2]]
+            }
         },
-        "of the Elements": {},
-        "of the Flamecaller": {},
+        "of Disintegration": {
+            "melee_damage_dice_modifiers": {
+                "physical": [[1, 0]],
+                "arcane": [[2, 4]]
+            }
+        },
+        "of Obliteration": {
+            "melee_damage_dice_modifiers": {
+                "physical": [[3, 2]]
+            },
+            "melee_damage_modifiers": {
+                "physical": 4
+            }
+        },
+        "of the Elements": {
+            "melee_damage_modifiers": {
+                "fire": 4,
+                "ice": 4,
+                "lightning": 4,
+            }
+        },
         "of Shattering": {},
         "of Torment": {},
-        "of Celestial Wrath": {},
-        "of Mortality": {},
+        "of Mortality": {
+            "melee_damage_modifiers": {
+                "physical": 8
+            },
+            "melee_damage_multiplier_modifiers": {
+                "physical": 0.5
+            },
+            "max_hp_multiplier_modifier": -0.5
+        },
     }
     return melee_weapon_suffix_modifiers
 
@@ -2055,22 +3681,25 @@ def generate_ranged_weapon_suffix_modifiers():
         "of Health": {},
         "of Life": {},
         "of Flames": {},
+        "of Scorching": {},
+        "of Conflagaration": {},
+        "of the Flamecaller": {},
+        "of Frostbite": {},
         "of the Glacier": {},
+        "of Shocking": {},
         "of Thunder": {},
+        "of Purification": {},
         "of the Heavens": {},
+        "of Celestial Wrath": {},
         "of the Void": {},
         "of the Arcane": {},
-        "of Toxins": {},
+        "of Wildfire": {},
         "of Evasion": {},
         "of Ruin": {},
-        "of Scorching": {},
-        "of Frostbite": {},
-        "of Thunder": {},
+        "of Poison": {},
         "of Decay": {},
         "of Death": {},
-        "of Conflagaration": {},
         "of Insanity": {},
-        "of Sanctification": {},
         "of the Slayer": {},
         "of the Excecutioner": {},
         "of Fervor": {},
@@ -2081,8 +3710,6 @@ def generate_ranged_weapon_suffix_modifiers():
         "of Slaughter": {},
         "of Ferocity": {},
         "of Onslaught": {},
-        "of Wildfire": {},
-        "of Blight": {},
         "of Destruction": {},
         "of Devastation": {},
         "of Decimation": {},
@@ -2090,10 +3717,8 @@ def generate_ranged_weapon_suffix_modifiers():
         "of Disintegration": {},
         "of Obliteration": {},
         "of the Elements": {},
-        "of the Flamecaller": {},
         "of Shattering": {},
         "of Torment": {},
-        "of Celestial Wrath": {},
         "of Mortality": {},
     }
     return ranged_weapon_suffix_modifiers
@@ -2115,7 +3740,7 @@ def generate_random_weapon():
     if suffix_seed <= 0.25:
         suffix = ''.join(choices(weapon_suffixes, weapon_suffix_weights, k=1))
 
-    suffix = "of Devastation"
+    suffix = "of Decay"
 
     rarity = {
         "rarity_level": rarity_level,
@@ -2125,15 +3750,15 @@ def generate_random_weapon():
     weapon_type = "".join(
         choices(weapon_types["types"], weapon_types["weights"]))
 
-    weapon_type = "pistol"
-
     if weapon_type in ["pistol", "rifle", "bow", "crossbow"]:
         slot = EquipmentSlots.RANGED_WEAPON
         weapon_quality_modifiers = generate_ranged_quality_modifiers()[quality]
         if prefix:
-            prefix_modifiers = generate_ranged_weapon_prefix_modifiers()[prefix]
+            prefix_modifiers = generate_ranged_weapon_prefix_modifiers(
+            )[prefix]
         if suffix:
-            suffix_modifiers = generate_ranged_weapon_suffix_modifiers()[suffix]
+            suffix_modifiers = generate_ranged_weapon_suffix_modifiers(
+            )[suffix]
     else:
         slot = EquipmentSlots.MAIN_HAND
         weapon_quality_modifiers = generate_melee_quality_modifiers()[quality]
@@ -2164,16 +3789,16 @@ def generate_random_weapon():
         material_modifiers = generate_melee_weapon_material_modifiers(
         )[material]
 
-    if weapon_type == "bow":
-        ammunition = "arrow"
-    elif weapon_type == "crossbow":
-        ammunition = "bolt"
-    elif weapon_type in ["pistol", "rifle"]:
-        ammunition = "bullet"
-    else:
-        ammunition = None
+    ammunitions = {
+        "bow": "arrow",
+        "crossbow": "bolt",
+        "pistol": "bullet",
+        "rifle": "bullet"
+    }
 
-    two_handed = True if weapon_type == "twohanded" else False
+    ammunition = ammunitions.get(weapon_type, None)
+
+    two_handed = True if weapon_type in ["twohanded", "polearm"] else False
 
     weapon_name_modifiers = generate_weapon_name_modifiers()[weapon_name]
 
@@ -2192,8 +3817,10 @@ def generate_random_weapon():
         total_modifiers.append(suffix_modifiers)
 
     if rarity_level != "normal":
-        possible_rarity_modifiers = generate_weapon_rarity_modifiers(
-        )[rarity_level]
+        possible_rarity_modifiers = generate_ranged_weapon_rarity_modifiers(
+        )[rarity_level] if weapon_type in [
+            "pistol", "rifle", "bow", "crossbow"
+        ] else generate_melee_weapon_rarity_modifiers()[rarity_level]
         modifier_count = rarities["rarity_modifier_counts"][rarity_level]
         rarity_modifier_sample = sample(possible_rarity_modifiers,
                                         modifier_count)
@@ -2228,10 +3855,13 @@ def generate_random_weapon():
         "melee_chance_to_hit_modifier": 0,
         "ranged_chance_to_hit_modifier": 0,
         "armor_modifier": 0,
+        "armor_multiplier_modifier": 0,
         "armor_class_modifier": 0,
+        "armor_class_multiplier_modifier": 0,
         "dodge_modifier": 0,
         "shield_armor_class": 0,
         "max_hp_modifier": 0,
+        "max_hp_multiplier_modifier": 0,
         "speed_modifier": 0,
         "movement_energy_bonus_modifier": 0,
         "melee_attack_energy_bonus_modifier": 0,
@@ -2259,7 +3889,27 @@ def generate_random_weapon():
             "arcane": 0,
             "poison": 0,
         },
+        "melee_damage_multiplier_modifiers": {
+            "physical": 0,
+            "fire": 0,
+            "ice": 0,
+            "lightning": 0,
+            "holy": 0,
+            "chaos": 0,
+            "arcane": 0,
+            "poison": 0,
+        },
         "ranged_damage_modifiers": {
+            "physical": 0,
+            "fire": 0,
+            "ice": 0,
+            "lightning": 0,
+            "holy": 0,
+            "chaos": 0,
+            "arcane": 0,
+            "poison": 0,
+        },
+        "ranged_damage_multiplier_modifiers": {
             "physical": 0,
             "fire": 0,
             "ice": 0,
@@ -2298,14 +3948,29 @@ def generate_random_weapon():
             "chaos": 0,
             "arcane": 0,
             "poison": 0,
-        }
+        },
+        "resistance_multiplier_modifiers": {
+            "physical": 0,
+            "fire": 0,
+            "ice": 0,
+            "lightning": 0,
+            "holy": 0,
+            "chaos": 0,
+            "arcane": 0,
+            "poison": 0,
+        },
+        "equippable_effects": []
     }
 
     for modifiers in total_modifiers:
         for modifier_name, modifier_value in modifiers.items():
             if modifier_name in modifiers:
-                if type(modifier_value) is dict:
-                    if modifier_name in ["melee_damage_dice", "ranged_damage_dice"]:
+                if modifier_name == "equippable_effects":
+                    combined_modifiers[modifier_name].extend(modifier_value)
+                elif type(modifier_value) is dict:
+                    if modifier_name in [
+                            "melee_damage_dice", "ranged_damage_dice"
+                    ]:
                         for damage_type in modifiers[modifier_name]:
                             new_value = modifiers[modifier_name][damage_type]
                             combined_modifiers[modifier_name][
@@ -2357,6 +4022,11 @@ def generate_random_weapon():
 
     for modifier_name, modifier_value in combined_modifiers.items():
         setattr(equippable_component, modifier_name, modifier_value)
+
+    # Instantiate the equippable effects, replacing the function with the class instance
+    equippable_component.equippable_effects = [
+        effect_function() for effect_function in equippable_component.equippable_effects
+    ]
 
     new_weapon = Entity(0,
                         0,

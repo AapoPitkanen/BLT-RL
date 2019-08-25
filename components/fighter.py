@@ -8,6 +8,7 @@ from copy import deepcopy
 
 if TYPE_CHECKING:
     from components.attributes import Attributes
+    from components.status_effects import Effect
     from entity import Entity
 
 
@@ -160,62 +161,69 @@ class Fighter:
         return modifier
 
     @property
+    def ongoing_effects(self) -> List["Effect"]:
+        if self.owner and self.owner.equipment:
+            return self.status_effects + self.owner.equipment.calculate_equipment_effects
+        else:
+            return self.status_effects
+
+    @property
     def effects_with_modifiers(self):
-        return [effect for effect in self.status_effects if effect.modifiers]
+        return [effect for effect in self.ongoing_effects if effect.modifiers]
 
     @property
     def effects_with_melee_damage_modifiers(self):
         return [
-            effect for effect in self.status_effects if effect.modifiers
+            effect for effect in self.ongoing_effects if effect.modifiers
             and effect.modifiers.get("melee_damage_modifiers", {})
         ]
 
     @property
     def effects_with_melee_damage_multiplier_modifiers(self):
         return [
-            effect for effect in self.status_effects if effect.modifiers
+            effect for effect in self.ongoing_effects if effect.modifiers
             and effect.modifiers.get("melee_damage_multiplier_modifiers", {})
         ]
 
     @property
     def effects_with_ranged_damage_modifiers(self):
         return [
-            effect for effect in self.status_effects if effect.modifiers
+            effect for effect in self.ongoing_effects if effect.modifiers
             and effect.modifiers.get("ranged_damage_modifiers", {})
         ]
 
     @property
     def effects_with_ranged_damage_multiplier_modifiers(self):
         return [
-            effect for effect in self.status_effects if effect.modifiers
+            effect for effect in self.ongoing_effects if effect.modifiers
             and effect.modifiers.get("ranged_damage_multiplier_modifiers", {})
         ]
 
     @property
     def effects_with_melee_damage_dice(self):
         return [
-            effect for effect in self.status_effects if effect.modifiers
+            effect for effect in self.ongoing_effects if effect.modifiers
             and effect.modifiers.get("melee_damage_dice", {})
         ]
 
     @property
     def effects_with_ranged_damage_dice(self):
         return [
-            effect for effect in self.status_effects if effect.modifiers
+            effect for effect in self.ongoing_effects if effect.modifiers
             and effect.modifiers.get("ranged_damage_dice", {})
         ]
 
     @property
     def effects_with_resistances(self):
         return [
-            effect for effect in self.status_effects
+            effect for effect in self.ongoing_effects
             if effect.modifiers and effect.modifiers.get("resistances", {})
         ]
 
     @property
     def effects_with_resistance_multiplier_modifiers(self):
         return [
-            effect for effect in self.status_effects if effect.modifiers
+            effect for effect in self.ongoing_effects if effect.modifiers
             and effect.modifiers.get("resistance_multiplier_modifiers", {})
         ]
 
@@ -629,11 +637,18 @@ class Fighter:
 
     def apply_effect(self, new_effect, **kwargs):
 
+        apply_seed = random()
         effect_caster = kwargs.get("effect_caster")
 
         results = []
         apply_effect_results = []
         effect = new_effect()
+
+        # Some effects have a specific probability to be applied. If the seed exceeds the effects
+        # chance to be applied, the effect will not be applied.
+        if apply_seed > effect.chance_to_apply:
+            return results
+
         effect.owner = self.owner
         if not self.status_effects:
             self.status_effects.append(effect)
@@ -715,7 +730,7 @@ class Fighter:
         if self.current_hp <= 0:
             return results
 
-        for effect in self.status_effects:
+        for effect in self.ongoing_effects:
             if effect.on_take_damage:
                 results.extend(effect.on_take_damage(effect))
 
@@ -794,7 +809,7 @@ class Fighter:
 
         attack_hit = False
 
-        for effect in self.status_effects:
+        for effect in self.ongoing_effects:
             if effect.on_attack:
                 results.extend(effect.on_attack(effect, target))
 
@@ -943,7 +958,7 @@ class Fighter:
                     if self.owner.ai else messages["player_critical_hit"]
                 })
 
-                for effect in self.status_effects:
+                for effect in self.ongoing_effects:
                     if effect.on_deal_damage:
                         results.extend(
                             effect.on_deal_damage(
@@ -975,7 +990,7 @@ class Fighter:
                     else messages["player_critical_hit_no_damage"]
                 })
 
-                for effect in self.status_effects:
+                for effect in self.ongoing_effects:
                     if effect.on_critical_hit:
                         results.extend(effect.on_critical_hit(effect))
 
@@ -991,7 +1006,7 @@ class Fighter:
                     if self.owner.ai else messages["player_hit"]
                 })
 
-                for effect in self.status_effects:
+                for effect in self.ongoing_effects:
                     if effect.on_deal_damage:
                         results.extend(
                             effect.on_deal_damage(
@@ -1015,7 +1030,7 @@ class Fighter:
                     if self.owner.ai else messages["player_no_damage"]
                 })
 
-                for effect in self.status_effects:
+                for effect in self.ongoing_effects:
                     if effect.on_attack_hit:
                         results.extend(effect.on_attack_hit(effect))
                 attack_hit = True
@@ -1027,7 +1042,7 @@ class Fighter:
                 if self.owner.ai else messages["player_critical_miss"]
             })
 
-            for effect in self.status_effects:
+            for effect in self.ongoing_effects:
                 if effect.on_critical_miss:
                     results.extend(effect.on_critical_miss(effect))
 
@@ -1050,7 +1065,7 @@ class Fighter:
                     if target.ai else messages["player_dodged_2"]
                 })
 
-            for effect in self.status_effects:
+            for effect in self.ongoing_effects:
                 if effect.on_attack_miss:
                     results.extend(effect.on_attack_miss(effect))
 
@@ -1067,7 +1082,7 @@ class Fighter:
                     messages["monster_blocked_2"]
                     if target.ai else messages["player_blocked_2"]
                 })
-            for effect in self.status_effects:
+            for effect in self.ongoing_effects:
                 if effect.on_attack_miss:
                     results.extend(effect.on_attack_miss(effect))
 
@@ -1079,7 +1094,7 @@ class Fighter:
                     if self.owner.ai else messages["player_critical_hit"]
                 })
 
-                for effect in self.status_effects:
+                for effect in self.ongoing_effects:
                     if effect.on_deal_damage:
                         results.extend(
                             effect.on_deal_damage(
@@ -1107,7 +1122,7 @@ class Fighter:
                     else messages["player_critical_hit_no_damage"]
                 })
 
-                for effect in self.status_effects:
+                for effect in self.ongoing_effects:
                     if effect.on_critical_hit:
                         results.extend(effect.on_critical_hit(effect))
 
@@ -1121,7 +1136,7 @@ class Fighter:
                     if self.owner.ai else messages["player_hit"]
                 })
 
-                for effect in self.status_effects:
+                for effect in self.ongoing_effects:
                     if effect.on_deal_damage:
                         results.extend(
                             effect.on_deal_damage(
@@ -1145,8 +1160,7 @@ class Fighter:
                     if self.owner.ai else messages["player_no_damage"]
                 })
 
-                for effect in self.status_effects:
-
+                for effect in self.ongoing_effects:
                     if effect.on_attack_hit:
                         results.extend(effect.on_attack_hit(effect))
         else:
@@ -1155,12 +1169,24 @@ class Fighter:
                 messages["monster_miss"]
                 if self.owner.ai else messages["player_miss"]
             })
-            for effect in self.status_effects:
+            for effect in self.ongoing_effects:
                 if effect.on_attack_miss:
                     results.extend(effect.on_attack_miss(effect))
 
         if ranged and attack_hit:
             results.append({"ranged_attack_hit": target})
-            results.append({"ammo_type": self.owner.equipment.RANGED_WEAPON_AMMUNITION.equippable.equippable_type.ammunition_name})
+            results.append({
+                "ammo_type":
+                self.owner.equipment.RANGED_WEAPON_AMMUNITION.equippable.
+                equippable_type.ammunition_name
+            })
+
+        for effect in self.status_effects:
+            if effect.duration == -1:
+                self.status_effects.remove(effect)
+
+        for effect in target.fighter.status_effects:
+            if effect.duration == -1:
+                target.fighter.status_effects.remove(effect)
 
         return results

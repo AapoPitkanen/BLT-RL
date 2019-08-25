@@ -9,9 +9,9 @@ if TYPE_CHECKING:
 
 
 class Game:
-    def __init__(self, player, entities, game_map, message_log, state,
-                 previous_state, fov_recompute, constants, camera,
-                 mouse_coordinates, targeting_item):
+    def __init__(self, player: "Entity", entities: List["Entity"], game_map,
+                 message_log, state, previous_state, fov_recompute, constants,
+                 camera, mouse_coordinates, targeting_item):
         self.player = player
         self.entities = entities
         self.game_map = game_map

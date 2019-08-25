@@ -1,5 +1,6 @@
 from random import random, randint, choices, sample
 from components.equippable import Equippable
+from components.status_effects import Regeneration
 from entity import Entity
 from equipment_slots import equipment_slot_armor_list
 from components.equipment_attributes import rarities, armor_material_names, armor_material_weights, qualities, quality_weights, armor_prefixes, armor_prefix_weights, armor_suffixes, armor_suffix_weights
@@ -370,6 +371,9 @@ def generate_armor_suffix_modifiers():
         },
         "of Evasion": {
             "dodge_modifier": randint(2, 4)
+        },
+        "of Regeneration": {
+            "equippable_effects": [Regeneration]
         }
     }
     return armor_suffix_modifiers
@@ -1350,6 +1354,8 @@ def generate_random_armor():
     if suffix_seed <= 0.25:
         suffix = ''.join(choices(armor_suffixes, armor_suffix_weights, k=1))
 
+    suffix = "of Regeneration"
+
     rarity = {
         "rarity_level": rarity_level,
         "rarity_color": rarities["rarity_colors"][rarity_level]
@@ -1417,13 +1423,17 @@ def generate_random_armor():
         "melee_chance_to_hit_modifier": 0,
         "ranged_chance_to_hit_modifier": 0,
         "armor_modifier": 0,
+        "armor_multiplier_modifier": 0,
         "armor_class_modifier": 0,
+        "armor_class_multiplier_modifier": 0,
         "dodge_modifier": 0,
         "shield_armor_class": 0,
         "max_hp_modifier": 0,
+        "max_hp_multiplier_modifier": 0,
         "speed_modifier": 0,
         "movement_energy_bonus_modifier": 0,
         "melee_attack_energy_bonus_modifier": 0,
+        "ranged_attack_energy_bonus_modifier": 0,
         "critical_hit_chance_modifier": 0,
         "critical_hit_damage_multiplier_modifier": 0,
         "strength_modifier": 0,
@@ -1447,7 +1457,27 @@ def generate_random_armor():
             "arcane": 0,
             "poison": 0,
         },
+        "melee_damage_multiplier_modifiers": {
+            "physical": 0,
+            "fire": 0,
+            "ice": 0,
+            "lightning": 0,
+            "holy": 0,
+            "chaos": 0,
+            "arcane": 0,
+            "poison": 0,
+        },
         "ranged_damage_modifiers": {
+            "physical": 0,
+            "fire": 0,
+            "ice": 0,
+            "lightning": 0,
+            "holy": 0,
+            "chaos": 0,
+            "arcane": 0,
+            "poison": 0,
+        },
+        "ranged_damage_multiplier_modifiers": {
             "physical": 0,
             "fire": 0,
             "ice": 0,
@@ -1486,13 +1516,26 @@ def generate_random_armor():
             "chaos": 0,
             "arcane": 0,
             "poison": 0,
-        }
+        },
+        "resistance_multiplier_modifiers": {
+            "physical": 0,
+            "fire": 0,
+            "ice": 0,
+            "lightning": 0,
+            "holy": 0,
+            "chaos": 0,
+            "arcane": 0,
+            "poison": 0,
+        },
+        "equippable_effects": []
     }
 
     for modifiers in total_modifiers:
         for modifier_name, modifier_value in modifiers.items():
             if modifier_name in modifiers:
-                if type(modifier_value) is dict:
+                if modifier_name == "equippable_effects":
+                    combined_modifiers[modifier_name].extend(modifier_value)
+                elif type(modifier_value) is dict:
                     if "damage_dice" in modifier_name:
                         for damage_type in modifiers[modifier_name]:
                             new_value = modifiers[modifier_name][damage_type]
@@ -1546,10 +1589,16 @@ def generate_random_armor():
     for modifier_name, modifier_value in combined_modifiers.items():
         setattr(equippable_component, modifier_name, modifier_value)
 
+    # Instantiate the equippable effects, replacing the function with the class instance
+    equippable_component.equippable_effects = [
+        effect_function()
+        for effect_function in equippable_component.equippable_effects
+    ]
+
     new_armor = Entity(0,
                        0,
                        armor_characters[slot._name_],
-                       random_armor.unidentified_name,
+                       random_armor.identified_name,
                        equippable=equippable_component)
 
     return new_armor

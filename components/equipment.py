@@ -49,6 +49,14 @@ class Equipment:
         return modifier
 
     @property
+    def calculate_equipment_effects(self):
+        equipment_effects = []
+        for entity in self.__dict__.values():
+            if entity and entity.equippable and entity.equippable.equippable_effects:
+                equipment_effects.extend(entity.equippable.equippable_effects)
+        return equipment_effects
+
+    @property
     def calculate_total_melee_damage_dice(self):
         total_damage_dice = {
             "physical": [],

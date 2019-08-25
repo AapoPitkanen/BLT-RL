@@ -285,17 +285,29 @@ def ranged_attack(*args, **kwargs):
                     return results
 
             fire_ranged_weapon_messages = {
-                "bow": f"You fire your bow at the {entity.name}!",
-                "crossbow": f"You fire your crossbow at the {entity.name}!",
-                "pistol": f"You fire your pistol at the {entity.name}!",
-                "rifle": f"You fire your rifle at the {entity.name}!",
+                "player": {
+                    "bow": f"You shoot your bow at the {entity.name}!",
+                    "crossbow":
+                    f"You shoot your crossbow at the {entity.name}!",
+                    "pistol": f"You fire your pistol at the {entity.name}!",
+                    "rifle": f"You fire your rifle at the {entity.name}!",
+                },
+                "monster": {
+                    "bow": f"The {caster.name} shoots an arrow at you!",
+                    "crossbow": f"The {caster.name} shoots a bolt at you!",
+                    "pistol": f"The {caster.name} fires its pistol at you!",
+                    "rifle": f"The {caster.name} fires its rifle at you!",
+                }
             }
+
+            caster_type = "monster" if caster.ai else "player"
 
             results.append({
                 "consumed":
                 True,
                 "message":
-                Message(fire_ranged_weapon_messages[ranged_weapon_type])
+                Message(fire_ranged_weapon_messages[caster_type]
+                        [ranged_weapon_type])
             })
 
             if ranged_weapon_type in ["pistol", "rifle"]:

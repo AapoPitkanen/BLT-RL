@@ -3,6 +3,13 @@ from types import MethodType
 from game_messages import Message
 import tcod
 
+# General Effect class that does a whole bunch of things based on different
+# events. Almost anything can be an effect, such as character class abilites,
+# special weapon attributes, status effects etc.
+# If an effect has a number after hit such as Decay_50, the number means
+# the chance that the effect is applied in any event where the effect would
+# be applied (i.e. when dealing damage etc.)
+
 
 class Effect():
     def __init__(self,
@@ -27,8 +34,14 @@ class Effect():
                  on_critical_hit=None,
                  on_critical_miss=None,
                  effects_to_apply=None,
-                 magnitudes=None):
+                 magnitudes=None,
+                 chance_to_apply=1):
         self.name = name
+        # Duration also implicitly defines the type of effect:
+        # duration == None -> permanent effect
+        # duration == 0 -> instant effect
+        # duration == -1 -> temporary effect (removed after applying, in fighter.attack)
+        # duration > 0 -> ongoing effect
         self.duration = duration
         self.start_message = start_message
         self.end_message = end_message
@@ -56,33 +69,7 @@ class Effect():
         # }
         self.effects_to_apply = effects_to_apply
         self.magnitudes = magnitudes
-
-
-def DealDoublePhysicalDamage():
-    DealDoublePhysicalDamage = Effect(
-        name="double_physical_damage",
-        duration=0,
-        modifiers={"melee_damage_multiplier_modifiers": {
-            "physical": 1
-        }})
-    return DealDoublePhysicalDamage
-
-
-def on_attack_apply_double_damage_to_orcs(self, target):
-    results = []
-
-    if target.name == "Orc":
-        for effect in self.effects_to_apply.get("on_attack", []):
-            results.extend(self.owner.fighter.apply_effect(effect))
-    return results
-
-
-def DoubleDamageToOrcs():
-    DoubleDamageToOrcs = Effect(
-        name="double_damage_to_orcs",
-        on_attack=on_attack_apply_double_damage_to_orcs,
-        effects_to_apply={"on_attack": [DealDoublePhysicalDamage]})
-    return DoubleDamageToOrcs
+        self.chance_to_apply = chance_to_apply
 
 
 def HalveMaxHP():
@@ -106,6 +93,8 @@ def on_apply_deal_fire_damage(self, **kwargs):
 
     for _i in range(dice_count):
         total_damage += randint(1, dice_sides)
+
+    total_damage += intelligence_modifier
 
     results.append({"take_damage": {"fire": total_damage}})
     return results
@@ -264,6 +253,83 @@ def NaturalRegeneration():
 
 static_effects = [NaturalRegeneration, LifeSteal]
 
+# DECAY
+
+
+def resolve_decay(self):
+    results = []
+    if self.duration % 3 == 0:
+        damage_to_take = int(round(self.owner.fighter.current_hp * 0.1))
+        results.append({"take_damage": {"physical": damage_to_take}})
+        message_seed = random()
+        if message_seed <= 0.25:
+            message = Message(
+                "Your flesh withers away!",
+                "red") if not self.owner.ai else Message(
+                    f"The {self.owner.name}'s flesh withers away!", "red")
+            results.append({"message": message})
+    if self.duration > 0:
+        results.append({"duration": -1})
+    return results
+
+
+def Decay_50() -> Effect:
+    Decay = Effect(name="decay",
+                   duration=randint(12, 18),
+                   start_message={
+                       "player": {
+                           "message":
+                           "Your flesh turns gray starts to wither away!",
+                           "message_color": "red"
+                       },
+                       "monster": {
+                           "message":
+                           "'s flesh turns gray and starts to wither away!",
+                           "message_color": "red"
+                       }
+                   },
+                   end_message={
+                       "player": {
+                           "message": "Your flesh regains its color.",
+                           "message_color": "light green"
+                       },
+                       "monster": {
+                           "message": "'s flesh turns back to normal.",
+                           "message_color": "yellow"
+                       }
+                   },
+                   resolve=resolve_decay,
+                   chance_to_apply=0.5)
+    return Decay
+
+
+# APPLY DECAY_50 ON HIT
+
+
+def ApplyDecay_50OnAttack() -> Effect:
+    ApplyDecayOnAttack = Effect(
+        name="apply_decay_on_attack",
+        on_deal_damage=on_deal_damage_apply_effects_to_target,
+        effects_to_apply={"on_deal_damage": [Decay_50]})
+    return ApplyDecayOnAttack
+
+
+# REGENERATION
+
+
+def resolve_regeneration(self):
+    results = []
+    results.append({"heal": 1})
+    return results
+
+
+def Regeneration() -> Effect:
+    Regeneration = Effect("regeneration",
+                          resolve=resolve_regeneration,
+                          stacking_duration=False)
+    return Regeneration
+
+
 # SLOW #
 
 
@@ -274,9 +340,9 @@ def resolve_slow(self):
     return results
 
 
-def Slow():
-    Slow = Effect("slow",
-                  10,
+def Slow() -> Effect:
+    Slow = Effect(name="slow",
+                  duration=10,
                   start_message={
                       "player": {
                           "message": "Your movements slow down!",
@@ -329,7 +395,7 @@ def resolve_poison(self):
     return results
 
 
-def Poison():
+def Poison() -> Effect:
     Poison = Effect(name="poison",
                     duration=randint(3, 6),
                     start_message={
@@ -376,12 +442,13 @@ def resolve_internal_trauma(self):
         results.append({"duration": -1})
     if self.duration % 2 == 0:
         results.append({"take_damage": {"physical": randint(1, 2)}})
+    return results
 
 
-def InternalTrauma():
+def InternalTrauma() -> Effect:
     InternalTrauma = Effect(
-        "internal_trauma",
-        randint(4, 8),
+        name="internal_trauma",
+        duration=randint(4, 8),
         start_message={
             "player": {
                 "message": "One of your internal organs is crushed!",
@@ -403,6 +470,7 @@ def InternalTrauma():
             }
         },
         modifiers={})
+    return InternalTrauma
 
 
 # BLEED #
@@ -416,9 +484,9 @@ def resolve_bleed(self):
     return results
 
 
-def Bleed():
-    Bleed = Effect("bleed",
-                   randint(2, 6),
+def Bleed() -> Effect:
+    Bleed = Effect(name="bleed",
+                   duration=randint(2, 6),
                    start_message={
                        "player": {
                            "message": "Your wounds start to bleed!",
@@ -471,7 +539,7 @@ def resolve_burn(self):
     return results
 
 
-def Burn():
+def Burn() -> Effect:
     Burn = Effect(
         "burn",
         randint(2, 4),
@@ -539,7 +607,7 @@ def resolve_chilled(self):
     return results
 
 
-def Chilled():
+def Chilled() -> Effect:
     Chilled = Effect(
         "chilled",
         randint(2, 6),
@@ -588,12 +656,12 @@ def Chilled():
 
 def ArmorNegated():
     ArmorNegated = Effect(name="armor_negated",
-                          duration=0,
+                          duration=-1,
                           modifiers={"armor_modifier": -999})
     return ArmorNegated
 
 
-def IgnoreArmor():
+def IgnoreArmor() -> Effect:
     IgnoreArmor = Effect(name="ignore_armor",
                          on_attack=on_attack_apply_effects_to_target,
                          effects_to_apply={"on_attack": [ArmorNegated]})
@@ -606,7 +674,8 @@ def IgnoreArmor():
 def resolve_effects(fighter):
     results = []
 
-    for effect in fighter.status_effects:
+    # Check for status effects and equipment effects
+    for effect in fighter.ongoing_effects:
         if fighter.current_hp > 0 and effect.resolve:
             effect_results = effect.resolve(effect)
             for result in effect_results:
@@ -636,7 +705,9 @@ def resolve_effects(fighter):
 
             if effect.on_expire:
                 results.extend(effect.on_expire(effect))
-
+            # Effects are only removed from status effects, not from ongoing effects. Ongoing effects
+            # contains effects from status effects and equipment effects (equipment effects are always "permanent", as
+            # they exist as long as the equipment is worn)
             fighter.status_effects.remove(effect)
 
             if fighter.current_hp > 0 and effect.end_message:
