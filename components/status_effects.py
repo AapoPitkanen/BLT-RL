@@ -6,9 +6,8 @@ import tcod
 # General Effect class that does a whole bunch of things based on different
 # events. Almost anything can be an effect, such as character class abilites,
 # special weapon attributes, status effects etc.
-# If an effect has a number after hit such as Decay_50, the number means
-# the chance that the effect is applied in any event where the effect would
-# be applied (i.e. when dealing damage etc.)
+# Effects named with P(number) have that chance of triggering whenever
+# that effect would be applied
 
 
 class Effect():
@@ -273,7 +272,7 @@ def resolve_decay(self):
     return results
 
 
-def Decay_50() -> Effect:
+def DecayP50() -> Effect:
     Decay = Effect(name="decay",
                    duration=randint(12, 18),
                    start_message={
@@ -303,15 +302,89 @@ def Decay_50() -> Effect:
     return Decay
 
 
-# APPLY DECAY_50 ON HIT
+# APPLY DECAYP50 ON HIT
 
 
-def ApplyDecay_50OnAttack() -> Effect:
+def ApplyDecayP50OnAttack() -> Effect:
     ApplyDecayOnAttack = Effect(
         name="apply_decay_on_attack",
         on_deal_damage=on_deal_damage_apply_effects_to_target,
-        effects_to_apply={"on_deal_damage": [Decay_50]})
+        effects_to_apply={"on_deal_damage": [DecayP50]})
     return ApplyDecayOnAttack
+
+
+# ARMOR PIERCE 25%
+
+
+def ArmorPierce25() -> Effect:
+    ArmorPierce25 = Effect(name="armor_pierce_25",
+                           duration=-1,
+                           modifiers={"armor_multiplier_modifier": -0.25})
+    return ArmorPierce25
+
+
+# ARMOR PIERCE 50%
+
+
+def ArmorPierce50() -> Effect:
+    ArmorPierce50 = Effect(name="armor_pierce_50",
+                           duration=-1,
+                           modifiers={"armor_multiplier_modifier": -0.5})
+    return ArmorPierce50
+
+
+# APPLY ARMOR PIERCE 25% ON ATTACK
+
+
+def ApplyArmorPierce25OnAttack() -> Effect:
+    ApplyArmorPierce25OnAttack = Effect(
+        name="apply_armor_pierce25",
+        on_attack=on_attack_apply_effects_to_target,
+        effects_to_apply={"on_attack": [ArmorPierce25]})
+    return ApplyArmorPierce25OnAttack
+
+
+# APPLY ARMOR PIERCE 50% ON ATTACK
+
+
+def ApplyArmorPierce50OnAttack() -> Effect:
+    ApplyArmorPierce50OnAttack = Effect(
+        name="apply_armor_pierce50",
+        on_attack=on_attack_apply_effects_to_target,
+        effects_to_apply={"on_attack": [ArmorPierce50]})
+    return ApplyArmorPierce50OnAttack
+
+
+# PHYSICAL DAMAGE +25%
+
+
+def IncreasePhysicalDamage25():
+    IncreasePhysicalDamage25 = Effect(name="increase_physical_damage_25",
+                                      duration=25,
+                                      modifiers={
+                                          "melee_damage_multiplier_modifiers":
+                                          {
+                                              "physical": 0.25
+                                          },
+                                          "ranged_damage_multiplier_modifiers":
+                                          {
+                                              "physical": 0.25
+                                          }
+                                      },
+                                      stacking_duration=False,
+                                      only_one_allowed=True)
+    return IncreasePhysicalDamage25
+
+
+# INCREASE PHYSICAL DAMAGE ON CRITICAL HIT
+
+
+def OnCriticalApplyPhysicalDamage25():
+    OnCriticalApplyPhysicalDamage25 = Effect(
+        name="on_critical_hit_apply_physical_damage_25",
+        on_critical_hit=on_critical_hit_apply_effects,
+        effects_to_apply={"on_critical_hit": [IncreasePhysicalDamage25]})
+    return OnCriticalApplyPhysicalDamage25
 
 
 # REGENERATION

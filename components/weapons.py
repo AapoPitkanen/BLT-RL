@@ -1,7 +1,7 @@
 import tcod as libtcod
 from components.equippable import Equippable
 from components.equipment_attributes import qualities, quality_weights, rarities, weapon_metal_material_names, weapon_metal_material_weights, weapon_wood_material_names, weapon_wood_material_weights, weapon_prefixes, weapon_prefix_weights, weapon_suffixes, weapon_suffix_weights
-from components.status_effects import ApplyDecay_50OnAttack, Regeneration
+from components.status_effects import ApplyDecayP50OnAttack, Regeneration, ApplyArmorPierce25OnAttack, ApplyArmorPierce50OnAttack, OnCriticalApplyPhysicalDamage25
 from equipment_slots import EquipmentSlots
 from entity import Entity
 from random import random, randint, choices, sample
@@ -3521,7 +3521,7 @@ def generate_melee_weapon_suffix_modifiers():
             }
         },
         "of Decay": {
-            "equippable_effects": [ApplyDecay_50OnAttack],
+            "equippable_effects": [ApplyDecayP50OnAttack],
             "melee_damage_modifiers": {
                 "physical": 1
             },
@@ -3598,7 +3598,11 @@ def generate_melee_weapon_suffix_modifiers():
             },
             "melee_chance_to_hit_modifier": 2
         },
-        "of Onslaught": {},
+        "of Onslaught": {
+            "speed_modifier": 5,
+            "melee_attack_energy_bonus_modifier": 5,
+            "equippable_effects": [OnCriticalApplyPhysicalDamage25]
+        },
         "of Destruction": {
             "melee_damage_dice_modifiers": {
                 "physical": [[2, 0]]
@@ -3627,20 +3631,30 @@ def generate_melee_weapon_suffix_modifiers():
         },
         "of Obliteration": {
             "melee_damage_dice_modifiers": {
-                "physical": [[3, 2]]
+                "physical": [[3, 3]]
             },
             "melee_damage_modifiers": {
-                "physical": 4
+                "physical": 6
             }
         },
         "of the Elements": {
+            "melee_damage_dice": {
+                "fire": [[1, 2]],
+                "ice": [[1, 2]],
+                "lightning": [[1, 2]]
+            },
             "melee_damage_modifiers": {
                 "fire": 4,
                 "ice": 4,
                 "lightning": 4,
             }
         },
-        "of Shattering": {},
+        "of Piercing": {
+            "equippable_effects": [ApplyArmorPierce25OnAttack]
+        },
+        "of Shattering": {
+            "equippable_effects": [ApplyArmorPierce50OnAttack]
+        },
         "of Torment": {},
         "of Mortality": {
             "melee_damage_modifiers": {
@@ -3718,6 +3732,7 @@ def generate_ranged_weapon_suffix_modifiers():
         "of Obliteration": {},
         "of the Elements": {},
         "of Shattering": {},
+        "of Piercing": {},
         "of Torment": {},
         "of Mortality": {},
     }
