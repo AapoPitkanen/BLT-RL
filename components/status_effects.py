@@ -741,6 +741,29 @@ def IgnoreArmor() -> Effect:
     return IgnoreArmor
 
 
+def resolve_shocked(self):
+    results = []
+    results.append({"energy": -50})
+    return results
+
+
+def Shocked():
+    Shocked = Effect(name="shocked",
+                     duration=0,
+                     start_message={
+                         "player": {
+                             "message": "You are electrocuted!",
+                             "message_color": "light blue"
+                         },
+                         "monster": {
+                             "message": " is electrocuted!",
+                             "message_color": "light blue"
+                         }
+                     },
+                     resolve=resolve_shocked)
+    return Shocked
+
+
 # GENERAL EFFECT RESOLVER #
 
 
@@ -757,6 +780,7 @@ def resolve_effects(fighter):
                 duration_reset = result.get("duration_reset")
                 take_damage = result.get("take_damage")
                 message = result.get("message")
+                energy = result.get("energy")
 
                 if heal:
                     fighter.heal(heal)
@@ -773,6 +797,9 @@ def resolve_effects(fighter):
 
                 if message:
                     results.append({"message": message})
+
+                if energy:
+                    fighter.energy -= energy
 
         if effect.duration is not None and effect.duration == 0:
 
@@ -803,10 +830,10 @@ def resolve_effects(fighter):
 
 
 status_effects_by_damage_type = {
-    "physical": Bleed,
+    "physical": InternalTrauma,
     "fire": Burn,
     "ice": Chilled,
-    "lightning": Bleed,
+    "lightning": Shocked,
     "holy": Bleed,
     "chaos": Bleed,
     "arcane": Slow,

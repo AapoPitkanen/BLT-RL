@@ -3571,7 +3571,9 @@ def generate_melee_weapon_suffix_modifiers():
             "melee_attack_energy_bonus_modifier": 5,
             "life_steal_modifier": 5 / 100
         },
-        "of Cruelty": {},
+        "of Cruelty": {
+            
+        },
         "of Ruthlessness": {},
         "of Fury": {
             "speed_modifier": randint(1, 10),
