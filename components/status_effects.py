@@ -741,6 +741,9 @@ def IgnoreArmor() -> Effect:
     return IgnoreArmor
 
 
+# SHOCKED
+
+
 def resolve_shocked(self):
     results = []
     results.append({"energy": -50})
@@ -762,6 +765,49 @@ def Shocked():
                      },
                      resolve=resolve_shocked)
     return Shocked
+
+
+# WITCHFIRE
+
+
+def resolve_witchfire(self):
+    results = []
+    results.append({"duration": -1})
+    results.append({"take_damage": {"chaos": randint(2, 4)}})
+    return results
+
+
+def Witchfire():
+    Witchfire = Effect(name="witchfire",
+                       duration=randint(4, 12),
+                       start_message={
+                           "player": {
+                               "message":
+                               "Your body is burned by entropic flames!",
+                               "message_color": "crimson"
+                           },
+                           "monster": {
+                               "message": " is burned by entropic flames!",
+                               "message_color": "light crimson"
+                           }
+                       },
+                       end_message={
+                           "player": {
+                               "message":
+                               "The flames of chaos suddenly vanish.",
+                               "message_color": "light green"
+                           },
+                           "monster": {
+                               "message":
+                               " is no longer surrounded by crimson flames.",
+                               "message_color": "yellow"
+                           }
+                       },
+                       modifiers={
+                           "melee_chance_to_hit_modifier": -8,
+                           "ranged_chance_to_hit_modifier": -8
+                       },
+                       resolve=resolve_witchfire)
 
 
 # GENERAL EFFECT RESOLVER #
@@ -835,7 +881,7 @@ status_effects_by_damage_type = {
     "ice": Chilled,
     "lightning": Shocked,
     "holy": Bleed,
-    "chaos": Bleed,
+    "chaos": Witchfire,
     "arcane": Slow,
     "poison": Poison
 }
